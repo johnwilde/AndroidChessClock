@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/linearLayout1" android:layout_height="match_parent"
+	android:layout_width="match_parent" android:orientation="vertical">
+
+	<LinearLayout android:id="@+id/linearLayout2"
+		android:layout_height="match_parent" android:layout_width="match_parent"
+		android:orientation="horizontal" android:gravity="top"
+		android:layout_weight="5">
+
+		<TextView style="@style/clockStyle" android:id="@+id/clock1"
+			android:layout_width="wrap_content" android:layout_gravity="left"
+			android:gravity="center" android:layout_weight="1">
+		</TextView>
+
+		<Button style="@style/clockStyle" android:text="@string/reset_button"
+			android:id="@+id/reset_button" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:gravity="center"
+			android:layout_gravity="center|left" android:layout_weight="0.2"
+			android:textStyle="bold">
+		</Button>
+
+		<ToggleButton style="@style/clockStyle" android:textOn="@string/pauseon_button"
+		    android:textOff="@string/pauseoff_button"
+			android:id="@+id/pause_button" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:gravity="center"
+			android:layout_gravity="center|right" android:layout_weight="0.2"
+			android:textStyle="bold">
+		</ToggleButton>
+
+		<TextView style="@style/clockStyle" android:id="@+id/clock2"
+			android:layout_width="wrap_content" android:layout_gravity="right"
+			android:gravity="center" android:layout_weight="1">
+		</TextView>
+	</LinearLayout>
+
+	<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/RadioGroup1" android:layout_width="match_parent"
+		android:layout_height="match_parent" android:orientation="horizontal"
+		android:layout_gravity="bottom" android:layout_weight=".5"
+		android:animateLayoutChanges="true">
+
+		<ImageView style="@style/tinyButton"
+			android:id="@+id/button1tiny"
+			android:layout_gravity="left|center_vertical"
+			android:src="@drawable/wilde_scale">
+		</ImageView>
+
+		<RadioButton style="@style/bigButton"
+		    android:id="@+id/button1"
+			android:layout_gravity="left|center_vertical"
+			android:background="@drawable/wilde_normal">
+		</RadioButton>
+
+		<ImageView style="@style/tinyButton"
+			android:id="@+id/button2tiny"
+			android:layout_gravity="right|center_vertical"
+			android:src="@drawable/parker_scale">
+		</ImageView>
+
+		<RadioButton style="@style/bigButton"
+		    android:id="@+id/button2"
+			android:layout_gravity="right|center_vertical"
+			android:background="@drawable/parker_normal">
+		</RadioButton>
+
+	</RadioGroup>
+
+</LinearLayout>
+

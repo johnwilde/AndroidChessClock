@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">10:00</string>
+    <string name="app_name">ChessTimer</string>
+	<string name="preferences">Preferences</string>
+	
+	<string name="reset_button">Reset</string>
+	
+	<string name="pauseoff_button">Pause</string>
+	<string name="pauseon_button">Resume</string>
+	
+	<string name="initial_time_preference_description">Time Per Player</string>
+	
+	<string name="initial_minutes_preference">Minutes</string>
+	<string name="summary_initial_minutes_preference">Set number of minutes</string>
+	<string name="dialog_title_initial_minutes_preference">Please enter number of minutes</string>
+	
+	<string name="initial_seconds_preference">Seconds</string>
+	<string name="summary_initial_seconds_preference">Set number of seconds</string>
+	<string name="dialog_title_initial_seconds_preference">Please enter number of seconds</string>
+
+
+	<string name="increment_preference_description">Extra Time Per Move</string>
+	
+	<string name="increment_preference">Seconds</string>
+	<string name="summary_increment_preference">Set per-move increment (in seconds)</string>
+	<string name="dialog_title_increment_preference">Please enter number of seconds</string>
+
+
+</resources>

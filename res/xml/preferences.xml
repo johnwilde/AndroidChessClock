@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Define the options on the preferences screen  -->
+
+<PreferenceScreen
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+            android:title="@string/initial_time_preference_description">
+
+        <EditTextPreference
+                android:key="initial_minutes_preference"
+                android:title="@string/initial_minutes_preference"
+                android:summary="@string/summary_initial_minutes_preference"
+                android:dialogTitle="@string/dialog_title_initial_minutes_preference" />
+                
+
+        <EditTextPreference
+                android:key="initial_seconds_preference"
+                android:title="@string/initial_seconds_preference"
+                android:summary="@string/summary_initial_seconds_preference"
+                android:dialogTitle="@string/dialog_title_initial_seconds_preference" />
+                
+    </PreferenceCategory>
+
+ <PreferenceCategory
+            android:title="@string/increment_preference_description">
+
+        <EditTextPreference
+                android:key="increment_preference"
+                android:title="@string/increment_preference"
+                android:summary="@string/summary_increment_preference"
+                android:dialogTitle="@string/dialog_title_increment_preference" />
+                
+    </PreferenceCategory>
+    
+</PreferenceScreen>
+
