@@ -1,2 +1,3 @@
 # ignore the ./bin directory
-./bin/*
+bin/
+
