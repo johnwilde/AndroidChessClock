@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <scale xmlns:android="http://schemas.android.com/apk/res/android"
     android:drawable="@drawable/parker_normal"
+    android:useIntrinsicSizeAsMinimum="false"
     android:scaleGravity="center"
-    android:scaleHeight="1%"
-    android:scaleWidth="1%" />
+    android:scaleHeight="10%"
+    android:scaleWidth="10%" />

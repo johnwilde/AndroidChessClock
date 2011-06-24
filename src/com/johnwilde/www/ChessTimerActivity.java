@@ -6,20 +6,26 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -29,8 +35,7 @@ import android.widget.ToggleButton;
  */
 public class ChessTimerActivity extends Activity {
 	Timer mTimer1, mTimer2;
-	RadioButton mButton1, mButton2;
-	ImageView mButton1Tiny, mButton2Tiny;
+	ImageButton mButton1, mButton2;
 	Button mResetButton;
 	ToggleButton mPauseButton;
 
@@ -61,10 +66,8 @@ public class ChessTimerActivity extends Activity {
 		mTimer1 = new Timer(R.id.clock1);
 		mTimer2 = new Timer(R.id.clock2);
 
-		mButton1 = (RadioButton) findViewById(R.id.button1);
-		mButton2 = (RadioButton) findViewById(R.id.button2);
-		mButton1Tiny = (ImageView) findViewById(R.id.button1tiny);
-		mButton2Tiny = (ImageView) findViewById(R.id.button2tiny);
+		mButton1 = (ImageButton) findViewById(R.id.button1);
+		mButton2 = (ImageButton) findViewById(R.id.button2);
 
 		mResetButton = (Button) findViewById(R.id.reset_button);
 		mPauseButton = (ToggleButton) findViewById(R.id.pause_button);
@@ -76,10 +79,6 @@ public class ChessTimerActivity extends Activity {
 		mButton2.setOnClickListener(new ButtonClickListener(mTimer2, mTimer1));
 		mResetButton.setOnClickListener(new ResetButtonClickListener());
 
-		mButton1Tiny.getDrawable().setLevel(10000);
-		mButton2Tiny.getDrawable().setLevel(10000);
-		
-		displayButtonStates();
 	}
 
 	public void initializeClocks() {
@@ -92,46 +91,44 @@ public class ChessTimerActivity extends Activity {
 
 		mPauseButton.setOnClickListener(null);
 		
-		mButton1.setVisibility(View.VISIBLE);
-		mButton2.setVisibility(View.VISIBLE);
-		mButton1Tiny.setVisibility(View.GONE);
-		mButton2Tiny.setVisibility(View.GONE);
+		mButton1.getDrawable().setLevel(5000);
+		mButton2.getDrawable().setLevel(5000);
+		
+//		mButton1.getBackground().setLevel(5000);
+//		mButton1.getBackground().invalidateSelf();
+//
+//		mButton2.getBackground().setLevel(5000);
+//		mButton2.getBackground().invalidateSelf();
+
 	}
 
-	void displayButtonStates() {
-		StringBuilder sb = new StringBuilder();
+//	void displayButtonStates() {
+//		StringBuilder sb = new StringBuilder();
+//
+//		String button1Left = Integer.toString(mButton1.getLeft());
+//		String button2Left = Integer.toString(mButton2.getLeft());
+//
+//		sb.append("Button1 left = " + button1Left);
+//		sb.append(" Button2 left = " + button2Left);
+//
+//		if (mButton1.isChecked())
+//			sb.append("Button1 ON ");
+//		else
+//			sb.append("Button1 OFF ");
+//
+//		if (mButton2.isChecked())
+//			sb.append("Button2 ON ");
+//		else
+//			sb.append("Button2 OFF");
+//
+//		Log.d(TAG, sb.toString());
+//	}
 
-		String button1Left = Integer.toString(mButton1.getLeft());
-		String button2Left = Integer.toString(mButton2.getLeft());
-
-		sb.append("Button1 left = " + button1Left);
-		sb.append(" Button2 left = " + button2Left);
-
-		if (mButton1.isChecked())
-			sb.append("Button1 ON ");
-		else
-			sb.append("Button1 OFF ");
-
-		if (mButton2.isChecked())
-			sb.append("Button2 ON ");
-		else
-			sb.append("Button2 OFF");
-
-		Log.d(TAG, sb.toString());
-	}
-
-	RadioButton getButton(Timer timer) {
+	ImageButton getButton(Timer timer) {
 		if (timer == mTimer1)
 			return mButton1;
 		else
 			return mButton2;
-	}
-
-	ImageView getButtonTiny(Timer timer) {
-		if (timer == mTimer1)
-			return mButton1Tiny;
-		else
-			return mButton2Tiny;
 	}
 
 	/**
@@ -139,15 +136,13 @@ public class ChessTimerActivity extends Activity {
 	 */
 	final class ButtonClickListener implements OnClickListener {
 		Timer myTimer, otherTimer;
-		View myButton, otherButton, myButtonTiny, otherButtonTiny;
+		ImageButton myButton, otherButton;
 
 		public ButtonClickListener(Timer mine, Timer other) {
 			myTimer = mine;
 			otherTimer = other;
 			myButton = getButton(mine);
 			otherButton = getButton(other);
-			myButtonTiny = getButtonTiny(mine);
-			otherButtonTiny = getButtonTiny(other);
 		}
 
 		@Override
@@ -167,14 +162,19 @@ public class ChessTimerActivity extends Activity {
 				mStarted = true;
 				otherTimer.start();
 			}
-
-			otherButtonTiny.setVisibility(View.GONE);
-			myButton.setVisibility(View.GONE);
-
-			otherButton.setVisibility(View.VISIBLE);
-			myButtonTiny.setVisibility(View.VISIBLE);
-
-			displayButtonStates();
+			int lp = ViewGroup.LayoutParams.FILL_PARENT;
+			//int lp = ViewGroup.LayoutParams.WRAP_CONTENT;
+			myButton.setLayoutParams(new RadioGroup.LayoutParams(lp,lp, 5));
+			otherButton.setLayoutParams(new RadioGroup.LayoutParams(lp,lp, 1));
+			
+			myButton.getDrawable().setLevel(1);
+			otherButton.getDrawable().setLevel(10000);
+			
+			myButton.getDrawable().invalidateSelf();
+			otherButton.getDrawable().invalidateSelf();
+			// a lower layout weight will make the image bigger
+			// a higher level makes the image bigger
+			
 		}
 
 	}

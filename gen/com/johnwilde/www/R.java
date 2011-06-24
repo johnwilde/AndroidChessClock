@@ -15,21 +15,21 @@ public final class R {
         public static final int parker_normal=0x7f020001;
         public static final int parker_pressed=0x7f020002;
         public static final int parker_scale=0x7f020003;
-        public static final int wilde_normal=0x7f020004;
-        public static final int wilde_pressed=0x7f020005;
-        public static final int wilde_scale=0x7f020006;
+        public static final int parker_transition=0x7f020004;
+        public static final int wilde_normal=0x7f020005;
+        public static final int wilde_pressed=0x7f020006;
+        public static final int wilde_scale=0x7f020007;
+        public static final int wilde_transition=0x7f020008;
     }
     public static final class id {
         public static final int RadioGroup1=0x7f080005;
-        public static final int button1=0x7f080007;
-        public static final int button1tiny=0x7f080006;
-        public static final int button2=0x7f080009;
-        public static final int button2tiny=0x7f080008;
+        public static final int button1=0x7f080006;
+        public static final int button2=0x7f080007;
         public static final int clock1=0x7f080001;
         public static final int clock2=0x7f080004;
         public static final int linearLayout1=0x7f080000;
         public static final int pause_button=0x7f080003;
-        public static final int preferences=0x7f08000a;
+        public static final int preferences=0x7f080008;
         public static final int reset_button=0x7f080002;
     }
     public static final class layout {
