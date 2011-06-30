@@ -3,29 +3,21 @@ package com.johnwilde.www;
 import java.text.DecimalFormat;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -34,149 +26,353 @@ import android.widget.ToggleButton;
  * Activity holding two clocks and two buttons.
  */
 public class ChessTimerActivity extends Activity {
-	Timer mTimer1, mTimer2;
-	ImageButton mButton1, mButton2;
-	Button mResetButton;
+	
+	/**
+	 * The 4 states are:
+	 * 
+	 * IDLE: 
+	 *  	Waiting for a player to make the first move.
+	 * 
+	 * RUNNING:
+	 * 		The timer for one player is running. 
+	 * 
+	 * PAUSED:
+	 * 		Neither timer is running, but mActive stores
+	 *      the button of the player whose timer will start
+	 *      when play is resumed.
+	 *      
+	 * DONE:
+	 *      Neither timer is running and one timer has reached
+	 *      0.0.  mActive stores the player whose timer ran 
+	 *      out.
+	 *
+	 */
+	enum GameState {IDLE, RUNNING, PAUSED, DONE;}
+	GameState mCurrentState = GameState.IDLE;
+
+	PlayerButton mButton1, mButton2;  	// The two big buttons
+	Button mResetButton;				
 	ToggleButton mPauseButton;
-
-	boolean mStarted = false;
-	int mInitialDurationSeconds = 60; // retrieve from preferences
-	int mIncrementSeconds; // retrieve from preferences
-	public Context mContext;
+	
+	// Holds a reference to either mButton1 or mButton2.
+	//
+	// if mCurrentState == IDLE:
+	//		it will be null.
+	// if mCurrentState == RUNNING:
+	//		it will point to the player whose clock is running
+	// if mCurrentState == PAUSED:
+	//		it will point to the player whose clock was running
+	//		when paused
+	// if mCurrentState == DONE:
+	//		it will point to the player whose clock ran out of fime
+	PlayerButton mActive; 
+	
+	// these values are populated from the user preferences
+	int mInitialDurationSeconds = 60; 
+	int mIncrementSeconds; 
+	
+	// Constants 
 	private static final String TAG = "ChessTimerActivity";
-
+	private static final int BUTTON_FADED = 25;
+	private static final int BUTTON_VISIBLE = 255;
+	private static final int REQUEST_CODE_PREFERENCES = 1;
+	
+	// Create all the objects and enter IDLE state
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		mContext = this;
-	}
 
-	/*
-	 * Placed initialization code here instead of in onCreate() because the call
-	 * to findViewById() was returning null, because the view had not finished
-	 * inflating.
-	 * 
-	 * @see android.app.Activity#onStart()
-	 */
-	@Override
-	public void onStart() {
-		super.onStart();
-
-		mTimer1 = new Timer(R.id.clock1);
-		mTimer2 = new Timer(R.id.clock2);
-
-		mButton1 = (ImageButton) findViewById(R.id.button1);
-		mButton2 = (ImageButton) findViewById(R.id.button2);
+		mButton1 = new PlayerButton( new Timer(R.id.clock1), R.id.button1);
+		mButton2 = new PlayerButton( new Timer(R.id.clock2), R.id.button2);
 
 		mResetButton = (Button) findViewById(R.id.reset_button);
 		mPauseButton = (ToggleButton) findViewById(R.id.pause_button);
+		mPauseButton.setOnClickListener(new PauseButtonClickListener());
 		
-		// reset the timers
-		setClocksUsingPreferenceSettings();
+		mButton1.setButtonListener(new PlayerButtonClickListener(mButton1, mButton2));
+		mButton2.setButtonListener(new PlayerButtonClickListener(mButton2, mButton1));
 
-		mButton1.setOnClickListener(new ButtonClickListener(mTimer1, mTimer2));
-		mButton2.setOnClickListener(new ButtonClickListener(mTimer2, mTimer1));
 		mResetButton.setOnClickListener(new ResetButtonClickListener());
 
+		loadUserPreferences();
+
+		transitionTo(GameState.IDLE);
+		Log.d(TAG, "Finished onCreate()");
 	}
 
-	public void initializeClocks() {
-		if (mTimer1 != null)
-			mTimer1.reset();
-		if (mTimer2 != null)
-			mTimer2.reset();
+	// Save data needed to recreate activity.  Enter PAUSED state
+	// if we are currently RUNNING.
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
 		
-		mStarted = false;
+		if (mCurrentState == GameState.RUNNING)
+			mPauseButton.performClick(); // pause, if not IDLE
+		
+		outState.putLong("Timer1", mButton1.timer.getMsToGo() );
+		outState.putLong("Timer2", mButton2.timer.getMsToGo() );
+		outState.putString("State", mCurrentState.toString());
+		
+		// if IDLE, the current state is NULL
+		if (mCurrentState != GameState.IDLE)
+			outState.putInt("ActiveButton", mActive.getButtonId()); 
+	}
+	
+	// This is called after onCreate() and restores the activity state
+	// using data saved in onSaveInstanceState().  The activity will
+	// never be in the RUNNING state after this method.
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
+		
+		GameState stateToRestore = GameState.valueOf(savedInstanceState.getString("State"));
+		
+		// onCreate() puts us in IDLE and we don't need to do anything else
+		if (stateToRestore == GameState.IDLE)
+			return;
+		
+		long activeButtonId = savedInstanceState.getInt("ActiveButton");
+		boolean button1Active = (mButton1.getButtonId() == activeButtonId ? true : false);
+		boolean button2Active = (mButton2.getButtonId() == activeButtonId ? true : false);
+		
+		mButton1.setTimeAndState(savedInstanceState.getLong("Timer1"), button1Active);
+		mButton2.setTimeAndState(savedInstanceState.getLong("Timer2"), button2Active);
 
-		mPauseButton.setOnClickListener(null);
-		
-		mButton1.getDrawable().setLevel(5000);
-		mButton2.getDrawable().setLevel(5000);
-		
-//		mButton1.getBackground().setLevel(5000);
-//		mButton1.getBackground().invalidateSelf();
-//
-//		mButton2.getBackground().setLevel(5000);
-//		mButton2.getBackground().invalidateSelf();
+		if (stateToRestore == GameState.DONE){
+			transitionTo(GameState.DONE);
+			return;
+		}
+			
+		if (stateToRestore == GameState.PAUSED){
+			transitionTo(GameState.PAUSED);
+			Toast.makeText(this, "Paused. Press to resume.", Toast.LENGTH_SHORT).show();
+			return;
+		}
 
 	}
-
-//	void displayButtonStates() {
-//		StringBuilder sb = new StringBuilder();
-//
-//		String button1Left = Integer.toString(mButton1.getLeft());
-//		String button2Left = Integer.toString(mButton2.getLeft());
-//
-//		sb.append("Button1 left = " + button1Left);
-//		sb.append(" Button2 left = " + button2Left);
-//
-//		if (mButton1.isChecked())
-//			sb.append("Button1 ON ");
-//		else
-//			sb.append("Button1 OFF ");
-//
-//		if (mButton2.isChecked())
-//			sb.append("Button2 ON ");
-//		else
-//			sb.append("Button2 OFF");
-//
-//		Log.d(TAG, sb.toString());
-//	}
-
-	ImageButton getButton(Timer timer) {
-		if (timer == mTimer1)
-			return mButton1;
-		else
-			return mButton2;
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu, menu);
+		return true;
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int itemId = item.getItemId();
+		switch (itemId) {
+		case R.id.optionsmenu_preferences:
+			launchPreferencesActivity();
+			break;
+		// Generic catch all for all the other menu resources
+		default:
+			break;
+		}
+	
+		return false;
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+	
+		// check which activity has returned (for now we only have one, so
+		// it isn't really necessary).
+		if (requestCode == REQUEST_CODE_PREFERENCES) {
+			// reset clocks using (possibly new) settings
+			loadUserPreferences();
+			transitionTo(GameState.IDLE);
+		}
+	}
+
+
+	// All state transitions are occur here.  The logic that controls
+	// the UI elements is here.
+	public void transitionTo(GameState state){
+		GameState start = mCurrentState;
+		
+		switch (state){
+		case IDLE:
+			mCurrentState = GameState.IDLE;
+			mPauseButton.setClickable(false); // disable pause when IDLE
+			mButton1.setTransparency(BUTTON_VISIBLE);
+			mButton2.setTransparency(BUTTON_VISIBLE);
+			mButton1.timer.reset();
+			mButton2.timer.reset();
+			break;
+			
+		case RUNNING:
+			mCurrentState = GameState.RUNNING;
+			mPauseButton.setClickable(true); // enable 'pause'
+			mPauseButton.setChecked(false);
+			
+			// start the clock
+			mActive.timer.start();
+			break;
+			
+		case PAUSED:
+			mCurrentState = GameState.PAUSED;
+			mPauseButton.setChecked(true); // Changes text on Pause button
+			mPauseButton.setClickable(true); // enable 'resume'
+			// pause the clock
+			mActive.timer.pause();
+			break;
+			
+		case DONE:
+			if (mActive != null){
+				mCurrentState = GameState.DONE;
+				mActive.timer.done();
+				mPauseButton.setClickable(false); // disable pause when DONE
+				break;
+			}
+			else{
+				Log.d(TAG, "Can't tranition to DONE when neither player is active");
+				return;
+			}
+			
+		}
+		
+		Log.d(TAG, "Transition from " + start + " to " + mCurrentState);
+			
+	}
+
+	public void setActiveButton(PlayerButton button) {
+		mActive = button;
+
+		// Give visual indication of which player goes next by fading
+		// the button of the player who just moved
+		mActive.setTransparency(BUTTON_VISIBLE);
+		PlayerButton other = (mButton1 == mActive ? mButton2 : mButton1);
+		other.setTransparency(BUTTON_FADED);
+
+		Log.d(TAG, "Setting active button = " + button.getButtonId() );
+	}
+
+
+	public void launchPreferencesActivity() {
+		// launch an activity through this intent
+		Intent launchPreferencesIntent = new Intent().setClass(this,
+				TimerOptions.class);
+		// Make it a subactivity so we know when it returns
+		startActivityForResult(launchPreferencesIntent,
+				REQUEST_CODE_PREFERENCES);
+	}
+
+
+	private void loadUserPreferences() {
+		// Since we're in the same package, we can use this context to get
+		// the default shared preferences (?)
+		SharedPreferences sharedPref = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		
+		int minutes = Integer.parseInt(sharedPref.getString(
+				TimerOptions.Key.MINUTES.toString(), "2"));
+		int seconds = Integer.parseInt(sharedPref.getString(
+				TimerOptions.Key.SECONDS.toString(), "0"));
+		
+		setInitialDuration(minutes * 60 + seconds);
+	
+		seconds = Integer.parseInt(sharedPref.getString(
+				TimerOptions.Key.INCREMENT_SECONDS.toString(), "5"));
+		setIncrement(seconds);
+	}
+
+
+	private void setInitialDuration(int seconds) {
+		mInitialDurationSeconds = seconds;
+	}
+
+
+	private void setIncrement(int seconds) {
+		mIncrementSeconds = seconds;
+	}
+
+
+	// Class to aggregate a button and a timer.  It provides
+	// a method for setting the time which is used when the 
+	// activity must be recreated after it had been started.
+	class PlayerButton{
+		Timer timer;
+		ImageButton button;
+		boolean isFaded = false;
+		private int mId;
+		
+		PlayerButton(Timer timer, int buttonId){
+			this.timer = timer;
+			button = (ImageButton)findViewById(buttonId);
+			mId = buttonId;
+		}		
+		
+		public int getButtonId(){
+			return mId;
+		}
+		
+		void setButtonListener(PlayerButtonClickListener listener){
+			button.setOnClickListener(listener);
+		}
+
+		// 0 is fully transparent, 255 is fully opaque
+		private void setTransparency(int alpha) {
+			if (button == null){
+				Log.d(TAG, "Button is NULL");
+			}
+			
+			button.getDrawable().setAlpha(alpha);
+			button.invalidateDrawable(button.getDrawable());
+		}
+		
+
+		public void setTimeAndState(long time, boolean isActive){
+			if (isActive)
+				setActiveButton(this);
+			
+			timer.initializeWithValue(time);
+		}
+	}
+	
 	/**
-	 * Pauses one clock and starts the other when a button is clicked.
+	 * Pause one clock and start the other when a button is clicked.
 	 */
-	final class ButtonClickListener implements OnClickListener {
-		Timer myTimer, otherTimer;
-		ImageButton myButton, otherButton;
-
-		public ButtonClickListener(Timer mine, Timer other) {
-			myTimer = mine;
-			otherTimer = other;
-			myButton = getButton(mine);
-			otherButton = getButton(other);
+	final class PlayerButtonClickListener implements OnClickListener {
+		PlayerButton mine, other;
+		
+		public PlayerButtonClickListener(PlayerButton mine, PlayerButton other) {
+			this.mine = mine;
+			this.other = other;
 		}
 
 		@Override
 		public void onClick(View v) {
 
-			if (mStarted) {
-				if (myTimer.isRunning()) {
-					myTimer.pause();
-					myTimer.increment(mIncrementSeconds);
-					otherTimer.start();
-				}
-			} else {
-				// allow pause button to be used
-				mPauseButton.setOnClickListener(new PauseButtonClickListener());
-				
-				// start the other player's timer
-				mStarted = true;
-				otherTimer.start();
-			}
-			int lp = ViewGroup.LayoutParams.FILL_PARENT;
-			//int lp = ViewGroup.LayoutParams.WRAP_CONTENT;
-			myButton.setLayoutParams(new RadioGroup.LayoutParams(lp,lp, 5));
-			otherButton.setLayoutParams(new RadioGroup.LayoutParams(lp,lp, 1));
-			
-			myButton.getDrawable().setLevel(1);
-			otherButton.getDrawable().setLevel(10000);
-			
-			myButton.getDrawable().invalidateSelf();
-			otherButton.getDrawable().invalidateSelf();
-			// a lower layout weight will make the image bigger
-			// a higher level makes the image bigger
-			
-		}
+			switch (mCurrentState){
 
+			case PAUSED: 
+				// alternate way to un-pause the activity
+				// the primary way is to click the "Pause-Reset" toggle button
+				mPauseButton.performClick();
+				return;
+
+			case DONE: // do nothing
+				return;
+				
+			case RUNNING:
+				if (mine.timer.isRunning()) {
+					mine.timer.pause();
+					mine.timer.increment(mIncrementSeconds);
+					other.timer.start();
+					setActiveButton(other);
+				}
+				break;
+
+			case IDLE:
+				// the game just started 
+				setActiveButton(other);
+				transitionTo(GameState.RUNNING);
+				break;
+			}
+		}
 	}
 
 	/**
@@ -185,36 +381,32 @@ public class ChessTimerActivity extends Activity {
 	final class ResetButtonClickListener implements OnClickListener {
 		@Override
 		public void onClick(View v) {
-			setClocksUsingPreferenceSettings();
+			loadUserPreferences();
+			transitionTo(GameState.IDLE);
 		}
-
 	}
 
 	/**
 	 * Pause the clock that is running.
 	 */
 	final class PauseButtonClickListener implements OnClickListener {
-		Timer clockRunningWhenPaused;
 		@Override
 		public void onClick(View v) {
-			ToggleButton tb = (ToggleButton) v;
 			
-			if ( tb.isChecked() == false ){
-				// We just became un-paused, start clock again
-				clockRunningWhenPaused.start();
+			if (mCurrentState == GameState.DONE ||
+				mCurrentState == GameState.IDLE)
+				return;
+			
+			if ( mCurrentState == GameState.PAUSED ){
+				transitionTo(GameState.RUNNING);
 			}
 			else{
-				if (mTimer1.isRunning)
-					clockRunningWhenPaused = mTimer1;
-				else
-					clockRunningWhenPaused = mTimer2;
-				
-				clockRunningWhenPaused.pause();
+				transitionTo(GameState.PAUSED);	
 			}
 		}
-
 	}
 
+	// This class updates each player's clock.
 	final class Timer implements OnLongClickListener {
 		TextView mView;
 		long mMillisUntilFinished;
@@ -225,23 +417,27 @@ public class ChessTimerActivity extends Activity {
 		DecimalFormat dfSecondsNearEnd = new DecimalFormat("0.0");
 		DecimalFormat dfSeconds = new DecimalFormat("00");
 		DecimalFormat dfMinAndHours = new DecimalFormat("##");
-		private int mNormalTextColor;
+		private int mNormalTextColor = Color.BLACK;
 
 		Timer(int id) {
 			mView = (TextView) findViewById(id);
-			mNormalTextColor = mView.getCurrentTextColor();
 			initialize();
 		}
 
-		public void initialize() {
+		public void initializeWithValue(long msToGo) {
 			mView.setLongClickable(true);
 			mView.setOnLongClickListener(this);
-			mMillisUntilFinished = mInitialDurationSeconds * 1000;
+			mMillisUntilFinished = msToGo;
 			mCountDownTimer = new InnerTimer();
 			isRunning = false;
 			mView.setTextColor( mNormalTextColor );
 			
-			updateTimerText();
+			updateTimerText();			
+		}
+
+		
+		public void initialize() {
+			initializeWithValue(mInitialDurationSeconds * 1000);
 		}
 
 		public void increment(int mIncrementSeconds) {
@@ -314,14 +510,17 @@ public class ChessTimerActivity extends Activity {
 
 		}
 
+		long getMsToGo(){
+			return mMillisUntilFinished;
+		}
+
 		public void done() {
 			mView.setText("0.0");
-			mNormalTextColor  = mView.getCurrentTextColor();
 			mView.setTextColor(Color.RED);
 		}
 
 		class InnerTimer {
-			long mInterval = 50; // rate (ms) at which text is updated
+			long mInterval = 50; // interval (in ms) at which  text is updated
 			CountDownTimer mTimer;
 
 			void go() {
@@ -333,11 +532,11 @@ public class ChessTimerActivity extends Activity {
 					}
 
 					public void onFinish() {
-						done();
+						transitionTo(GameState.DONE);
 					}
 				}.start();
 			}
-
+			
 			void cancel() {
 				if (mTimer != null)
 					mTimer.cancel();
@@ -357,83 +556,5 @@ public class ChessTimerActivity extends Activity {
 		}
 
 	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.menu, menu);
-		return true;
-	}
-
-	private static final int REQUEST_CODE_PREFERENCES = 1;
-
-	public void launchPreferencesActivity() {
-		// launch an activity through this intent
-		Intent launchPreferencesIntent = new Intent().setClass(this,
-				TimerOptions.class);
-		// Make it a subactivity so we know when it returns
-		startActivityForResult(launchPreferencesIntent,
-				REQUEST_CODE_PREFERENCES);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		int itemId = item.getItemId();
-		switch (itemId) {
-		case R.id.preferences:
-			launchPreferencesActivity();
-			break;
-
-		// Generic catch all for all the other menu resources
-		default:
-			// Don't toast text when a submenu is clicked
-			if (!item.hasSubMenu()) {
-				Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT)
-						.show();
-				return true;
-			}
-			break;
-		}
-
-		return false;
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-
-		// check which activity has returned (for now we only have one, so
-		// it isn't really necessary).
-		if (requestCode == REQUEST_CODE_PREFERENCES) {
-			// reset clocks using (possibly new) settings
-			setClocksUsingPreferenceSettings();
-		}
-	}
-
-	private void setClocksUsingPreferenceSettings() {
-		// Since we're in the same package, we can use this context to get
-		// the default shared preferences (?)
-		SharedPreferences sharedPref = PreferenceManager
-				.getDefaultSharedPreferences(this);
-		int minutes = Integer.parseInt(sharedPref.getString(
-				TimerOptions.KEY_MINUTES, "2"));
-		int seconds = Integer.parseInt(sharedPref.getString(
-				TimerOptions.KEY_SECONDS, "0"));
-		
-		setInitialDuration(minutes * 60 + seconds);
-
-		seconds = Integer.parseInt(sharedPref.getString(
-				TimerOptions.KEY_INCREMENT_SECONDS, "0"));
-		setIncrement(seconds);
-
-		initializeClocks();
-	}
-
-	private void setInitialDuration(int seconds) {
-		mInitialDurationSeconds = seconds;
-	}
-
-	private void setIncrement(int seconds) {
-		mIncrementSeconds = seconds;
-	}
+	
 }

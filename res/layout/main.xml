@@ -1,60 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/linearLayout1" android:layout_height="match_parent"
-	android:layout_width="match_parent" android:orientation="vertical">
-
-	<LinearLayout style="@android:style/ButtonBar"
-		android:layout_height="match_parent" android:layout_width="match_parent"
-		android:orientation="horizontal" android:gravity="top"
-		android:layout_weight="5">
-
-		<TextView style="@style/clockStyle" android:id="@+id/clock1"
-			android:layout_width="wrap_content" android:layout_gravity="left|center"
-			android:gravity="center" android:layout_weight="1">
-		</TextView>
-
-		<Button style="@android:style/MediaButton" android:text="@string/reset_button"
-			android:id="@+id/reset_button" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:gravity="center"
-			android:layout_gravity="center|left" android:layout_weight="0.2"
-			android:textStyle="bold">
-		</Button>
-
-		<ToggleButton style="@android:style/MediaButton"
-			android:textOn="@string/pauseon_button"
-			android:textOff="@string/pauseoff_button"
-			android:id="@+id/pause_button" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:gravity="center"
-			android:layout_gravity="center|right" android:layout_weight="0.2"
-			android:textStyle="bold">
-		</ToggleButton>
-
-		<TextView style="@style/clockStyle" android:id="@+id/clock2"
-			android:layout_width="wrap_content" android:layout_gravity="right|center"
-			android:gravity="center" android:layout_weight="1">
-		</TextView>
-	</LinearLayout>
-
-	<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
-		android:id="@+id/RadioGroup1" android:layout_width="match_parent"
-		android:layout_height="match_parent" android:orientation="horizontal"
-		android:layout_gravity="bottom" android:layout_weight=".5"
+<TableLayout android:orientation="vertical"
+	android:stretchColumns="1" android:layout_gravity="center" android:id="@+id/LinearLayout2"
+	android:layout_weight="0" xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_height="match_parent" android:layout_width="match_parent">
+	<TableRow android:id="@+id/tableRow1" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:layout_weight="0">
+		<LinearLayout android:gravity="top" android:layout_width="match_parent"
+			android:layout_height="match_parent" android:layout_weight="1"
+			android:orientation="horizontal" style="@android:style/ButtonBar">
+			<TextView android:id="@+id/clock1" android:layout_gravity="left|center"
+				android:layout_width="wrap_content" style="@style/clockStyle"
+				android:gravity="center" android:layout_weight="1"></TextView>
+			<Button android:id="@+id/reset_button" android:text="@string/reset_button"
+				android:gravity="center" android:layout_gravity="center|left"
+				android:layout_height="wrap_content" android:textStyle="bold"
+				android:layout_width="wrap_content" style="@android:style/MediaButton"
+				android:layout_weight="0.2"></Button>
+			<ToggleButton android:gravity="center" android:id="@+id/pause_button"
+				android:textOff="@string/pauseoff_button" android:layout_gravity="center|right"
+				android:layout_height="wrap_content" style="@android:style/MediaButton"
+				android:textOn="@string/pauseon_button" android:layout_width="wrap_content"
+				android:textStyle="bold" android:layout_weight="0.2"></ToggleButton>
+			<TextView android:id="@+id/clock2" android:layout_gravity="right|center"
+				android:layout_width="wrap_content" style="@style/clockStyle"
+				android:gravity="center" android:layout_weight="1"></TextView>
+		</LinearLayout>
+	</TableRow>
+	<LinearLayout android:layout_height="fill_parent"
+		android:layout_width="fill_parent" android:id="@+id/ll1"
 		android:animateLayoutChanges="true">
-
-		<ImageButton style="@style/bigButton"
-		    android:id="@+id/button1"
-			android:layout_gravity="left|center_vertical"
-			android:src="@drawable/wilde_scale">
+		<ImageButton android:src="@drawable/white"
+			android:background="@null" android:id="@+id/button1"
+			android:scaleType="fitXY" android:layout_width="match_parent"
+			android:layout_height="match_parent" android:layout_weight="1">
 		</ImageButton>
-
-		<ImageButton style="@style/bigButton"
-		    android:id="@+id/button2"
-			android:layout_gravity="right|center_vertical"
-			android:src="@drawable/parker_scale">
-<!--		    android:background="@drawable/parker_scale">-->
+		<ImageButton android:src="@drawable/black"
+			android:background="@null" android:id="@+id/button2"
+			android:scaleType="fitXY" android:layout_weight="1"
+			android:layout_height="match_parent" android:layout_width="match_parent">
 		</ImageButton>
+	</LinearLayout>
+</TableLayout>
 
-	</RadioGroup>
 
-</LinearLayout>
 
