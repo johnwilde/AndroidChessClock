@@ -17,6 +17,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/optionsmenu_preferences" 
-        android:title="@string/optionsmenu_preferences" />
+        android:title="@string/optionsmenu_preferences"
+
+         />
+
+	<item android:id="@+id/optionsmenu_about" 
+        android:title="@string/optionsmenu_about"
+         />
+
 
 </menu>

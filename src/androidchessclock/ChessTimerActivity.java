@@ -1,10 +1,16 @@
-package com.johnwilde.www;
+package androidchessclock;
 
 import java.text.DecimalFormat;
 
+import com.johnwilde.www.R;
+
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -166,6 +172,9 @@ public class ChessTimerActivity extends Activity {
 		case R.id.optionsmenu_preferences:
 			launchPreferencesActivity();
 			break;
+		case R.id.optionsmenu_about:
+			showAboutDialog();
+			break;			
 		// Generic catch all for all the other menu resources
 		default:
 			break;
@@ -260,6 +269,29 @@ public class ChessTimerActivity extends Activity {
 				REQUEST_CODE_PREFERENCES);
 	}
 
+	public void showAboutDialog(){
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		String title = getString(R.string.app_name);
+		String msg = getString(R.string.about_dialog);
+		builder.setMessage(title + ", version: " + getPackageVersion() + "\n\n" + msg)
+		       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+		           public void onClick(DialogInterface dialog, int id) {
+		                dialog.cancel();
+		           }
+		       });
+		AlertDialog alert = builder.create();		
+		alert.show();
+	}
+	
+	private String getPackageVersion(){
+
+		try {
+			PackageInfo manager=getPackageManager().getPackageInfo(getPackageName(), 0);
+			return manager.versionName;
+		} catch (NameNotFoundException e) {
+			return "Unknown";
+		}
+	}
 
 	private void loadUserPreferences() {
 		// Since we're in the same package, we can use this context to get

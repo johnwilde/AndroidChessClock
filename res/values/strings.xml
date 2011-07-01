@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Chess Clock</string>
 	<string name="optionsmenu_preferences">Preferences</string>
+	<string name="optionsmenu_about">About</string>
 	
 	<string name="reset_button">Reset</string>
 	
@@ -25,5 +26,6 @@
 	<string name="summary_increment_preference">Set per-move increment (in seconds)</string>
 	<string name="dialog_title_increment_preference">Please enter number of seconds</string>
 
+	<string name="about_dialog">To report bugs or view source code, visit "https://github.com/johnwilde/AndroidChessClock"</string>
 
 </resources>

@@ -1,4 +1,6 @@
-package com.johnwilde.www;
+package androidchessclock;
+
+import com.johnwilde.www.R;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;

@@ -14,7 +14,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="TimerOptions"></activity>
+        <activity android:name="androidchessclock.TimerOptions"></activity>
 
     </application>
 </manifest>
