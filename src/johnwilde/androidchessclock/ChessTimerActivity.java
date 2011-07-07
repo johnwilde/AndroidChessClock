@@ -310,7 +310,7 @@ public class ChessTimerActivity extends Activity {
 		setInitialDuration(minutes * 60 + seconds);
 	
 		seconds = Integer.parseInt(sharedPref.getString(
-				TimerOptions.Key.INCREMENT_SECONDS.toString(), "5"));
+				TimerOptions.Key.INCREMENT_SECONDS.toString(), "0"));
 		setIncrement(seconds);
 	}
 

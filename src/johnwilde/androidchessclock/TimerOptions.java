@@ -43,6 +43,9 @@ public class TimerOptions extends PreferenceActivity
 
         if (pref instanceof EditTextPreference) {
         	EditTextPreference editTextPref = (EditTextPreference) pref;
+        	String s = editTextPref.getText();
+        	if (s.trim().isEmpty())
+        		editTextPref.setText("0");
         	editTextPref.setSummary("Current value is: " + editTextPref.getText());
         }
     }    

@@ -13,7 +13,7 @@
                 android:title="@string/initial_minutes_preference"
                 android:summary="@string/summary_initial_minutes_preference"
                 android:dialogTitle="@string/dialog_title_initial_minutes_preference"
-                android:inputType="number"
+                android:numeric="integer"
                 android:defaultValue="2"
                 />
                 
@@ -23,22 +23,17 @@
                 android:title="@string/initial_seconds_preference"
                 android:summary="@string/summary_initial_seconds_preference"
                 android:dialogTitle="@string/dialog_title_initial_seconds_preference" 
-                android:inputType="number"
+                android:numeric="integer"
                 android:defaultValue="0"
                 />
                 
-    </PreferenceCategory>
-
- <PreferenceCategory
-            android:title="@string/increment_preference_description">
-
         <EditTextPreference
                 android:key="increment_preference"
                 android:title="@string/increment_preference"
                 android:summary="@string/summary_increment_preference"
                 android:dialogTitle="@string/dialog_title_increment_preference" 
-                android:inputType="number"
-                android:defaultValue="5"
+                android:numeric="integer"
+                android:defaultValue="0"
                 />
                 
                 

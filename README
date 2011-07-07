@@ -29,7 +29,7 @@ ICON ASSET CREATION:
   
   
 TODO
-	* Fix bug that allows empty time field in preferences
+
 	* Wake lock to prevent screen from dimming during play
 	* Lock 'portrait' orientation
 	* Make pause notification persistent (not a 'Toast')
@@ -44,6 +44,8 @@ TODO
 	* Let user select image to be displayed on button
 	  
 DONE
-	* 'About' screen
+	* Fix bug that allows empty time field in preferences
 	* Fixed package name in manifest
+	* 'About' screen
+
 
