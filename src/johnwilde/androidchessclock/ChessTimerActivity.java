@@ -2,8 +2,6 @@ package johnwilde.androidchessclock;
 
 import java.text.DecimalFormat;
 
-import johnwilde.androidchessclock.R;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -154,8 +152,7 @@ public class ChessTimerActivity extends Activity {
 		}
 			
 		if (stateToRestore == GameState.PAUSED){
-			transitionTo(GameState.PAUSED);
-			Toast.makeText(this, "Paused. Press to resume.", Toast.LENGTH_SHORT).show();
+			transitionToPauseAndShowDialog();
 			return;
 		}
 
@@ -168,6 +165,12 @@ public class ChessTimerActivity extends Activity {
 		return true;
 	}
 
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		transitionToPauseAndToast();
+		return true;
+	}
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int itemId = item.getItemId();
@@ -209,6 +212,7 @@ public class ChessTimerActivity extends Activity {
 		case IDLE:
 			mCurrentState = GameState.IDLE;
 			mPauseButton.setClickable(false); // disable pause when IDLE
+			mPauseButton.setChecked(false); // Changes text on Pause button
 			mButton1.setTransparency(BUTTON_VISIBLE);
 			mButton2.setTransparency(BUTTON_VISIBLE);
 			mButton1.timer.reset();
@@ -286,6 +290,19 @@ public class ChessTimerActivity extends Activity {
 		alert.show();
 	}
 	
+	public void showPauseDialog(){
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(R.string.pause_dialog)
+		       .setPositiveButton("Resume", new DialogInterface.OnClickListener() {
+		           public void onClick(DialogInterface dialog, int id) {
+		                dialog.cancel();
+		                mPauseButton.performClick();
+		           }
+		       });
+		AlertDialog alert = builder.create();		
+		alert.show();
+	}
+
 	private String getPackageVersion(){
 
 		try {
@@ -436,11 +453,24 @@ public class ChessTimerActivity extends Activity {
 				transitionTo(GameState.RUNNING);
 			}
 			else{
-				transitionTo(GameState.PAUSED);	
+				transitionToPauseAndShowDialog();
 			}
 		}
 	}
 
+	public void transitionToPauseAndShowDialog(){
+		transitionTo(GameState.PAUSED);
+		showPauseDialog();
+	}
+	
+	public void transitionToPauseAndToast(){
+		if (mCurrentState == GameState.DONE ||
+				mCurrentState == GameState.IDLE)
+				return;
+		transitionTo(GameState.PAUSED);
+		Toast.makeText(this, "Paused. Press to resume.", Toast.LENGTH_SHORT).show();
+	}
+	
 	// This class updates each player's clock.
 	final class Timer implements OnLongClickListener {
 		TextView mView;
@@ -582,6 +612,7 @@ public class ChessTimerActivity extends Activity {
 		@Override
 		public boolean onLongClick(View v) {
 			// launch activity that allows user to set time and increment values
+			transitionToPauseAndToast();
 			launchPreferencesActivity();
 			return true;
 		}

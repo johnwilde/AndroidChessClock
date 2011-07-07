@@ -46,6 +46,7 @@ public final class R {
         public static final int initial_time_preference_description=0x7f050006;
         public static final int optionsmenu_about=0x7f050002;
         public static final int optionsmenu_preferences=0x7f050001;
+        public static final int pause_dialog=0x7f050011;
         public static final int pauseoff_button=0x7f050004;
         public static final int pauseon_button=0x7f050005;
         public static final int reset_button=0x7f050003;

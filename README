@@ -32,7 +32,6 @@ TODO
 
 	* Wake lock to prevent screen from dimming during play
 	* Lock 'portrait' orientation
-	* Make pause notification persistent (not a 'Toast')
 	* Haptic feedback on button press
 	* Audio feedback when clock expires
 	* Scroll input widget for setting clocks
@@ -44,6 +43,7 @@ TODO
 	* Let user select image to be displayed on button
 	  
 DONE
+	* Make pause notification persistent (not a 'Toast')
 	* Fix bug that allows empty time field in preferences
 	* Fixed package name in manifest
 	* 'About' screen

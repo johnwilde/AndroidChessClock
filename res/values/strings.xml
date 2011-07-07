@@ -24,5 +24,5 @@
 	<string name="dialog_title_increment_preference">Please enter number of seconds</string>
 
 	<string name="about_dialog">To report bugs or view source code, visit "https://github.com/johnwilde/AndroidChessClock"</string>
-
+	<string name="pause_dialog">Paused</string>
 </resources>
