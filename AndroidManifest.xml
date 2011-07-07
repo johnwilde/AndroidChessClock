@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.johnwilde.www"
       android:versionCode="1"
-      android:versionName="1.0">
+      android:versionName="1.0" package="johnwilde.androidchessclock">
     <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="12"/>
 
     <application android:icon="@drawable/ic_launcher"
@@ -14,7 +13,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="androidchessclock.TimerOptions"></activity>
+        <activity android:name=".TimerOptions"></activity>
 
     </application>
 </manifest>

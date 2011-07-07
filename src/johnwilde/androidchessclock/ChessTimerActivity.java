@@ -1,8 +1,8 @@
-package androidchessclock;
+package johnwilde.androidchessclock;
 
 import java.text.DecimalFormat;
 
-import com.johnwilde.www.R;
+import johnwilde.androidchessclock.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -101,6 +101,9 @@ public class ChessTimerActivity extends Activity {
 
 		mResetButton.setOnClickListener(new ResetButtonClickListener());
 
+//		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+//		sharedPref.edit().clear().apply();
+		
 		loadUserPreferences();
 
 		transitionTo(GameState.IDLE);

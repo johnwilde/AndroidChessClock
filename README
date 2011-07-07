@@ -29,13 +29,21 @@ ICON ASSET CREATION:
   
   
 TODO
-
-	* Wake lock to prevent screen from dimming
-	* Haptic/audio feedback when clock expires
-	* 'About' screen
+	* Fix bug that allows empty time field in preferences
+	* Wake lock to prevent screen from dimming during play
+	* Lock 'portrait' orientation
+	* Make pause notification persistent (not a 'Toast')
+	* Haptic feedback on button press
+	* Audio feedback when clock expires
+	* Scroll input widget for setting clocks
+	* At end of game show chart with the distribution of time spent-per move
+	  for each player
 	* Bronstein/Fischer timing option
 	* Allow clocks to go negative
 	* Allow clocks to be initialized to different times
 	* Let user select image to be displayed on button
-	* At end of game show chart with the distribution of time spent-per move
-	  for each player
+	  
+DONE
+	* 'About' screen
+	* Fixed package name in manifest
+
