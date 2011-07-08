@@ -32,7 +32,7 @@ TODO
 	* Haptic feedback on button press
 	* Audio feedback when clock expires
 	* Scroll input widget for setting clocks
-	* At end of game show chart with the distribution of time spent-per move
+	* At end of game show a chart with the distribution of time spent-per move
 	  for each player
 	* Bronstein/Fischer timing option
 	* Allow clocks to go negative

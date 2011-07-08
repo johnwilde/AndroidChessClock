@@ -10,10 +10,15 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 
 /**  Activity that inflates the preferences from XML.
+ * 
+ * It also updates the view with the current preference value
+ * and reports back which prefs were changed. 
  */
 public class TimerOptions extends PreferenceActivity
   implements OnSharedPreferenceChangeListener {
 	
+	// This enum stores the preference keys 
+	// that are defined in preferences.xml
 	public enum Key{
 		MINUTES("initial_minutes_preference"),
 		SECONDS("initial_seconds_preference"),
@@ -29,10 +34,14 @@ public class TimerOptions extends PreferenceActivity
 			mValue = value;
 		}
 	}
+	
+	// This enum is used to tag boolean flags in  the
+	// Intent that is returned by this activity.  The ChessTimer
+	// can then take the appropriate action.
 	public enum TimerPref{
-		TIME("johnwilde.androidchessclock.NewTime"),
-		INCREMENT("johnwilde.androidchessclock.NewIncrement"),
-		SCREEN("johnwilde.androidchessclock.NewScreenDim");
+		TIME("johnwilde.androidchessclock.NewTime"),			// user changed the initial time 
+		INCREMENT("johnwilde.androidchessclock.NewIncrement"),  // user changed the increment field
+		SCREEN("johnwilde.androidchessclock.NewScreenDim"); 	// user changed the screen dim option
 		private String mValue;
 
 		public String toString(){
@@ -58,8 +67,10 @@ public class TimerOptions extends PreferenceActivity
         if (key.equals(Key.MINUTES.toString() ) ||
         	key.equals(Key.SECONDS.toString() ) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.TIME.toString(), true));
+        
         if (key.equals(Key.INCREMENT_SECONDS.toString() ) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.INCREMENT.toString(), true));
+        
         if (key.equals(Key.SCREEN_DIM.toString()) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SCREEN.toString(), true));
         
@@ -94,11 +105,6 @@ public class TimerOptions extends PreferenceActivity
 
         // Unregister the listener whenever a key changes            
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);    
-    
-        
-        
-        
-    
     }
     
 }

@@ -80,7 +80,7 @@ public class ChessTimerActivity extends Activity {
 
 	// used to keep the screen bright during play
 	private WakeLock mWakeLock;
-	private boolean mAllowScreenToDim; 
+	private int mWakeLockType; // set from user preferences
 	
 	// Constants 
 	private static final String TAG = "ChessTimerActivity";
@@ -112,7 +112,8 @@ public class ChessTimerActivity extends Activity {
 
 //		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 //		sharedPref.edit().clear().apply();
-		
+		// set default values (for first run)
+		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		loadAllUserPreferences();
 
 		transitionTo(GameState.IDLE);
@@ -128,29 +129,6 @@ public class ChessTimerActivity extends Activity {
     	super.onPause();
     }
     
-    private void releaseWakeLock() {
-    	if (mWakeLock != null){
-	    	if ( mWakeLock.isHeld() ) {
-	    		mWakeLock.release();
-	    		Log.d(TAG, "released wake lock " + mWakeLock);
-	    	}
-    	}
-	}
-    private void acquireWakeLock() {
-
-    	releaseWakeLock();
-    	
-    	/** Create a PowerManager object so we can get the wakelock */
-    	int wakeLockType = mAllowScreenToDim ? PowerManager.SCREEN_DIM_WAKE_LOCK:
-    				       PowerManager.SCREEN_BRIGHT_WAKE_LOCK;
-    				
-    	PowerManager pm = (PowerManager) getSystemService(ChessTimerActivity.POWER_SERVICE);  
-
-    	mWakeLock = pm.newWakeLock(wakeLockType, TAG);
-    	mWakeLock.acquire();
-    	Log.d(TAG, "acquired wake lock " + mWakeLock);
-    }
-
     @Override
     public void onResume() {
 	    acquireWakeLock();
@@ -162,7 +140,6 @@ public class ChessTimerActivity extends Activity {
     	releaseWakeLock();
     	super.onDestroy();
     }
-	
 	
 	// Save data needed to recreate activity.  Enter PAUSED state
 	// if we are currently RUNNING.
@@ -277,7 +254,23 @@ public class ChessTimerActivity extends Activity {
 		}
 	}
 
-
+    private void releaseWakeLock() {
+    	if (mWakeLock != null){
+	    	if ( mWakeLock.isHeld() ) {
+	    		mWakeLock.release();
+	    		Log.d(TAG, "released wake lock " + mWakeLock);
+	    	}
+    	}
+	}
+    
+    private void acquireWakeLock() {
+    	releaseWakeLock();
+    	PowerManager pm = (PowerManager) getSystemService(ChessTimerActivity.POWER_SERVICE);  
+    	mWakeLock = pm.newWakeLock(mWakeLockType, TAG);
+    	mWakeLock.acquire();
+    	Log.d(TAG, "acquired wake lock " + mWakeLock);
+    }
+	
 	// All state transitions are occur here.  The logic that controls
 	// the UI elements is here.
 	public void transitionTo(GameState state){
@@ -397,9 +390,16 @@ public class ChessTimerActivity extends Activity {
 	private void loadScreenDimUserPreference() {
 		SharedPreferences sharedPref = PreferenceManager
 			.getDefaultSharedPreferences(this);
-		mAllowScreenToDim = sharedPref.getBoolean(TimerOptions.Key.SCREEN_DIM.toString(), true);
+		boolean allowScreenToDim = sharedPref.getBoolean(TimerOptions.Key.SCREEN_DIM.toString(), true);
+    	/** Create a PowerManager object so we can get the wakelock */
+    	mWakeLockType = allowScreenToDim ? PowerManager.SCREEN_DIM_WAKE_LOCK:
+    				       PowerManager.SCREEN_BRIGHT_WAKE_LOCK;
 	}
 
+	// Note: the default values used in these methods
+	// are not used.  The SharedPreferences will have
+	// their default values set (in onCreate() ) and 
+	// those defaults are saved in preferences.xml
 	private void loadInitialIncrementUserPreference() {
 		SharedPreferences sharedPref = PreferenceManager
 			.getDefaultSharedPreferences(this);
@@ -414,7 +414,7 @@ public class ChessTimerActivity extends Activity {
 				.getDefaultSharedPreferences(this);
 		
 		int minutes = Integer.parseInt(sharedPref.getString(
-				TimerOptions.Key.MINUTES.toString(), "2"));
+				TimerOptions.Key.MINUTES.toString(), "0"));
 		int seconds = Integer.parseInt(sharedPref.getString(
 				TimerOptions.Key.SECONDS.toString(), "0"));
 		
@@ -458,7 +458,7 @@ public class ChessTimerActivity extends Activity {
 		// 0 is fully transparent, 255 is fully opaque
 		private void setTransparency(int alpha) {
 			if (button == null){
-				Log.d(TAG, "Button is NULL");
+				Log.e(TAG, "Button is NULL");
 			}
 			
 			button.getDrawable().setAlpha(alpha);

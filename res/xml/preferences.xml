@@ -14,7 +14,7 @@
                 android:summary="@string/summary_initial_minutes_preference"
                 android:dialogTitle="@string/dialog_title_initial_minutes_preference"
                 android:numeric="integer"
-                android:defaultValue="2"
+                android:defaultValue="5"
                 />
                 
 
