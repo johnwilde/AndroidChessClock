@@ -29,8 +29,6 @@ ICON ASSET CREATION:
   
   
 TODO
-
-	* Wake lock to prevent screen from dimming during play
 	* Lock 'portrait' orientation
 	* Haptic feedback on button press
 	* Audio feedback when clock expires
@@ -43,6 +41,7 @@ TODO
 	* Let user select image to be displayed on button
 	  
 DONE
+	* Wake lock to prevent screen from dimming during play
 	* Make pause notification persistent (not a 'Toast')
 	* Fix bug that allows empty time field in preferences
 	* Fixed package name in manifest

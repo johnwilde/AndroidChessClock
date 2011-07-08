@@ -17,7 +17,8 @@ public class TimerOptions extends PreferenceActivity
 	public enum Key{
 		MINUTES("initial_minutes_preference"),
 		SECONDS("initial_seconds_preference"),
-		INCREMENT_SECONDS("increment_preference");
+		INCREMENT_SECONDS("increment_preference"),
+		SCREEN_DIM("screen_dim_preference");
 		private String mValue;
 
 		public String toString(){
@@ -28,6 +29,19 @@ public class TimerOptions extends PreferenceActivity
 			mValue = value;
 		}
 	}
+	public enum TimerPref{
+		TIME("johnwilde.androidchessclock.NewTime"),
+		INCREMENT("johnwilde.androidchessclock.NewIncrement"),
+		SCREEN("johnwilde.androidchessclock.NewScreenDim");
+		private String mValue;
+
+		public String toString(){
+			return mValue;
+		}
+		TimerPref(String value){
+			mValue = value;
+		}
+	}	
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +53,16 @@ public class TimerOptions extends PreferenceActivity
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, 
     		String key) {
-        Preference pref = findPreference(key);
+    	Preference pref = findPreference(key);
 
+        if (key.equals(Key.MINUTES.toString() ) ||
+        	key.equals(Key.SECONDS.toString() ) )
+        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.TIME.toString(), true));
+        if (key.equals(Key.INCREMENT_SECONDS.toString() ) )
+        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.INCREMENT.toString(), true));
+        if (key.equals(Key.SCREEN_DIM.toString()) )
+        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SCREEN.toString(), true));
+        
         if (pref instanceof EditTextPreference) {
         	EditTextPreference editTextPref = (EditTextPreference) pref;
         	String s = editTextPref.getText();
@@ -55,8 +77,11 @@ public class TimerOptions extends PreferenceActivity
         super.onResume();
         // Setup the initial values
         for (Key k : Key.values()){
-        	EditTextPreference pref = (EditTextPreference)findPreference(k.toString());
-        	pref.setSummary("Current value is: " + pref.getText());
+        	Preference p = findPreference(k.toString());
+        	if (p instanceof EditTextPreference){
+        		EditTextPreference pref = (EditTextPreference)p;
+        		pref.setSummary("Current value is: " + pref.getText());
+        	}
         }
         
         // Set up a listener whenever a key changes            
@@ -69,6 +94,11 @@ public class TimerOptions extends PreferenceActivity
 
         // Unregister the listener whenever a key changes            
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);    
+    
+        
+        
+        
+    
     }
     
 }

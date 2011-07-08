@@ -23,6 +23,10 @@
 	<string name="summary_increment_preference">Set per-move increment (in seconds)</string>
 	<string name="dialog_title_increment_preference">Please enter number of seconds</string>
 
+	<string name="power_options_preference_description">Power Preferences</string>
+	<string name="screen_dim_preference">Allow screen to dim</string>
+
+
 	<string name="about_dialog">To report bugs or view source code, visit "https://github.com/johnwilde/AndroidChessClock"</string>
 	<string name="pause_dialog">Paused</string>
 </resources>

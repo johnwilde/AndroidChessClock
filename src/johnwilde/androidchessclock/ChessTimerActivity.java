@@ -12,6 +12,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -73,7 +75,11 @@ public class ChessTimerActivity extends Activity {
 	
 	// these values are populated from the user preferences
 	int mInitialDurationSeconds = 60; 
-	int mIncrementSeconds; 
+	int mIncrementSeconds;
+
+	// used to keep the screen bright during play
+	private WakeLock mWakeLock;
+	private boolean mAllowScreenToDim; 
 	
 	// Constants 
 	private static final String TAG = "ChessTimerActivity";
@@ -102,12 +108,57 @@ public class ChessTimerActivity extends Activity {
 //		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 //		sharedPref.edit().clear().apply();
 		
-		loadUserPreferences();
+		loadAllUserPreferences();
 
 		transitionTo(GameState.IDLE);
+		
+		acquireWakeLock();
+		
 		Log.d(TAG, "Finished onCreate()");
 	}
 
+    @Override
+    public void onPause() {
+    	releaseWakeLock();
+    	super.onPause();
+    }
+    
+    private void releaseWakeLock() {
+    	if (mWakeLock != null){
+	    	if ( mWakeLock.isHeld() ) {
+	    		mWakeLock.release();
+	    		Log.d(TAG, "released wake lock " + mWakeLock);
+	    	}
+    	}
+	}
+    private void acquireWakeLock() {
+
+    	releaseWakeLock();
+    	
+    	/** Create a PowerManager object so we can get the wakelock */
+    	int wakeLockType = mAllowScreenToDim ? PowerManager.SCREEN_DIM_WAKE_LOCK:
+    				       PowerManager.SCREEN_BRIGHT_WAKE_LOCK;
+    				
+    	PowerManager pm = (PowerManager) getSystemService(ChessTimerActivity.POWER_SERVICE);  
+
+    	mWakeLock = pm.newWakeLock(wakeLockType, TAG);
+    	mWakeLock.acquire();
+    	Log.d(TAG, "acquired wake lock " + mWakeLock);
+    }
+
+    @Override
+    public void onResume() {
+	    acquireWakeLock();
+	    super.onResume();
+    }
+    
+    @Override
+    public void onDestroy() {
+    	releaseWakeLock();
+    	super.onDestroy();
+    }
+	
+	
 	// Save data needed to recreate activity.  Enter PAUSED state
 	// if we are currently RUNNING.
 	@Override
@@ -196,9 +247,28 @@ public class ChessTimerActivity extends Activity {
 		// check which activity has returned (for now we only have one, so
 		// it isn't really necessary).
 		if (requestCode == REQUEST_CODE_PREFERENCES) {
-			// reset clocks using (possibly new) settings
-			loadUserPreferences();
-			transitionTo(GameState.IDLE);
+			
+			if (data == null)
+				return; // no preferences were changed
+			
+			// reset clocks using new settings
+			if (data.getBooleanExtra(TimerOptions.TimerPref.TIME.toString(), false)){
+				loadAllUserPreferences();
+				transitionTo(GameState.IDLE);
+				return; // exit early
+			}
+			
+			// set a new increment, if needed
+			if (data.getBooleanExtra(TimerOptions.TimerPref.INCREMENT.toString(), false)){
+				loadInitialIncrementUserPreference();
+			}
+			
+			// create a new wakelock, if needed
+			if (data.getBooleanExtra(TimerOptions.TimerPref.SCREEN.toString(), false)){
+				loadScreenDimUserPreference();
+				acquireWakeLock();
+			}
+
 		}
 	}
 
@@ -272,7 +342,7 @@ public class ChessTimerActivity extends Activity {
 		Intent launchPreferencesIntent = new Intent().setClass(this,
 				TimerOptions.class);
 		// Make it a subactivity so we know when it returns
-		startActivityForResult(launchPreferencesIntent,
+		startActivityForResult(launchPreferencesIntent, 
 				REQUEST_CODE_PREFERENCES);
 	}
 
@@ -313,9 +383,28 @@ public class ChessTimerActivity extends Activity {
 		}
 	}
 
-	private void loadUserPreferences() {
-		// Since we're in the same package, we can use this context to get
-		// the default shared preferences (?)
+	private void loadAllUserPreferences() {
+		loadInitialTimeUserPreferences();
+		loadInitialIncrementUserPreference();
+		loadScreenDimUserPreference();
+	}
+
+	private void loadScreenDimUserPreference() {
+		SharedPreferences sharedPref = PreferenceManager
+			.getDefaultSharedPreferences(this);
+		mAllowScreenToDim = sharedPref.getBoolean(TimerOptions.Key.SCREEN_DIM.toString(), true);
+	}
+
+	private void loadInitialIncrementUserPreference() {
+		SharedPreferences sharedPref = PreferenceManager
+			.getDefaultSharedPreferences(this);
+		int seconds;
+		seconds = Integer.parseInt(sharedPref.getString(
+				TimerOptions.Key.INCREMENT_SECONDS.toString(), "0"));
+		setIncrement(seconds);
+	}
+
+	private void loadInitialTimeUserPreferences() {
 		SharedPreferences sharedPref = PreferenceManager
 				.getDefaultSharedPreferences(this);
 		
@@ -325,10 +414,6 @@ public class ChessTimerActivity extends Activity {
 				TimerOptions.Key.SECONDS.toString(), "0"));
 		
 		setInitialDuration(minutes * 60 + seconds);
-	
-		seconds = Integer.parseInt(sharedPref.getString(
-				TimerOptions.Key.INCREMENT_SECONDS.toString(), "0"));
-		setIncrement(seconds);
 	}
 
 
@@ -433,7 +518,7 @@ public class ChessTimerActivity extends Activity {
 	final class ResetButtonClickListener implements OnClickListener {
 		@Override
 		public void onClick(View v) {
-			loadUserPreferences();
+			loadAllUserPreferences();
 			transitionTo(GameState.IDLE);
 		}
 	}

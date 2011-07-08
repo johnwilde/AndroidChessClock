@@ -38,6 +38,18 @@
                 
                 
     </PreferenceCategory>
+
+   <PreferenceCategory
+            android:title="@string/power_options_preference_description">
+
+        <CheckBoxPreference
+        		android:key="screen_dim_preference"
+                android:title="@string/screen_dim_preference"
+                android:defaultValue="false"
+                />
+                
+   </PreferenceCategory>
+
     
 </PreferenceScreen>
 

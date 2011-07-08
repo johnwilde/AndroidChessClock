@@ -35,7 +35,7 @@ public final class R {
         public static final int menu=0x7f070000;
     }
     public static final class string {
-        public static final int about_dialog=0x7f050010;
+        public static final int about_dialog=0x7f050012;
         public static final int app_name=0x7f050000;
         public static final int dialog_title_increment_preference=0x7f05000f;
         public static final int dialog_title_initial_minutes_preference=0x7f050009;
@@ -46,10 +46,12 @@ public final class R {
         public static final int initial_time_preference_description=0x7f050006;
         public static final int optionsmenu_about=0x7f050002;
         public static final int optionsmenu_preferences=0x7f050001;
-        public static final int pause_dialog=0x7f050011;
+        public static final int pause_dialog=0x7f050013;
         public static final int pauseoff_button=0x7f050004;
         public static final int pauseon_button=0x7f050005;
+        public static final int power_options_preference_description=0x7f050010;
         public static final int reset_button=0x7f050003;
+        public static final int screen_dim_preference=0x7f050011;
         public static final int summary_increment_preference=0x7f05000e;
         public static final int summary_initial_minutes_preference=0x7f050008;
         public static final int summary_initial_seconds_preference=0x7f05000b;
