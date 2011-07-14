@@ -23,6 +23,7 @@ public class TimerOptions extends PreferenceActivity
 		MINUTES("initial_minutes_preference"),
 		SECONDS("initial_seconds_preference"),
 		INCREMENT_SECONDS("increment_preference"),
+		NEGATIVE_TIME("allow_negative_time_preference"),
 		SCREEN_DIM("screen_dim_preference");
 		private String mValue;
 
@@ -41,6 +42,7 @@ public class TimerOptions extends PreferenceActivity
 	public enum TimerPref{
 		TIME("johnwilde.androidchessclock.NewTime"),			// user changed the initial time 
 		INCREMENT("johnwilde.androidchessclock.NewIncrement"),  // user changed the increment field
+		NEGATIVE_TIME("johnwilde.androidchessclock.NegativeTime"),  // user changed the increment field
 		SCREEN("johnwilde.androidchessclock.NewScreenDim"); 	// user changed the screen dim option
 		private String mValue;
 
@@ -70,6 +72,9 @@ public class TimerOptions extends PreferenceActivity
         
         if (key.equals(Key.INCREMENT_SECONDS.toString() ) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.INCREMENT.toString(), true));
+
+        if (key.equals(Key.NEGATIVE_TIME.toString() ) )
+        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.NEGATIVE_TIME.toString(), true));
         
         if (key.equals(Key.SCREEN_DIM.toString()) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SCREEN.toString(), true));
@@ -77,7 +82,7 @@ public class TimerOptions extends PreferenceActivity
         if (pref instanceof EditTextPreference) {
         	EditTextPreference editTextPref = (EditTextPreference) pref;
         	String s = editTextPref.getText();
-        	if (s.trim().isEmpty())
+        	if (s.trim().length() == 0)
         		editTextPref.setText("0");
         	editTextPref.setSummary("Current value is: " + editTextPref.getText());
         }

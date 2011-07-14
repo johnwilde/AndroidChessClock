@@ -36,6 +36,12 @@
                 android:defaultValue="0"
                 />
                 
+        <CheckBoxPreference
+                android:key="allow_negative_time_preference"
+                android:title="@string/allow_negative_time_preference"
+                android:defaultValue="false"
+                />
+
                 
     </PreferenceCategory>
 

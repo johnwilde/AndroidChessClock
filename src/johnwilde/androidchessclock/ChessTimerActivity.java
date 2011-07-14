@@ -13,7 +13,9 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -77,6 +79,7 @@ public class ChessTimerActivity extends Activity {
 	// these values are populated from the user preferences
 	int mInitialDurationSeconds = 60; 
 	int mIncrementSeconds;
+	boolean mAllowNegativeTime = false;
 
 	// used to keep the screen bright during play
 	private WakeLock mWakeLock;
@@ -239,6 +242,10 @@ public class ChessTimerActivity extends Activity {
 				transitionTo(GameState.IDLE);
 				return; // exit early
 			}
+
+			if (data.getBooleanExtra(TimerOptions.TimerPref.NEGATIVE_TIME.toString(), false)){
+				loadNegativeTimeUserPreference();
+			}
 			
 			// set a new increment, if needed
 			if (data.getBooleanExtra(TimerOptions.TimerPref.INCREMENT.toString(), false)){
@@ -307,7 +314,6 @@ public class ChessTimerActivity extends Activity {
 		case DONE:
 			if (mActive != null){
 				mCurrentState = GameState.DONE;
-				mActive.timer.done();
 				mPauseButton.setClickable(false); // disable pause when DONE
 				break;
 			}
@@ -384,9 +390,17 @@ public class ChessTimerActivity extends Activity {
 	private void loadAllUserPreferences() {
 		loadInitialTimeUserPreferences();
 		loadInitialIncrementUserPreference();
+		loadNegativeTimeUserPreference();
 		loadScreenDimUserPreference();
 	}
 
+	private void loadNegativeTimeUserPreference() {
+		SharedPreferences sharedPref = PreferenceManager
+			.getDefaultSharedPreferences(this);
+		mAllowNegativeTime = sharedPref.getBoolean(TimerOptions.Key.NEGATIVE_TIME.toString(), false);
+	}
+
+	
 	private void loadScreenDimUserPreference() {
 		SharedPreferences sharedPref = PreferenceManager
 			.getDefaultSharedPreferences(this);
@@ -570,6 +584,7 @@ public class ChessTimerActivity extends Activity {
 
 		// formatters for displaying text in timer
 		DecimalFormat dfSecondsNearEnd = new DecimalFormat("0.0");
+		DecimalFormat dfSecondsNegative = new DecimalFormat("0");
 		DecimalFormat dfSeconds = new DecimalFormat("00");
 		DecimalFormat dfMinAndHours = new DecimalFormat("##");
 		private int mNormalTextColor = Color.BLACK;
@@ -611,7 +626,7 @@ public class ChessTimerActivity extends Activity {
 
 		public void pause() {
 			if (mCountDownTimer != null)
-				mCountDownTimer.cancel();
+				mCountDownTimer.pause();
 			isRunning = false;
 		}
 
@@ -621,16 +636,22 @@ public class ChessTimerActivity extends Activity {
 		}
 
 		public void updateTimerText() {
+			if (getMsToGo() < 10000)
+				mView.setTextColor(Color.RED);
+			else
+				mView.setTextColor(Color.BLACK);
+			
 			mView.setText(formatTime(mMillisUntilFinished));
 		}
 
-		private String formatTime(long millis) {
+		private String formatTime(long millisIn) {
 			// 1000 ms in 1 second
 			// 60*1000 ms in 1 minute
 			// 60*60*1000 ms in 1 hour
 
 			String stringSec, stringMin, stringHr;
-
+			long millis = Math.abs(millisIn);
+			
 			// Parse the input (in ms) into integer hour, minute, and second
 			// values
 			long hours = millis / (1000 * 60 * 60);
@@ -639,10 +660,16 @@ public class ChessTimerActivity extends Activity {
 			long min = millis / (1000 * 60);
 			millis -= min * (1000 * 60);
 
+			// for 0 >= millisIn >= 1000
+			//   clock should read like: "0.3"
+			// for -999 >= millisIn >= -1
+			//   clock should read "0"
+			// for millisIn < -999
+			//   clock should read like : "-2"
 			long sec = millis / 1000;
 			millis -= sec * 1000;
 
-			// Construct the output string
+			// Construct string
 			if (hours > 0)
 				stringHr = dfMinAndHours.format(hours) + ":";
 			else
@@ -655,12 +682,19 @@ public class ChessTimerActivity extends Activity {
 
 			if (min > 0)
 				stringSec = dfSeconds.format(sec);
-			else if (sec < 10)
+			else if (sec < 10 && millisIn >= 0)
 				stringSec = dfSecondsNearEnd.format((double) sec
+						+ (double) millis / 1000.0);
+			else if (sec < 10 && millisIn < 0)
+				stringSec = dfSecondsNegative.format((double) sec
 						+ (double) millis / 1000.0);
 			else
 				stringSec = dfSeconds.format(sec);
 
+			if (millisIn <= -1000){
+				return "-" + stringHr + stringMin + stringSec;
+			}
+			
 			return stringHr + stringMin + stringSec;
 
 		}
@@ -668,33 +702,65 @@ public class ChessTimerActivity extends Activity {
 		long getMsToGo(){
 			return mMillisUntilFinished;
 		}
+		
+		boolean getAllowNegativeTime(){
+			return mAllowNegativeTime;
+		}
 
 		public void done() {
 			mView.setText("0.0");
 			mView.setTextColor(Color.RED);
+			transitionTo(GameState.DONE);
 		}
 
 		class InnerTimer {
-			long mInterval = 50; // interval (in ms) at which  text is updated
-			CountDownTimer mTimer;
-
-			void go() {
-				mTimer = new CountDownTimer(mMillisUntilFinished, mInterval) {
-
-					public void onTick(long millisUntilFinished) {
-						mMillisUntilFinished = millisUntilFinished;
-						updateTimerText();
-					}
-
-					public void onFinish() {
-						transitionTo(GameState.DONE);
-					}
-				}.start();
-			}
+			long mLastUpdateTime = 0L;
+			Handler mHandler = new Handler();
 			
+			// this class will update itself (and call
+			// updateTimerText) accordingly:
+			//     if getMsToGo() > 10 * 1000, every 1000 ms
+			// 	   if getMsToGo() < 10 * 1000, every 100 ms
+			//     if getMsToGo() < 0 and getAllowNegativeTime is true, every 1000 ms
+			Runnable mUpdateTimeTask = new Runnable(){
+				public void run(){
+					long ellapsedTime = SystemClock.uptimeMillis() - mLastUpdateTime;
+					mMillisUntilFinished -= ellapsedTime;
+					mLastUpdateTime = SystemClock.uptimeMillis();
+					
+					if (getMsToGo() > 10000){
+						updateTimerText();
+						mHandler.postDelayed(mUpdateTimeTask, 1000);
+					}
+					else if (getMsToGo() < 10000 && getMsToGo() > 0){
+						updateTimerText();
+						mHandler.postDelayed(mUpdateTimeTask, 100);
+					}
+					else if (getMsToGo() < 0 && getAllowNegativeTime()){
+						updateTimerText();
+						mHandler.postDelayed(mUpdateTimeTask, 1000);
+					}
+					else{
+						mHandler.removeCallbacks(mUpdateTimeTask);
+						done();
+						return;
+					}
+				}
+			};
+			
+			void go() {
+				mLastUpdateTime = SystemClock.uptimeMillis();
+				mHandler.postDelayed(mUpdateTimeTask, 0);
+			}
+
+			void pause() {
+				// account for the time that has ellapsed since our last update and pause the clock
+				mMillisUntilFinished -= ( SystemClock.uptimeMillis() - mLastUpdateTime );
+				mHandler.removeCallbacks(mUpdateTimeTask);
+			}
+
 			void cancel() {
-				if (mTimer != null)
-					mTimer.cancel();
+				mHandler.removeCallbacks(mUpdateTimeTask);
 			}
 
 		}

@@ -23,6 +23,8 @@
 	<string name="summary_increment_preference">Set per-move increment (in seconds)</string>
 	<string name="dialog_title_increment_preference">Please enter number of seconds</string>
 
+	<string name="allow_negative_time_preference">Allow clocks to go negative.</string>
+
 	<string name="power_options_preference_description">Power Preferences</string>
 	<string name="screen_dim_preference">Allow screen to dim</string>
 
