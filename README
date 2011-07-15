@@ -29,6 +29,9 @@ ICON ASSET CREATION:
   
   
 TODO
+	* Move counter (for use with official FIDE tournament time control)
+	* Advanced FIDE time controls
+	* Allow time to be added to each clock during a game
 	* Haptic feedback on button press
 	* Audio feedback when clock expires
 	* Scroll input widget for setting clocks
