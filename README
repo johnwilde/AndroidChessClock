@@ -29,7 +29,6 @@ ICON ASSET CREATION:
   
   
 TODO
-	* Move counter (for use with official FIDE tournament time control)
 	* Advanced FIDE time controls
 	* Allow time to be added to each clock during a game
 	* Haptic feedback on button press
@@ -42,6 +41,7 @@ TODO
 	* Let user select image to be displayed on button
 	  
 DONE
+	* Move counter (for eventual use with official FIDE tournament time control)
 	* fixed bug whereby String.isEmpty() was being used, but
 	  this is only valid for API > 9 (i.e. not for 2.1 or 2.2 devices)
 	* Allow clocks to go negative
