@@ -46,13 +46,19 @@
     </PreferenceCategory>
 
    <PreferenceCategory
-            android:title="@string/power_options_preference_description">
+            android:title="@string/display_options_preference_description">
 
         <CheckBoxPreference
         		android:key="screen_dim_preference"
                 android:title="@string/screen_dim_preference"
                 android:defaultValue="false"
                 />
+                
+ 	<CheckBoxPreference
+        		android:key="show_move_count_preference"
+                android:title="@string/show_move_count_preference"
+                android:defaultValue="false"
+                />                
                 
    </PreferenceCategory>
 

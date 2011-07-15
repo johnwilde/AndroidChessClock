@@ -25,8 +25,9 @@
 
 	<string name="allow_negative_time_preference">Allow clocks to go negative.</string>
 
-	<string name="power_options_preference_description">Power Preferences</string>
+	<string name="display_options_preference_description">Display Preferences</string>
 	<string name="screen_dim_preference">Allow screen to dim</string>
+	<string name="show_move_count_preference">Show move counter</string>
 
 
 	<string name="about_dialog">To report bugs or view source code, visit "https://github.com/johnwilde/AndroidChessClock"</string>

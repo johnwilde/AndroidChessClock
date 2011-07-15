@@ -24,7 +24,8 @@ public class TimerOptions extends PreferenceActivity
 		SECONDS("initial_seconds_preference"),
 		INCREMENT_SECONDS("increment_preference"),
 		NEGATIVE_TIME("allow_negative_time_preference"),
-		SCREEN_DIM("screen_dim_preference");
+		SCREEN_DIM("screen_dim_preference"),
+		SHOW_MOVE_COUNTER("show_move_count_preference");
 		private String mValue;
 
 		public String toString(){
@@ -43,7 +44,8 @@ public class TimerOptions extends PreferenceActivity
 		TIME("johnwilde.androidchessclock.NewTime"),			// user changed the initial time 
 		INCREMENT("johnwilde.androidchessclock.NewIncrement"),  // user changed the increment field
 		NEGATIVE_TIME("johnwilde.androidchessclock.NegativeTime"),  // user changed the increment field
-		SCREEN("johnwilde.androidchessclock.NewScreenDim"); 	// user changed the screen dim option
+		SCREEN("johnwilde.androidchessclock.NewScreenDim"), 	// user changed the screen dim option
+		SHOW_MOVE_COUNTER("johnwilde.androidchessclock.NewMoveCounter"); 	// user changed the move counter option
 		private String mValue;
 
 		public String toString(){
@@ -78,6 +80,10 @@ public class TimerOptions extends PreferenceActivity
         
         if (key.equals(Key.SCREEN_DIM.toString()) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SCREEN.toString(), true));
+
+        if (key.equals(Key.SHOW_MOVE_COUNTER.toString()) )
+        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SHOW_MOVE_COUNTER.toString(), true));
+        
         
         if (pref instanceof EditTextPreference) {
         	EditTextPreference editTextPref = (EditTextPreference) pref;

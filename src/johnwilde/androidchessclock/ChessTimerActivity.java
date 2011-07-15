@@ -80,7 +80,8 @@ public class ChessTimerActivity extends Activity {
 	int mInitialDurationSeconds = 60; 
 	int mIncrementSeconds;
 	boolean mAllowNegativeTime = false;
-
+	boolean mShowMoveCounter = false;
+	
 	// used to keep the screen bright during play
 	private WakeLock mWakeLock;
 	private int mWakeLockType; // set from user preferences
@@ -101,8 +102,8 @@ public class ChessTimerActivity extends Activity {
 		
 		setContentView(R.layout.main);
 
-		mButton1 = new PlayerButton( new Timer(R.id.clock1), R.id.button1);
-		mButton2 = new PlayerButton( new Timer(R.id.clock2), R.id.button2);
+		mButton1 = new PlayerButton( new Timer(R.id.clock1), R.id.button1, R.id.moveCounter1);
+		mButton2 = new PlayerButton( new Timer(R.id.clock2), R.id.button2, R.id.moveCounter2);
 
 		mResetButton = (Button) findViewById(R.id.reset_button);
 		mPauseButton = (ToggleButton) findViewById(R.id.pause_button);
@@ -155,6 +156,8 @@ public class ChessTimerActivity extends Activity {
 		
 		outState.putLong("Timer1", mButton1.timer.getMsToGo() );
 		outState.putLong("Timer2", mButton2.timer.getMsToGo() );
+		outState.putInt("MoveCounter1", mButton1.mMoveNumber );
+		outState.putInt("MoveCounter2", mButton2.mMoveNumber );
 		outState.putString("State", mCurrentState.toString());
 		
 		// if IDLE, the current state is NULL
@@ -179,8 +182,10 @@ public class ChessTimerActivity extends Activity {
 		boolean button1Active = (mButton1.getButtonId() == activeButtonId ? true : false);
 		boolean button2Active = (mButton2.getButtonId() == activeButtonId ? true : false);
 		
-		mButton1.setTimeAndState(savedInstanceState.getLong("Timer1"), button1Active);
-		mButton2.setTimeAndState(savedInstanceState.getLong("Timer2"), button2Active);
+		mButton1.setTimeAndState(savedInstanceState.getLong("Timer1"),
+				savedInstanceState.getInt("MoveCounter1"), button1Active);
+		mButton2.setTimeAndState(savedInstanceState.getLong("Timer2"), 
+				savedInstanceState.getInt("MoveCounter2"), button2Active);
 
 		if (stateToRestore == GameState.DONE){
 			transitionTo(GameState.DONE);
@@ -258,6 +263,11 @@ public class ChessTimerActivity extends Activity {
 				acquireWakeLock();
 			}
 
+			if (data.getBooleanExtra(TimerOptions.TimerPref.SHOW_MOVE_COUNTER.toString(), false)){
+				loadMoveCounterUserPreference();
+			}
+
+			
 		}
 	}
 
@@ -288,10 +298,8 @@ public class ChessTimerActivity extends Activity {
 			mCurrentState = GameState.IDLE;
 			mPauseButton.setClickable(false); // disable pause when IDLE
 			mPauseButton.setChecked(false); // Changes text on Pause button
-			mButton1.setTransparency(BUTTON_VISIBLE);
-			mButton2.setTransparency(BUTTON_VISIBLE);
-			mButton1.timer.reset();
-			mButton2.timer.reset();
+			mButton1.reset();
+			mButton2.reset();
 			break;
 			
 		case RUNNING:
@@ -328,7 +336,7 @@ public class ChessTimerActivity extends Activity {
 			
 	}
 
-	public void setActiveButton(PlayerButton button) {
+	public void setActiveButtonAndMoveCount(PlayerButton button) {
 		mActive = button;
 
 		// Give visual indication of which player goes next by fading
@@ -337,6 +345,17 @@ public class ChessTimerActivity extends Activity {
 		PlayerButton other = (mButton1 == mActive ? mButton2 : mButton1);
 		other.setTransparency(BUTTON_FADED);
 
+		if (mShowMoveCounter){
+			mActive.mMoveCounter.setVisibility(View.VISIBLE);
+			String s = "Move " + mActive.mMoveNumber;
+			mActive.mMoveCounter.setText(s);
+			other.mMoveCounter.setVisibility(View.GONE);
+		}
+		else{
+			mActive.mMoveCounter.setVisibility(View.GONE);
+			other.mMoveCounter.setVisibility(View.GONE);
+		}
+		
 		Log.d(TAG, "Setting active button = " + button.getButtonId() );
 	}
 
@@ -387,20 +406,40 @@ public class ChessTimerActivity extends Activity {
 		}
 	}
 
+
+	// Methods for loading USER PREFERENCES
+	//
+	// These methods are run after the user has changed
+	// a preference and during onCreate().  The onActivityResult()
+	// method is responsible for calling the method that matches
+	// the preference that was changed.
+	//
+	// Note: the default values required by the SharedPreferences getXX 
+	// methods are not used.  The SharedPreferences will have  their default 
+	// values set (in onCreate() ) and those defaults are saved in preferences.xml
+	
 	private void loadAllUserPreferences() {
 		loadInitialTimeUserPreferences();
 		loadInitialIncrementUserPreference();
 		loadNegativeTimeUserPreference();
+		loadMoveCounterUserPreference();
 		loadScreenDimUserPreference();
 	}
 
+	private void loadMoveCounterUserPreference() {
+		SharedPreferences sharedPref = PreferenceManager
+			.getDefaultSharedPreferences(this);
+		mShowMoveCounter = sharedPref.getBoolean(TimerOptions.Key.SHOW_MOVE_COUNTER.toString(), false);
+		if (mCurrentState == GameState.PAUSED)
+			setActiveButtonAndMoveCount(mActive);
+	}
+	
 	private void loadNegativeTimeUserPreference() {
 		SharedPreferences sharedPref = PreferenceManager
 			.getDefaultSharedPreferences(this);
 		mAllowNegativeTime = sharedPref.getBoolean(TimerOptions.Key.NEGATIVE_TIME.toString(), false);
 	}
 
-	
 	private void loadScreenDimUserPreference() {
 		SharedPreferences sharedPref = PreferenceManager
 			.getDefaultSharedPreferences(this);
@@ -410,10 +449,6 @@ public class ChessTimerActivity extends Activity {
     				       PowerManager.SCREEN_BRIGHT_WAKE_LOCK;
 	}
 
-	// Note: the default values used in these methods
-	// are not used.  The SharedPreferences will have
-	// their default values set (in onCreate() ) and 
-	// those defaults are saved in preferences.xml
 	private void loadInitialIncrementUserPreference() {
 		SharedPreferences sharedPref = PreferenceManager
 			.getDefaultSharedPreferences(this);
@@ -445,20 +480,23 @@ public class ChessTimerActivity extends Activity {
 		mIncrementSeconds = seconds;
 	}
 
-
-	// Class to aggregate a button and a timer.  It provides
-	// a method for setting the time which is used when the 
+	// Class to aggregate a button, a timer and a move counter.
+	// It provides a method for setting the time which is used when the 
 	// activity must be recreated after it had been started.
 	class PlayerButton{
 		Timer timer;
 		ImageButton button;
+		TextView mMoveCounter;
 		boolean isFaded = false;
 		private int mId;
+		private int mMoveNumber;
 		
-		PlayerButton(Timer timer, int buttonId){
+		PlayerButton(Timer timer, int buttonId, int moveCounterId){
 			this.timer = timer;
 			button = (ImageButton)findViewById(buttonId);
+			mMoveCounter = (TextView)findViewById(moveCounterId);
 			mId = buttonId;
+			mMoveNumber = 1;
 		}		
 		
 		public int getButtonId(){
@@ -480,11 +518,19 @@ public class ChessTimerActivity extends Activity {
 		}
 		
 
-		public void setTimeAndState(long time, boolean isActive){
+		public void setTimeAndState(long time, int moveCount, boolean isActive){
 			if (isActive)
-				setActiveButton(this);
-			
+				setActiveButtonAndMoveCount(this);
+			mMoveNumber = moveCount;
 			timer.initializeWithValue(time);
+		}
+		
+		// Put the button into the initial 'IDLE' configuration
+		public void reset(){
+			mMoveNumber = 1;
+			timer.reset();
+			setTransparency(BUTTON_VISIBLE);
+			mMoveCounter.setVisibility(View.GONE);
 		}
 	}
 	
@@ -515,16 +561,17 @@ public class ChessTimerActivity extends Activity {
 				
 			case RUNNING:
 				if (mine.timer.isRunning()) {
+					mine.mMoveNumber++;
 					mine.timer.pause();
 					mine.timer.increment(mIncrementSeconds);
 					other.timer.start();
-					setActiveButton(other);
+					setActiveButtonAndMoveCount(other);
 				}
 				break;
 
 			case IDLE:
 				// the game just started 
-				setActiveButton(other);
+				setActiveButtonAndMoveCount(other);
 				transitionTo(GameState.RUNNING);
 				break;
 			}
