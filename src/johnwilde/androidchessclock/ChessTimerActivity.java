@@ -12,7 +12,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -79,6 +78,8 @@ public class ChessTimerActivity extends Activity {
 	// these values are populated from the user preferences
 	int mInitialDurationSeconds = 60; 
 	int mIncrementSeconds;
+	enum DelayType {FISCHER, BRONSTEIN;}
+	DelayType mDelayType;
 	boolean mAllowNegativeTime = false;
 	boolean mShowMoveCounter = false;
 	
@@ -257,6 +258,10 @@ public class ChessTimerActivity extends Activity {
 				loadInitialIncrementUserPreference();
 			}
 			
+			if (data.getBooleanExtra(TimerOptions.TimerPref.DELAY_TYPE.toString(), false)){
+				loadDelayTypeUserPreference();
+			}
+			
 			// create a new wakelock, if needed
 			if (data.getBooleanExtra(TimerOptions.TimerPref.SCREEN.toString(), false)){
 				loadScreenDimUserPreference();
@@ -421,6 +426,7 @@ public class ChessTimerActivity extends Activity {
 	private void loadAllUserPreferences() {
 		loadInitialTimeUserPreferences();
 		loadInitialIncrementUserPreference();
+		loadDelayTypeUserPreference();
 		loadNegativeTimeUserPreference();
 		loadMoveCounterUserPreference();
 		loadScreenDimUserPreference();
@@ -438,6 +444,16 @@ public class ChessTimerActivity extends Activity {
 		SharedPreferences sharedPref = PreferenceManager
 			.getDefaultSharedPreferences(this);
 		mAllowNegativeTime = sharedPref.getBoolean(TimerOptions.Key.NEGATIVE_TIME.toString(), false);
+	}
+	
+	private void loadDelayTypeUserPreference(){
+		SharedPreferences sharedPref = PreferenceManager
+			.getDefaultSharedPreferences(this);
+
+		String[] delayTypes = getResources().getStringArray(R.array.delay_type_values);
+		String delayTypeString = sharedPref.getString(TimerOptions.Key.DELAY_TYPE.toString(), delayTypes[0]);
+
+		mDelayType = DelayType.valueOf(delayTypeString.toUpperCase());
 	}
 
 	private void loadScreenDimUserPreference() {
@@ -563,7 +579,8 @@ public class ChessTimerActivity extends Activity {
 				if (mine.timer.isRunning()) {
 					mine.mMoveNumber++;
 					mine.timer.pause();
-					mine.timer.increment(mIncrementSeconds);
+					if (mDelayType == DelayType.FISCHER)
+						other.timer.increment(mIncrementSeconds);
 					other.timer.start();
 					setActiveButtonAndMoveCount(other);
 				}
@@ -796,14 +813,23 @@ public class ChessTimerActivity extends Activity {
 			};
 			
 			void go() {
-				mLastUpdateTime = SystemClock.uptimeMillis();
-				mHandler.postDelayed(mUpdateTimeTask, 0);
+				if (mDelayType ==  DelayType.BRONSTEIN){
+					mLastUpdateTime = SystemClock.uptimeMillis() + mIncrementSeconds*1000;
+					mHandler.postDelayed(mUpdateTimeTask, mIncrementSeconds*1000);
+				}
+				else{
+					mLastUpdateTime = SystemClock.uptimeMillis();
+					mHandler.postDelayed(mUpdateTimeTask, 0);
+				}
 			}
 
 			void pause() {
-				// account for the time that has ellapsed since our last update and pause the clock
-				mMillisUntilFinished -= ( SystemClock.uptimeMillis() - mLastUpdateTime );
 				mHandler.removeCallbacks(mUpdateTimeTask);
+				// account for the time that has ellapsed since our last update and pause the clock
+				// if using BRONSTEIN this may be negative, so check for that case.
+				long msSinceLastUpdate = ( SystemClock.uptimeMillis() - mLastUpdateTime );
+				if (msSinceLastUpdate > 0)
+					mMillisUntilFinished -= msSinceLastUpdate;
 			}
 
 			void cancel() {

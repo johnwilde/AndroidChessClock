@@ -35,7 +35,7 @@
 			<ImageButton android:layout_width="match_parent"
 				android:scaleType="fitXY" android:src="@drawable/white"
 				android:layout_height="match_parent" android:background="@null"
-				android:id="@+id/button1"></ImageButton>
+				android:id="@+id/button1" ></ImageButton>
 			<TextView android:textAppearance="?android:attr/textAppearanceLarge"
 				android:layout_width="wrap_content" android:id="@+id/moveCounter1"
 				android:layout_height="wrap_content" android:gravity="bottom"
@@ -48,7 +48,7 @@
 			<ImageButton android:layout_width="match_parent"
 				android:scaleType="fitXY" android:src="@drawable/black"
 				android:layout_height="match_parent" android:background="@null"
-				android:id="@+id/button2"></ImageButton>
+				android:id="@+id/button2" ></ImageButton>
 			<TextView android:layout_width="wrap_content"
 				android:layout_height="wrap_content" 
 				android:textAppearance="?android:attr/textAppearanceLarge"

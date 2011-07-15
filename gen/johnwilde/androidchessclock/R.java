@@ -8,6 +8,10 @@
 package johnwilde.androidchessclock;
 
 public final class R {
+    public static final class array {
+        public static final int delay_type_descriptions=0x7f060000;
+        public static final int delay_type_values=0x7f060001;
+    }
     public static final class attr {
     }
     public static final class drawable {
@@ -16,56 +20,58 @@ public final class R {
         public static final int white=0x7f020002;
     }
     public static final class id {
-        public static final int FrameLayout01=0x7f08000a;
-        public static final int LinearLayout2=0x7f080000;
-        public static final int button1=0x7f080008;
-        public static final int button2=0x7f08000b;
-        public static final int clock1=0x7f080002;
-        public static final int clock2=0x7f080005;
-        public static final int frameLayout1=0x7f080007;
-        public static final int ll1=0x7f080006;
-        public static final int moveCounter1=0x7f080009;
-        public static final int moveCounter2=0x7f08000c;
-        public static final int optionsmenu_about=0x7f08000e;
-        public static final int optionsmenu_preferences=0x7f08000d;
-        public static final int pause_button=0x7f080004;
-        public static final int reset_button=0x7f080003;
-        public static final int tableRow1=0x7f080001;
+        public static final int FrameLayout01=0x7f09000a;
+        public static final int LinearLayout2=0x7f090000;
+        public static final int button1=0x7f090008;
+        public static final int button2=0x7f09000b;
+        public static final int clock1=0x7f090002;
+        public static final int clock2=0x7f090005;
+        public static final int frameLayout1=0x7f090007;
+        public static final int ll1=0x7f090006;
+        public static final int moveCounter1=0x7f090009;
+        public static final int moveCounter2=0x7f09000c;
+        public static final int optionsmenu_about=0x7f09000e;
+        public static final int optionsmenu_preferences=0x7f09000d;
+        public static final int pause_button=0x7f090004;
+        public static final int reset_button=0x7f090003;
+        public static final int tableRow1=0x7f090001;
     }
     public static final class layout {
         public static final int main=0x7f030000;
     }
     public static final class menu {
-        public static final int menu=0x7f070000;
+        public static final int menu=0x7f080000;
     }
     public static final class string {
-        public static final int about_dialog=0x7f050014;
-        public static final int allow_negative_time_preference=0x7f050010;
+        public static final int about_dialog=0x7f050016;
+        public static final int allow_negative_time_preference=0x7f050012;
         public static final int app_name=0x7f050000;
+        public static final int delay_type_preference=0x7f050010;
         public static final int dialog_title_increment_preference=0x7f05000f;
         public static final int dialog_title_initial_minutes_preference=0x7f050009;
         public static final int dialog_title_initial_seconds_preference=0x7f05000c;
-        public static final int display_options_preference_description=0x7f050011;
+        public static final int display_options_preference_description=0x7f050013;
         public static final int increment_preference=0x7f05000d;
         public static final int initial_minutes_preference=0x7f050007;
         public static final int initial_seconds_preference=0x7f05000a;
         public static final int initial_time_preference_description=0x7f050006;
         public static final int optionsmenu_about=0x7f050002;
         public static final int optionsmenu_preferences=0x7f050001;
-        public static final int pause_dialog=0x7f050015;
+        public static final int pause_dialog=0x7f050017;
         public static final int pauseoff_button=0x7f050004;
         public static final int pauseon_button=0x7f050005;
         public static final int reset_button=0x7f050003;
-        public static final int screen_dim_preference=0x7f050012;
-        public static final int show_move_count_preference=0x7f050013;
+        public static final int screen_dim_preference=0x7f050014;
+        public static final int show_move_count_preference=0x7f050015;
+        public static final int summary_delay_type_preference=0x7f050011;
         public static final int summary_increment_preference=0x7f05000e;
         public static final int summary_initial_minutes_preference=0x7f050008;
         public static final int summary_initial_seconds_preference=0x7f05000b;
     }
     public static final class style {
-        public static final int bigButton=0x7f060002;
-        public static final int clockStyle=0x7f060000;
-        public static final int tinyButton=0x7f060001;
+        public static final int bigButton=0x7f070002;
+        public static final int clockStyle=0x7f070000;
+        public static final int tinyButton=0x7f070001;
     }
     public static final class xml {
         public static final int big_button=0x7f040000;

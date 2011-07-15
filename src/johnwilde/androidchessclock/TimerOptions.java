@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 
@@ -23,6 +24,7 @@ public class TimerOptions extends PreferenceActivity
 		MINUTES("initial_minutes_preference"),
 		SECONDS("initial_seconds_preference"),
 		INCREMENT_SECONDS("increment_preference"),
+		DELAY_TYPE("delay_type_preference"),
 		NEGATIVE_TIME("allow_negative_time_preference"),
 		SCREEN_DIM("screen_dim_preference"),
 		SHOW_MOVE_COUNTER("show_move_count_preference");
@@ -43,6 +45,7 @@ public class TimerOptions extends PreferenceActivity
 	public enum TimerPref{
 		TIME("johnwilde.androidchessclock.NewTime"),			// user changed the initial time 
 		INCREMENT("johnwilde.androidchessclock.NewIncrement"),  // user changed the increment field
+		DELAY_TYPE("johnwilde.androidchessclock.NewDelayType"),  // user changed the delay type field
 		NEGATIVE_TIME("johnwilde.androidchessclock.NegativeTime"),  // user changed the increment field
 		SCREEN("johnwilde.androidchessclock.NewScreenDim"), 	// user changed the screen dim option
 		SHOW_MOVE_COUNTER("johnwilde.androidchessclock.NewMoveCounter"); 	// user changed the move counter option
@@ -75,6 +78,9 @@ public class TimerOptions extends PreferenceActivity
         if (key.equals(Key.INCREMENT_SECONDS.toString() ) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.INCREMENT.toString(), true));
 
+        if (key.equals(Key.DELAY_TYPE.toString() ) )
+        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.DELAY_TYPE.toString(), true));
+        
         if (key.equals(Key.NEGATIVE_TIME.toString() ) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.NEGATIVE_TIME.toString(), true));
         
@@ -92,6 +98,14 @@ public class TimerOptions extends PreferenceActivity
         		editTextPref.setText("0");
         	editTextPref.setSummary("Current value is: " + editTextPref.getText());
         }
+
+        if (pref instanceof ListPreference) {
+        	ListPreference listPref = (ListPreference) pref;
+        	String s =  getString(R.string.summary_delay_type_preference) +
+        	" Currently using " + listPref.getValue() + ".";
+        	listPref.setSummary(s);
+        }
+
     }    
     
     @Override
@@ -104,6 +118,12 @@ public class TimerOptions extends PreferenceActivity
         		EditTextPreference pref = (EditTextPreference)p;
         		pref.setSummary("Current value is: " + pref.getText());
         	}
+            if (p instanceof ListPreference) {
+            	ListPreference listPref = (ListPreference) p;
+            	String s =  getString(R.string.summary_delay_type_preference) +
+            	" Currently using " + listPref.getValue() + ".";
+            	listPref.setSummary(s);
+            }
         }
         
         // Set up a listener whenever a key changes            

@@ -31,16 +31,15 @@ ICON ASSET CREATION:
 TODO
 	* Advanced FIDE time controls
 	* Allow time to be added to each clock during a game
-	* Haptic feedback on button press
 	* Audio feedback when clock expires
 	* Scroll input widget for setting clocks
 	* At end of game show a chart with the distribution of time spent per move
 	  for each player
-	* Bronstein/Fischer timing option
 	* Allow clocks to be initialized to different times
 	* Let user select image to be displayed on button
 	  
 DONE
+	* Bronstein/Fischer timing option
 	* Move counter (for eventual use with official FIDE tournament time control)
 	* fixed bug whereby String.isEmpty() was being used, but
 	  this is only valid for API > 9 (i.e. not for 2.1 or 2.2 devices)
@@ -51,5 +50,7 @@ DONE
 	* Fix bug that allows empty time field in preferences
 	* Fixed package name in manifest
 	* 'About' screen
+	* NOT going to do this: "Haptic feedback on button press" clock is usually on the 
+	* table so you don't really feel this.
 
 

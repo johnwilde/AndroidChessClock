@@ -36,6 +36,14 @@
                 android:defaultValue="0"
                 />
                 
+	    <ListPreference
+           android:title="@string/delay_type_preference" 
+           android:summary="@string/summary_delay_type_preference"
+           android:key="delay_type_preference"
+           android:defaultValue="Fischer"
+           android:entries="@array/delay_type_descriptions"
+           android:entryValues="@array/delay_type_values" />    
+                
         <CheckBoxPreference
                 android:key="allow_negative_time_preference"
                 android:title="@string/allow_negative_time_preference"
