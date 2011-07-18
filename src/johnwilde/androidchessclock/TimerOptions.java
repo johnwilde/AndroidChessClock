@@ -190,24 +190,34 @@ public class TimerOptions extends PreferenceActivity
         String delayType = ChessTimerActivity.DelayType.BRONSTEIN.name();
         boolean allowNegativeTime = false;
         
-    	EditTextPreference e = (EditTextPreference)findPreference(Key.FIDE_MIN_PHASE1.toString());
-    	e.setText("" + FIDE_PHASE1_MIN );
-    	
-    	e = (EditTextPreference)findPreference(Key.FIDE_MIN_PHASE2.toString());
-    	e.setText("" + FIDE_PHASE2_MIN );
-    	
-    	e = (EditTextPreference)findPreference(Key.FIDE_MOVES_PHASE1.toString());
-    	e.setText("" + FIDE_PHASE1_MOVES);
-    	
-    	ListPreference lp = (ListPreference)findPreference(Key.ADV_DELAY_TYPE.toString());
-    	lp.setValue(delayType);
-    	
-    	e = (EditTextPreference)findPreference(Key.ADV_INCREMENT_SECONDS.toString());
-    	e.setText("" + FIDE_INCREMENT_SEC);
-    	
-    	CheckBoxPreference cb = (CheckBoxPreference)findPreference(Key.ADV_NEGATIVE_TIME.toString());
-    	cb.setChecked(allowNegativeTime);
+        setEditTextValue(Key.FIDE_MIN_PHASE1, "" + FIDE_PHASE1_MIN);
+        setEditTextValue(Key.FIDE_MIN_PHASE2, "" + FIDE_PHASE2_MIN);
+        setEditTextValue(Key.FIDE_MOVES_PHASE1, "" + FIDE_PHASE1_MOVES);
+        setEditTextValue(Key.ADV_INCREMENT_SECONDS, "" + FIDE_INCREMENT_SEC);
+        setListPreferenceValue(Key.ADV_DELAY_TYPE, delayType);
+        setCheckBoxValue(Key.ADV_NEGATIVE_TIME, allowNegativeTime);
     }
+
+    // Helper functions that check value before making a change
+    // This prevents stack overflow on API 7 devices
+    private void setEditTextValue(Key key, String value){
+    	EditTextPreference e = (EditTextPreference)findPreference(key.toString());
+    	if ( !e.getText().equals(value) )
+    		e.setText(value);
+    }
+
+    private void setListPreferenceValue(Key key, String value){
+    	ListPreference lp = (ListPreference)findPreference(key.toString());
+    	if ( ! lp.getValue().equals(value) )
+    		lp.setValue(value);
+    }
+    private void setCheckBoxValue(Key key, Boolean checked){
+    	CheckBoxPreference cb = (CheckBoxPreference)findPreference(key.toString());
+    	if ( !( cb.isChecked() == checked) )
+    		cb.setChecked(checked);
+    }
+
+    
     
     private void setPreferenceEnabledUsingKey(Key[] keys, boolean value){
     	for (Key key : keys){

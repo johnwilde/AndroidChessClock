@@ -29,6 +29,7 @@ ICON ASSET CREATION:
   
   
 TODO
+	* Display animated icon showing Bronstein delay countdown (next to clock)
 	* Allow time to be added to each clock during a game
 	* Audio feedback when clock expires
 	* Scroll input widget for setting clocks
@@ -51,6 +52,6 @@ DONE
 	* Fixed package name in manifest
 	* 'About' screen
 	* NOT going to do this: "Haptic feedback on button press" clock is usually on the 
-	* table so you don't really feel this.
+	  table so you can't really feel this.
 
 

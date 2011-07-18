@@ -140,7 +140,7 @@
  	<CheckBoxPreference
         		android:key="show_move_count_preference"
                 android:title="@string/show_move_count_preference"
-                android:defaultValue="false"
+                android:defaultValue="true"
                 />                
                 
    </PreferenceCategory>

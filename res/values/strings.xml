@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Chess Clock</string>
-	<string name="optionsmenu_preferences">Preferences</string>
+	<string name="optionsmenu_preferences">Settings</string>
 	<string name="optionsmenu_about">About</string>
 	
 	<string name="reset_button">Reset</string>
@@ -53,9 +53,9 @@
 	<string name="select_time_control_type_preference">Select Type</string>
 
     <string-array name="timecontrol_type_descriptions">
-        <item>Use official FIDE time control settings</item>
-        <item>Set custom time controls</item>
-        <item>Disabled (use Basic Time Preferences)</item>
+        <item>Tournament time control (FIDE)</item>
+        <item>Personal time control (CUSTOM)</item>
+        <item>Basic Time Preferences (DISABLED)</item>
     </string-array>
     
     <string-array name="timecontrol_type_values">
