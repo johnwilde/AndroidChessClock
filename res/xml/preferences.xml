@@ -4,9 +4,14 @@
 
 <PreferenceScreen
         xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <PreferenceCategory
-            android:title="@string/initial_time_preference_description">
+        
+        <PreferenceCategory
+        android:title="@string/time_preference_description">
+        
+	<PreferenceScreen
+			android:title="@string/basic_time_preference_description"
+			android:key="basic_time_control_preference_screen">
+    <PreferenceCategory>
 
         <EditTextPreference
                 android:key="initial_minutes_preference"
@@ -49,9 +54,79 @@
                 android:title="@string/allow_negative_time_preference"
                 android:defaultValue="false"
                 />
-
                 
     </PreferenceCategory>
+	
+	</PreferenceScreen>
+
+	<PreferenceScreen
+			android:title="@string/advanced_time_preference_description"
+			android:key="advanced_time_control_preference_screen">
+    <PreferenceCategory>
+
+        <ListPreference
+             	android:title="@string/select_time_control_type_preference"
+                android:key="timecontrol_type_preference"
+                android:defaultValue="DISABLED"
+ 	            android:entries="@array/timecontrol_type_descriptions"
+    	        android:entryValues="@array/timecontrol_type_values" />    
+                />
+
+        <EditTextPreference
+                android:key="fide_n_moves"
+                android:title="@string/fide_n_moves_title"
+                android:summary="@string/fide_n_moves_summary"
+                android:dialogTitle="@string/fide_n_moves_dialogtitle"
+                android:numeric="integer"
+                android:defaultValue="40"
+                />
+
+        <EditTextPreference
+                android:key="fide_minutes1"
+                android:title="@string/fide_minutes1_title"
+                android:summary="@string/fide_minutes1_summary"
+                android:dialogTitle="@string/fide_minutes1_dialogtitle"
+                android:numeric="integer"
+                android:defaultValue="90"
+                />
+                
+        <EditTextPreference
+                android:key="fide_minutes2"
+                android:title="@string/fide_minutes2_title"
+                android:summary="@string/fide_minutes2_summary"
+                android:dialogTitle="@string/fide_minutes2_dialogtitle"
+                android:numeric="integer"
+                android:defaultValue="30"
+                />
+
+        <EditTextPreference
+                android:key="advanced_increment_preference"
+                android:title="@string/increment_preference"
+                android:summary="@string/summary_increment_preference"
+                android:dialogTitle="@string/dialog_title_increment_preference" 
+                android:numeric="integer"
+                android:defaultValue="0"
+                />
+                
+	    <ListPreference
+           android:title="@string/delay_type_preference" 
+           android:summary="@string/summary_delay_type_preference"
+           android:key="advanced_delay_type_preference"
+           android:defaultValue="Fischer"
+           android:entries="@array/delay_type_descriptions"
+           android:entryValues="@array/delay_type_values" />    
+                
+        <CheckBoxPreference
+                android:key="advanced_allow_negative_time_preference"
+                android:title="@string/allow_negative_time_preference"
+                android:defaultValue="false"
+                />
+
+    </PreferenceCategory>
+	
+	</PreferenceScreen>
+	
+	</PreferenceCategory>
 
    <PreferenceCategory
             android:title="@string/display_options_preference_description">

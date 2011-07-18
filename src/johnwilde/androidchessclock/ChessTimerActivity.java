@@ -2,6 +2,8 @@ package johnwilde.androidchessclock;
 
 import java.text.DecimalFormat;
 
+import johnwilde.androidchessclock.TimerOptions.TimeControl;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -55,9 +57,12 @@ public class ChessTimerActivity extends Activity {
 	 *      out.
 	 *
 	 */
-	enum GameState {IDLE, RUNNING, PAUSED, DONE;}
+	enum GameState {IDLE, RUNNING, PAUSED, DONE};
 	GameState mCurrentState = GameState.IDLE;
 
+	enum TimeControlType {BASIC, TOURNAMENT};
+	TimeControlType mTimeControlType = TimeControlType.BASIC;
+	
 	PlayerButton mButton1, mButton2;  	// The two big buttons
 	Button mResetButton;				
 	ToggleButton mPauseButton;
@@ -78,7 +83,7 @@ public class ChessTimerActivity extends Activity {
 	// these values are populated from the user preferences
 	int mInitialDurationSeconds = 60; 
 	int mIncrementSeconds;
-	enum DelayType {FISCHER, BRONSTEIN;}
+	public static enum DelayType {FISCHER, BRONSTEIN;}
 	DelayType mDelayType;
 	boolean mAllowNegativeTime = false;
 	boolean mShowMoveCounter = false;
@@ -86,7 +91,12 @@ public class ChessTimerActivity extends Activity {
 	// used to keep the screen bright during play
 	private WakeLock mWakeLock;
 	private int mWakeLockType; // set from user preferences
-	
+	private SharedPreferences mSharedPref;
+
+	// set when using TOURNAMENT time control
+	private int mPhase1NumberMoves;
+	private int mPhase2Minutes;
+
 	// Constants 
 	private static final String TAG = "ChessTimerActivity";
 	private static final int BUTTON_FADED = 25;
@@ -114,9 +124,10 @@ public class ChessTimerActivity extends Activity {
 		mButton2.setButtonListener(new PlayerButtonClickListener(mButton2, mButton1));
 
 		mResetButton.setOnClickListener(new ResetButtonClickListener());
+		mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+		
+		//mSharedPref.edit().clear().apply();
 
-//		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-//		sharedPref.edit().clear().apply();
 		// set default values (for first run)
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		loadAllUserPreferences();
@@ -250,16 +261,22 @@ public class ChessTimerActivity extends Activity {
 			}
 
 			if (data.getBooleanExtra(TimerOptions.TimerPref.NEGATIVE_TIME.toString(), false)){
-				loadNegativeTimeUserPreference();
+				loadNegativeTimeUserPreference(TimerOptions.Key.NEGATIVE_TIME);
 			}
 			
 			// set a new increment, if needed
 			if (data.getBooleanExtra(TimerOptions.TimerPref.INCREMENT.toString(), false)){
-				loadInitialIncrementUserPreference();
+				loadIncrementUserPreference(TimerOptions.Key.INCREMENT_SECONDS);
 			}
 			
 			if (data.getBooleanExtra(TimerOptions.TimerPref.DELAY_TYPE.toString(), false)){
-				loadDelayTypeUserPreference();
+				loadDelayTypeUserPreference(TimerOptions.Key.DELAY_TYPE);
+			}
+
+			if (data.getBooleanExtra(TimerOptions.TimerPref.ADVANCED_TIME_CONTROL.toString(), false)){
+				loadTimeControlPreferences();
+				transitionTo(GameState.IDLE);
+				
 			}
 			
 			// create a new wakelock, if needed
@@ -276,7 +293,7 @@ public class ChessTimerActivity extends Activity {
 		}
 	}
 
-    private void releaseWakeLock() {
+	private void releaseWakeLock() {
     	if (mWakeLock != null){
 	    	if ( mWakeLock.isHeld() ) {
 	    		mWakeLock.release();
@@ -313,7 +330,7 @@ public class ChessTimerActivity extends Activity {
 			mPauseButton.setChecked(false);
 			
 			// start the clock
-			mActive.timer.start();
+			mActive.timer.start(false);
 			break;
 			
 		case PAUSED:
@@ -424,74 +441,94 @@ public class ChessTimerActivity extends Activity {
 	// values set (in onCreate() ) and those defaults are saved in preferences.xml
 	
 	private void loadAllUserPreferences() {
-		loadInitialTimeUserPreferences();
-		loadInitialIncrementUserPreference();
-		loadDelayTypeUserPreference();
-		loadNegativeTimeUserPreference();
+		loadTimeControlPreferences();
 		loadMoveCounterUserPreference();
 		loadScreenDimUserPreference();
 	}
 
+	private void loadTimeControlPreferences() {
+		TimerOptions.TimeControl timeControl = TimerOptions.TimeControl.valueOf(
+				mSharedPref.getString(TimerOptions.Key.TIMECONTROL_TYPE.toString(), "DISABLED")
+				);
+		
+		if (timeControl == TimeControl.DISABLED){
+			mTimeControlType = TimeControlType.BASIC;
+			loadBasicTimeControlUserPreference();
+		}else{
+			mTimeControlType = TimeControlType.TOURNAMENT;
+			loadAdvancedTimeControlUserPreference();
+		}
+	}
+
 	private void loadMoveCounterUserPreference() {
-		SharedPreferences sharedPref = PreferenceManager
-			.getDefaultSharedPreferences(this);
-		mShowMoveCounter = sharedPref.getBoolean(TimerOptions.Key.SHOW_MOVE_COUNTER.toString(), false);
+ 
+		mShowMoveCounter = mSharedPref.getBoolean(TimerOptions.Key.SHOW_MOVE_COUNTER.toString(), false);
 		if (mCurrentState == GameState.PAUSED)
 			setActiveButtonAndMoveCount(mActive);
 	}
 	
-	private void loadNegativeTimeUserPreference() {
-		SharedPreferences sharedPref = PreferenceManager
-			.getDefaultSharedPreferences(this);
-		mAllowNegativeTime = sharedPref.getBoolean(TimerOptions.Key.NEGATIVE_TIME.toString(), false);
+	private void loadNegativeTimeUserPreference(TimerOptions.Key key) {
+		mAllowNegativeTime = mSharedPref.getBoolean(key.toString(), false);
 	}
 	
-	private void loadDelayTypeUserPreference(){
-		SharedPreferences sharedPref = PreferenceManager
-			.getDefaultSharedPreferences(this);
-
+	private void loadDelayTypeUserPreference(TimerOptions.Key key){
 		String[] delayTypes = getResources().getStringArray(R.array.delay_type_values);
-		String delayTypeString = sharedPref.getString(TimerOptions.Key.DELAY_TYPE.toString(), delayTypes[0]);
+		String delayTypeString = mSharedPref.getString(key.toString(), delayTypes[0]);
 
 		mDelayType = DelayType.valueOf(delayTypeString.toUpperCase());
 	}
 
 	private void loadScreenDimUserPreference() {
-		SharedPreferences sharedPref = PreferenceManager
-			.getDefaultSharedPreferences(this);
-		boolean allowScreenToDim = sharedPref.getBoolean(TimerOptions.Key.SCREEN_DIM.toString(), true);
+		boolean allowScreenToDim = mSharedPref.getBoolean(TimerOptions.Key.SCREEN_DIM.toString(), true);
     	/** Create a PowerManager object so we can get the wakelock */
     	mWakeLockType = allowScreenToDim ? PowerManager.SCREEN_DIM_WAKE_LOCK:
     				       PowerManager.SCREEN_BRIGHT_WAKE_LOCK;
 	}
 
-	private void loadInitialIncrementUserPreference() {
-		SharedPreferences sharedPref = PreferenceManager
-			.getDefaultSharedPreferences(this);
-		int seconds;
-		seconds = Integer.parseInt(sharedPref.getString(
-				TimerOptions.Key.INCREMENT_SECONDS.toString(), "0"));
+	private void loadIncrementUserPreference(TimerOptions.Key key) {
+		int seconds = Integer.parseInt(mSharedPref.getString(key.toString(), "0"));
 		setIncrement(seconds);
 	}
 
 	private void loadInitialTimeUserPreferences() {
-		SharedPreferences sharedPref = PreferenceManager
-				.getDefaultSharedPreferences(this);
 		
-		int minutes = Integer.parseInt(sharedPref.getString(
+		int minutes = Integer.parseInt(mSharedPref.getString(
 				TimerOptions.Key.MINUTES.toString(), "0"));
-		int seconds = Integer.parseInt(sharedPref.getString(
+		int seconds = Integer.parseInt(mSharedPref.getString(
 				TimerOptions.Key.SECONDS.toString(), "0"));
 		
 		setInitialDuration(minutes * 60 + seconds);
 	}
 
+	private void loadBasicTimeControlUserPreference(){
+		loadInitialTimeUserPreferences();
+		loadIncrementUserPreference(TimerOptions.Key.INCREMENT_SECONDS);
+		loadDelayTypeUserPreference(TimerOptions.Key.DELAY_TYPE);
+		loadNegativeTimeUserPreference(TimerOptions.Key.NEGATIVE_TIME);
+	}
 
+    private void loadAdvancedTimeControlUserPreference() {
+    	
+		int minutes1 = Integer.parseInt(mSharedPref.getString(
+				TimerOptions.Key.FIDE_MIN_PHASE1.toString(), "0"));
+    	
+		setInitialDuration( minutes1 * 60 );
+		
+		mPhase1NumberMoves = Integer.parseInt(mSharedPref.getString(
+				TimerOptions.Key.FIDE_MOVES_PHASE1.toString(), "0"));
+
+		mPhase2Minutes = Integer.parseInt(mSharedPref.getString(
+				TimerOptions.Key.FIDE_MIN_PHASE2.toString(), "0"));
+
+		loadDelayTypeUserPreference(TimerOptions.Key.ADV_DELAY_TYPE);
+		loadIncrementUserPreference(TimerOptions.Key.ADV_INCREMENT_SECONDS);
+		loadNegativeTimeUserPreference( TimerOptions.Key.ADV_NEGATIVE_TIME );
+	}
+	
+    	
 	private void setInitialDuration(int seconds) {
 		mInitialDurationSeconds = seconds;
 	}
-
-
 	private void setIncrement(int seconds) {
 		mIncrementSeconds = seconds;
 	}
@@ -578,10 +615,21 @@ public class ChessTimerActivity extends Activity {
 			case RUNNING:
 				if (mine.timer.isRunning()) {
 					mine.mMoveNumber++;
+					
+					if ( mTimeControlType == TimeControlType.TOURNAMENT ){
+						if ( mine.mMoveNumber == (mPhase1NumberMoves + 1) ){
+							mine.timer.increment(mPhase2Minutes * 60);
+						}
+					}
+					
 					mine.timer.pause();
-					if (mDelayType == DelayType.FISCHER)
+					
+					boolean applyDelay =  (other.mMoveNumber > 1);
+					
+					if (mDelayType == DelayType.FISCHER && applyDelay)
 						other.timer.increment(mIncrementSeconds);
-					other.timer.start();
+					
+					other.timer.start(applyDelay);
 					setActiveButtonAndMoveCount(other);
 				}
 				break;
@@ -647,10 +695,9 @@ public class ChessTimerActivity extends Activity {
 		boolean isRunning = false;
 
 		// formatters for displaying text in timer
-		DecimalFormat dfSecondsNearEnd = new DecimalFormat("0.0");
-		DecimalFormat dfSecondsNegative = new DecimalFormat("0");
-		DecimalFormat dfSeconds = new DecimalFormat("00");
-		DecimalFormat dfMinAndHours = new DecimalFormat("##");
+		DecimalFormat dfOneDecimal = new DecimalFormat("0.0");
+		DecimalFormat dfOneDigit = new DecimalFormat("0");
+		DecimalFormat dfTwoDigit = new DecimalFormat("00");
 		private int mNormalTextColor = Color.BLACK;
 
 		Timer(int id) {
@@ -683,8 +730,8 @@ public class ChessTimerActivity extends Activity {
 			return isRunning;
 		}
 
-		public void start() {
-			mCountDownTimer.go();
+		public void start(boolean applyDelay) {
+			mCountDownTimer.go(applyDelay);
 			isRunning = true;
 		}
 
@@ -735,26 +782,29 @@ public class ChessTimerActivity extends Activity {
 
 			// Construct string
 			if (hours > 0)
-				stringHr = dfMinAndHours.format(hours) + ":";
+				stringHr = dfOneDigit.format(hours) + ":";
 			else
 				stringHr = "";
 
-			if (hours > 0 || min > 0)
-				stringMin = dfMinAndHours.format(min) + ":";
-			else
+			if (hours > 0 )
+				stringMin = dfTwoDigit.format(min) + ":";
+			else if ( min > 0)
+				stringMin = dfOneDigit.format(min) + ":";
+			else	
 				stringMin = "";
 
-			if (min > 0)
-				stringSec = dfSeconds.format(sec);
-			else if (sec < 10 && millisIn >= 0)
-				stringSec = dfSecondsNearEnd.format((double) sec
-						+ (double) millis / 1000.0);
-			else if (sec < 10 && millisIn < 0)
-				stringSec = dfSecondsNegative.format((double) sec
-						+ (double) millis / 1000.0);
-			else
-				stringSec = dfSeconds.format(sec);
+			stringSec = dfTwoDigit.format(sec);  
 
+			if (min == 0){
+				// modify formatting when less than 10 seconds
+				if (sec < 10 && millisIn >= 0) // between 0 and 9 seconds
+					stringSec = dfOneDecimal.format((double) sec
+							+ (double) millis / 1000.0);
+				else if (sec < 10 && millisIn < 0) //  between -1 and -9
+					stringSec = dfOneDigit.format((double) sec
+							+ (double) millis / 1000.0);
+			}
+			// clock is <= -1 second
 			if (millisIn <= -1000){
 				return "-" + stringHr + stringMin + stringSec;
 			}
@@ -812,8 +862,8 @@ public class ChessTimerActivity extends Activity {
 				}
 			};
 			
-			void go() {
-				if (mDelayType ==  DelayType.BRONSTEIN){
+			void go(boolean applyDelay) {
+				if (mDelayType ==  DelayType.BRONSTEIN && applyDelay){
 					mLastUpdateTime = SystemClock.uptimeMillis() + mIncrementSeconds*1000;
 					mHandler.postDelayed(mUpdateTimeTask, mIncrementSeconds*1000);
 				}
