@@ -47,7 +47,7 @@
 	<string name="display_options_preference_description">Display Preferences</string>
 	<string name="screen_dim_preference">Allow screen to dim</string>
 	<string name="show_move_count_preference">Show move counter</string>
-
+	<string name="white_on_left_preference">White button on left</string>
   	<string name="advanced_time_preference_description">Tournament Time Control</string>
 	<string name="summary_advanced_time_preference_description">Set tournament time control options.</string>
 	<string name="select_time_control_type_preference">Select Type</string>

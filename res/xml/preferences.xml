@@ -142,6 +142,12 @@
                 android:title="@string/show_move_count_preference"
                 android:defaultValue="true"
                 />                
+
+ 	<CheckBoxPreference
+        		android:key="white_on_left_preference"
+                android:title="@string/white_on_left_preference"
+                android:defaultValue="true"
+                />                
                 
    </PreferenceCategory>
 

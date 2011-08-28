@@ -27,6 +27,7 @@ public class TimerOptions extends PreferenceActivity
 		DELAY_TYPE("delay_type_preference"),
 		NEGATIVE_TIME("allow_negative_time_preference"),
 		SCREEN_DIM("screen_dim_preference"),
+		SWAP_SIDES("white_on_left_preference"),
 		SHOW_MOVE_COUNTER("show_move_count_preference"),
 		TIMECONTROL_TYPE("timecontrol_type_preference"),
 		FIDE_MOVES_PHASE1("fide_n_moves"),
@@ -58,6 +59,7 @@ public class TimerOptions extends PreferenceActivity
 		NEGATIVE_TIME("johnwilde.androidchessclock.NegativeTime"),  // user changed the increment field
 		SCREEN("johnwilde.androidchessclock.NewScreenDim"), 	// user changed the screen dim option
 		SHOW_MOVE_COUNTER("johnwilde.androidchessclock.NewMoveCounter"), 	// user changed the move counter option
+		SWAP_SIDES("johnwilde.androidchessclock.SwapSides"), 	// user changed the swap sides option		
 		ADVANCED_TIME_CONTROL("johnwilde.androidchessclock.NewAdvancedOption"); 
 		private String mValue;
 
@@ -111,6 +113,9 @@ public class TimerOptions extends PreferenceActivity
         
         if (key.equals(Key.SCREEN_DIM.toString()) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SCREEN.toString(), true));
+
+        if (key.equals(Key.SWAP_SIDES.toString()) )
+        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SWAP_SIDES.toString(), true));
 
         if (key.equals(Key.SHOW_MOVE_COUNTER.toString()) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SHOW_MOVE_COUNTER.toString(), true));
@@ -187,7 +192,7 @@ public class TimerOptions extends PreferenceActivity
         int FIDE_PHASE2_MIN = 30;
         int FIDE_PHASE1_MOVES = 40;
         int FIDE_INCREMENT_SEC = 30;
-        String delayType = ChessTimerActivity.DelayType.BRONSTEIN.name();
+        String delayType = ChessTimerActivity.DelayType.FISCHER.name();
         boolean allowNegativeTime = false;
         
         setEditTextValue(Key.FIDE_MIN_PHASE1, "" + FIDE_PHASE1_MIN);

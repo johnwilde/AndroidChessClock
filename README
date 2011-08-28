@@ -29,6 +29,7 @@ ICON ASSET CREATION:
   
   
 TODO
+	* Fix bug where game pauses for no reason
 	* Display animated icon showing Bronstein delay countdown (next to clock)
 	* Allow time to be added to each clock during a game
 	* Audio feedback when clock expires

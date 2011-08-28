@@ -2,6 +2,8 @@ package johnwilde.androidchessclock;
 
 import java.text.DecimalFormat;
 
+import org.xmlpull.v1.XmlPullParser;
+
 import johnwilde.androidchessclock.TimerOptions.TimeControl;
 
 import android.app.Activity;
@@ -19,7 +21,9 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
+import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Xml;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -27,6 +31,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -90,6 +96,7 @@ public class ChessTimerActivity extends Activity {
 	int mIncrementSeconds;
 	boolean mAllowNegativeTime = false;
 	boolean mShowMoveCounter = false;
+	private boolean mSwapSides = false;
 	private int mWakeLockType;
 	// set when using TOURNAMENT time control
 	private int mPhase1NumberMoves;
@@ -97,6 +104,8 @@ public class ChessTimerActivity extends Activity {
 	
 	// used to keep the screen bright during play
 	private WakeLock mWakeLock;
+
+
 	
 	// Constants 
 	private static final String TAG = "ChessTimerActivity";
@@ -293,8 +302,14 @@ public class ChessTimerActivity extends Activity {
 			if (data.getBooleanExtra(TimerOptions.TimerPref.SHOW_MOVE_COUNTER.toString(), false)){
 				loadMoveCounterUserPreference();
 			}
+
+			if (data.getBooleanExtra(TimerOptions.TimerPref.SWAP_SIDES.toString(), false)){
+				loadSwapSidesUserPreference();
+			}
 		}
 	}
+
+
 
 	private void releaseWakeLock() {
     	if (mWakeLock != null){
@@ -494,7 +509,24 @@ public class ChessTimerActivity extends Activity {
 		if (mCurrentState == GameState.PAUSED)
 			setActiveButtonAndMoveCount(mActive);
 	}
-	
+	private void loadSwapSidesUserPreference() {
+ 		mSwapSides = mSharedPref.getBoolean(TimerOptions.Key.SWAP_SIDES.toString(), false);
+ 		if (mSwapSides)
+ 			setWhiteButtonToRight();
+// 		else
+// 			setWhiteButtonToLeft();
+	}	
+	private void setWhiteButtonToRight() {
+		// determine which side the button is on now
+		final FrameLayout whiteFrame = (FrameLayout) findViewById(R.id.frameLayoutWhite);
+		 XmlPullParser parser = getResources().getXml(R.xml.white1);
+		 AttributeSet whiteAttributeSet = Xml.asAttributeSet(parser);
+		 int count = whiteAttributeSet.getAttributeCount();
+		FrameLayout.LayoutParams newLayout = new FrameLayout.LayoutParams(this, whiteAttributeSet);
+		whiteFrame.setLayoutParams(newLayout);
+		
+	}
+
 	private void loadNegativeTimeUserPreference(TimerOptions.Key key) {
 		mAllowNegativeTime = mSharedPref.getBoolean(key.toString(), false);
 	}
@@ -601,17 +633,15 @@ public class ChessTimerActivity extends Activity {
 			}
 			
 			timer.pause();
+
+			if (mDelayType == DelayType.FISCHER)
+				timer.increment(mIncrementSeconds);
 			
 		}
 
 		public void moveStarted() {
-			// only apply a delay after the first move
-			boolean applyDelay =  (mMoveNumber > 1);
 			
-			if (mDelayType == DelayType.FISCHER && applyDelay)
-				timer.increment(mIncrementSeconds);
-			
-			if (mDelayType == DelayType.BRONSTEIN && applyDelay)
+			if (mDelayType == DelayType.BRONSTEIN)
 				timer.start(mIncrementSeconds*1000);
 			else
 				timer.start(0);
@@ -735,6 +765,8 @@ public class ChessTimerActivity extends Activity {
 		
 		public void initialize() {
 			initializeWithValue(mInitialDurationSeconds * 1000);
+			if (mDelayType ==  DelayType.FISCHER)
+				increment(mIncrementSeconds);
 		}
 
 		public void increment(int mIncrementSeconds) {
