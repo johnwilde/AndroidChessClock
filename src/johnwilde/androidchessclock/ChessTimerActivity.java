@@ -2,7 +2,6 @@ package johnwilde.androidchessclock;
 
 import java.text.DecimalFormat;
 
-import org.xmlpull.v1.XmlPullParser;
 
 import johnwilde.androidchessclock.TimerOptions.TimeControl;
 
@@ -34,6 +33,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -96,7 +96,7 @@ public class ChessTimerActivity extends Activity {
 	int mIncrementSeconds;
 	boolean mAllowNegativeTime = false;
 	boolean mShowMoveCounter = false;
-	private boolean mSwapSides = false;
+	private boolean mWhiteOnLeft = false;
 	private int mWakeLockType;
 	// set when using TOURNAMENT time control
 	private int mPhase1NumberMoves;
@@ -105,8 +105,6 @@ public class ChessTimerActivity extends Activity {
 	// used to keep the screen bright during play
 	private WakeLock mWakeLock;
 
-
-	
 	// Constants 
 	private static final String TAG = "ChessTimerActivity";
 	private static final int BUTTON_FADED = 25;
@@ -123,8 +121,8 @@ public class ChessTimerActivity extends Activity {
 		
 		setContentView(R.layout.main);
 
-		mButton1 = new PlayerButton( new Timer(R.id.clock1), R.id.button1, R.id.moveCounter1);
-		mButton2 = new PlayerButton( new Timer(R.id.clock2), R.id.button2, R.id.moveCounter2);
+		mButton1 = new PlayerButton( new Timer(R.id.whiteClock), R.id.whiteButton, R.id.whiteMoveCounter);
+		mButton2 = new PlayerButton( new Timer(R.id.blackClock), R.id.blackButton, R.id.blackMoveCounter);
 
 		mResetButton = (Button) findViewById(R.id.reset_button);
 		mPauseButton = (ToggleButton) findViewById(R.id.pause_button);
@@ -510,20 +508,46 @@ public class ChessTimerActivity extends Activity {
 			setActiveButtonAndMoveCount(mActive);
 	}
 	private void loadSwapSidesUserPreference() {
- 		mSwapSides = mSharedPref.getBoolean(TimerOptions.Key.SWAP_SIDES.toString(), false);
- 		if (mSwapSides)
- 			setWhiteButtonToRight();
-// 		else
-// 			setWhiteButtonToLeft();
+ 		mWhiteOnLeft = mSharedPref.getBoolean(TimerOptions.Key.SWAP_SIDES.toString(), false);
+ 		configureSides();
 	}	
-	private void setWhiteButtonToRight() {
-		// determine which side the button is on now
-		final FrameLayout whiteFrame = (FrameLayout) findViewById(R.id.frameLayoutWhite);
-		 XmlPullParser parser = getResources().getXml(R.xml.white1);
-		 AttributeSet whiteAttributeSet = Xml.asAttributeSet(parser);
-		 int count = whiteAttributeSet.getAttributeCount();
-		FrameLayout.LayoutParams newLayout = new FrameLayout.LayoutParams(this, whiteAttributeSet);
-		whiteFrame.setLayoutParams(newLayout);
+	private void configureSides() {
+		View whiteClock = findViewById(R.id.whiteClock);
+		View blackClock = findViewById(R.id.blackClock);
+
+		View whiteButton = findViewById(R.id.whiteButton);
+		View blackButton = findViewById(R.id.blackButton);
+
+		View whiteMoveCounter = findViewById(R.id.whiteMoveCounter);
+		View blackMoveCounter = findViewById(R.id.blackMoveCounter);
+		
+		LinearLayout leftClockContainer = (LinearLayout)findViewById(R.id.leftClockContainer);
+		LinearLayout rightClockContainer = (LinearLayout)findViewById(R.id.rightClockContainer);
+		leftClockContainer.removeAllViewsInLayout();
+		rightClockContainer.removeAllViewsInLayout();	
+		
+		FrameLayout leftButtonContainer = (FrameLayout)findViewById(R.id.frameLayoutLeft);
+		FrameLayout rightButtonContainer = (FrameLayout)findViewById(R.id.frameLayoutRight);
+		leftButtonContainer.removeAllViewsInLayout();
+		rightButtonContainer.removeAllViewsInLayout();	
+		
+
+		if (mWhiteOnLeft) {
+			leftClockContainer.addView(whiteClock);
+			rightClockContainer.addView(blackClock);
+			leftButtonContainer.addView(whiteButton);
+			leftButtonContainer.addView(whiteMoveCounter);
+			rightButtonContainer.addView(blackButton);
+			rightButtonContainer.addView(blackMoveCounter);
+		} else 
+		{
+			leftClockContainer.addView(blackClock);
+			rightClockContainer.addView(whiteClock);
+			leftButtonContainer.addView(blackButton);
+			leftButtonContainer.addView(blackMoveCounter);
+			rightButtonContainer.addView(whiteButton);
+			rightButtonContainer.addView(whiteMoveCounter);
+		}
 		
 	}
 
