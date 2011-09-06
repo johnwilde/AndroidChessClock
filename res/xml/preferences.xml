@@ -149,6 +149,12 @@
                 android:defaultValue="true"
                 />                
                 
+ 	<CheckBoxPreference
+        		android:key="audible_notification_preference"
+                android:title="@string/audible_notification_preference"
+                android:defaultValue="true"
+                />                
+
    </PreferenceCategory>
 
     

@@ -28,6 +28,7 @@ public class TimerOptions extends PreferenceActivity
 		NEGATIVE_TIME("allow_negative_time_preference"),
 		SCREEN_DIM("screen_dim_preference"),
 		SWAP_SIDES("white_on_left_preference"),
+		PLAY_SOUND("audible_notification_preference"),
 		SHOW_MOVE_COUNTER("show_move_count_preference"),
 		TIMECONTROL_TYPE("timecontrol_type_preference"),
 		FIDE_MOVES_PHASE1("fide_n_moves"),
@@ -49,7 +50,7 @@ public class TimerOptions extends PreferenceActivity
 		}
 	}
 	
-	// This enum is used to tag boolean flags in  the
+	// This enum is used to tag boolean flags in the
 	// Intent that is returned by this activity.  The ChessTimer
 	// can then take the appropriate action.
 	public enum TimerPref{
@@ -59,7 +60,8 @@ public class TimerOptions extends PreferenceActivity
 		NEGATIVE_TIME("johnwilde.androidchessclock.NegativeTime"),  // user changed the increment field
 		SCREEN("johnwilde.androidchessclock.NewScreenDim"), 	// user changed the screen dim option
 		SHOW_MOVE_COUNTER("johnwilde.androidchessclock.NewMoveCounter"), 	// user changed the move counter option
-		SWAP_SIDES("johnwilde.androidchessclock.SwapSides"), 	// user changed the swap sides option		
+		SWAP_SIDES("johnwilde.androidchessclock.SwapSides"), 	// user changed the swap sides option
+		PLAY_SOUND("johnwilde.androidchessclock.PlaySound"), 	// user changed the audible notification option		
 		ADVANCED_TIME_CONTROL("johnwilde.androidchessclock.NewAdvancedOption"); 
 		private String mValue;
 
@@ -116,6 +118,9 @@ public class TimerOptions extends PreferenceActivity
 
         if (key.equals(Key.SWAP_SIDES.toString()) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SWAP_SIDES.toString(), true));
+
+        if (key.equals(Key.PLAY_SOUND.toString()) )
+        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.PLAY_SOUND.toString(), true));
 
         if (key.equals(Key.SHOW_MOVE_COUNTER.toString()) )
         	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SHOW_MOVE_COUNTER.toString(), true));

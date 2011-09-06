@@ -1,5 +1,6 @@
 package johnwilde.androidchessclock;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 
 import johnwilde.androidchessclock.TimerOptions.TimeControl;
@@ -11,7 +12,10 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Color;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -99,6 +103,10 @@ public class ChessTimerActivity extends Activity {
 	
 	// used to keep the screen bright during play
 	private WakeLock mWakeLock;
+	// for sounding buzzer
+	MediaPlayer mMediaPlayer;
+	
+	private boolean mPlaySoundAtEnd;
 
 	// Constants 
 	private static final String TAG = "ChessTimerActivity";
@@ -110,11 +118,10 @@ public class ChessTimerActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		setContentView(R.layout.main);
+		
 		// the layout looks best in landscape orientation
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-		
-		setContentView(R.layout.main);
 
 		mButton1 = new PlayerButton( new Timer(R.id.whiteClock), R.id.whiteButton, R.id.whiteMoveCounter);
 		mButton2 = new PlayerButton( new Timer(R.id.blackClock), R.id.blackButton, R.id.blackMoveCounter);
@@ -139,6 +146,7 @@ public class ChessTimerActivity extends Activity {
 		transitionTo(GameState.IDLE);
 		
 		acquireWakeLock();
+		acquireMediaPlayer();
 		
 		Log.d(TAG, "Finished onCreate()");
 	}
@@ -146,18 +154,21 @@ public class ChessTimerActivity extends Activity {
     @Override
     public void onPause() {
     	releaseWakeLock();
+    	releaseMediaPlayer();
     	super.onPause();
     }
     
     @Override
     public void onResume() {
 	    acquireWakeLock();
+	    acquireMediaPlayer();
 	    super.onResume();
     }
     
     @Override
     public void onDestroy() {
     	releaseWakeLock();
+    	releaseMediaPlayer();
     	super.onDestroy();
     }
 	
@@ -299,10 +310,49 @@ public class ChessTimerActivity extends Activity {
 			if (data.getBooleanExtra(TimerOptions.TimerPref.SWAP_SIDES.toString(), false)){
 				loadSwapSidesUserPreference();
 			}
+
+			if (data.getBooleanExtra(TimerOptions.TimerPref.PLAY_SOUND.toString(), false)){
+				loadAudibleNotificationUserPreference();
+				acquireMediaPlayer();
+			}
+
 		}
 	}
 
+	private void acquireMediaPlayer() {
+		releaseMediaPlayer();
+		if (mPlaySoundAtEnd) {
+			try {
+				AssetFileDescriptor afd = getResources().openRawResourceFd(
+						R.raw.buzzer);
+				if (afd == null)
+					return;
+				mMediaPlayer = new MediaPlayer();
+				mMediaPlayer.setDataSource(afd.getFileDescriptor(), afd
+						.getStartOffset(), afd.getLength());
+				afd.close();
+				mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+				mMediaPlayer.prepareAsync();
+			} catch (IOException ex) {
+				Log.d(TAG, "create failed:", ex);
+				// fall through
+			} catch (IllegalArgumentException ex) {
+				Log.d(TAG, "create failed:", ex);
+				// fall through
+			} catch (SecurityException ex) {
+				Log.d(TAG, "create failed:", ex);
+				// fall through
+			}
+		}
+	}
 
+	private void releaseMediaPlayer() {
+		if (mMediaPlayer != null) {
+			mMediaPlayer.release();
+			mMediaPlayer = null;
+		}
+		
+	}
 
 	private void releaseWakeLock() {
     	if (mWakeLock != null){
@@ -460,6 +510,7 @@ public class ChessTimerActivity extends Activity {
 		loadTimeControlPreferences();
 		loadMoveCounterUserPreference();
 		loadSwapSidesUserPreference();
+		loadAudibleNotificationUserPreference();
 		loadScreenDimUserPreference();
 	}
 
@@ -513,6 +564,13 @@ public class ChessTimerActivity extends Activity {
  		mWhiteOnLeft = mSharedPref.getBoolean(TimerOptions.Key.SWAP_SIDES.toString(), false);
  		configureSides();
 	}	
+	
+	private void loadAudibleNotificationUserPreference() {
+ 		mPlaySoundAtEnd= mSharedPref.getBoolean(TimerOptions.Key.PLAY_SOUND.toString(), false);
+	}
+
+
+
 	private void configureSides() {
 		View whiteClock = findViewById(R.id.whiteClock);
 		View blackClock = findViewById(R.id.blackClock);
@@ -906,6 +964,8 @@ public class ChessTimerActivity extends Activity {
 		public void done() {
 			mView.setText("0.0");
 			mView.setTextColor(Color.RED);
+			if (mMediaPlayer != null)
+				mMediaPlayer.start();
 			transitionTo(GameState.DONE);
 		}
 
@@ -919,6 +979,7 @@ public class ChessTimerActivity extends Activity {
 			// 	   if getMsToGo() < 10 * 1000, every 100 ms
 			//     if getMsToGo() < 0 and getAllowNegativeTime is true, every 1000 ms
 			Runnable mUpdateTimeTask = new Runnable(){
+				boolean playedBuzzer = false;
 				public void run(){
 					long ellapsedTime = SystemClock.uptimeMillis() - mLastUpdateTime;
 					mMillisUntilFinished -= ellapsedTime;
@@ -934,6 +995,11 @@ public class ChessTimerActivity extends Activity {
 					}
 					else if (getMsToGo() < 0 && getAllowNegativeTime()){
 						updateTimerText();
+						if (mMediaPlayer != null && playedBuzzer == false){
+							mMediaPlayer.start();
+							playedBuzzer = true;
+						}
+							
 						mHandler.postDelayed(mUpdateTimeTask, 1000);
 					}
 					else{
