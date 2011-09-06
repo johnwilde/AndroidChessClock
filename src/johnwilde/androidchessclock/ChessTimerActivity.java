@@ -2,9 +2,7 @@ package johnwilde.androidchessclock;
 
 import java.text.DecimalFormat;
 
-
 import johnwilde.androidchessclock.TimerOptions.TimeControl;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -20,9 +18,7 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Xml;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -30,7 +26,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -385,7 +380,7 @@ public class ChessTimerActivity extends Activity {
 
 		if (mShowMoveCounter){
 			mActive.mMoveCounter.setVisibility(View.VISIBLE);
-			String s = "Move " + mActive.mMoveNumber;
+			String s = getString(R.string.move_counter_text) + " " + mActive.mMoveNumber;
 			mActive.mMoveCounter.setText(s);
 			other.mMoveCounter.setVisibility(View.GONE);
 		}
@@ -410,27 +405,30 @@ public class ChessTimerActivity extends Activity {
 	public void showAboutDialog(){
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		String title = getString(R.string.app_name);
-		String msg = getString(R.string.about_dialog);
-		builder.setMessage(title + ", version: " + getPackageVersion() + "\n\n" + msg)
-		       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-		           public void onClick(DialogInterface dialog, int id) {
-		                dialog.cancel();
-		           }
-		       });
-		AlertDialog alert = builder.create();		
+		String about = getString(R.string.about_dialog);
+		String message = title + ", " + getString(R.string.version) + ": " 
+		+ getPackageVersion() + "\n\n" + about;
+		builder.setMessage(message).setPositiveButton(getString(R.string.OK),
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						dialog.cancel();
+					}
+				});
+		AlertDialog alert = builder.create();
 		alert.show();
 	}
 	
 	public void showPauseDialog(){
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(R.string.pause_dialog)
-		       .setPositiveButton("Resume", new DialogInterface.OnClickListener() {
-		           public void onClick(DialogInterface dialog, int id) {
-		                dialog.cancel();
-		                mPauseButton.performClick();
-		           }
-		       });
-		AlertDialog alert = builder.create();		
+		builder.setMessage(R.string.pause_dialog);
+		builder.setPositiveButton(getString(R.string.pauseon_button),
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						dialog.cancel();
+						mPauseButton.performClick();
+					}
+				});
+		AlertDialog alert = builder.create();
 		alert.show();
 	}
 
@@ -440,7 +438,7 @@ public class ChessTimerActivity extends Activity {
 			PackageInfo manager=getPackageManager().getPackageInfo(getPackageName(), 0);
 			return manager.versionName;
 		} catch (NameNotFoundException e) {
-			return "Unknown";
+			return getString(R.string.unknown);
 		}
 	}
 
@@ -459,13 +457,15 @@ public class ChessTimerActivity extends Activity {
 	private void loadAllUserPreferences() {
 		loadTimeControlPreferences();
 		loadMoveCounterUserPreference();
+		loadSwapSidesUserPreference();
 		loadScreenDimUserPreference();
 	}
 
 	// determine whether we're using BASIC or TOURNAMENT time control
 	private void loadTimeControlPreferences() {
 		TimerOptions.TimeControl timeControl = TimerOptions.TimeControl.valueOf(
-				mSharedPref.getString(TimerOptions.Key.TIMECONTROL_TYPE.toString(), "DISABLED")
+				mSharedPref.getString(TimerOptions.Key.TIMECONTROL_TYPE.toString(),
+						"DISABLED")
 				);
 		
 		if (timeControl == TimeControl.DISABLED){
@@ -755,7 +755,7 @@ public class ChessTimerActivity extends Activity {
 				mCurrentState == GameState.IDLE)
 				return;
 		transitionTo(GameState.PAUSED);
-		Toast.makeText(this, "Paused. Press to resume.", Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, getString(R.string.pause_toast), Toast.LENGTH_SHORT).show();
 	}
 	
 	// This class updates each player's clock.

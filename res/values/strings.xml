@@ -5,7 +5,9 @@
 	<string name="optionsmenu_about">About</string>
 	
 	<string name="reset_button">Reset</string>
-	
+	<string name="OK">OK</string>
+	<string name="unknown">Unknown</string>
+	<string name="version">version</string>
 	<string name="pauseoff_button">Pause</string>
 	<string name="pauseon_button">Resume</string>
 	
@@ -78,6 +80,9 @@
 	<string name="fide_minutes2_summary"></string>
 	<string name="fide_minutes2_dialogtitle">Please enter number of minutes</string>
 	
+	
+	<string name="move_counter_text">Move</string>
 	<string name="about_dialog">To report bugs or view source code, visit "https://github.com/johnwilde/AndroidChessClock"</string>
 	<string name="pause_dialog">Paused</string>
+	<string name="pause_toast">Paused. Press to resume.</string>
 </resources>
