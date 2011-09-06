@@ -329,8 +329,9 @@ public class ChessTimerActivity extends Activity {
 		switch (state){
 		case IDLE:
 			mCurrentState = GameState.IDLE;
-			mPauseButton.setClickable(false); // disable pause when IDLE
-			mPauseButton.setChecked(false); // Changes text on Pause button
+			mPauseButton.setClickable(true); 
+			mPauseButton.setTextOff(getString(R.string.pauseinit_button));
+			mPauseButton.setChecked(false); // set to 'off' state
 			mButton1.reset();
 			mButton2.reset();
 			break;
@@ -339,6 +340,7 @@ public class ChessTimerActivity extends Activity {
 			mCurrentState = GameState.RUNNING;
 			mPauseButton.setClickable(true); // enable 'pause'
 			mPauseButton.setChecked(false);
+			mPauseButton.setTextOff(getString(R.string.pauseoff_button));
 			
 			// start the clock
 			mActive.timer.start(0);
@@ -732,10 +734,14 @@ public class ChessTimerActivity extends Activity {
 		@Override
 		public void onClick(View v) {
 			
-			if (mCurrentState == GameState.DONE ||
-				mCurrentState == GameState.IDLE)
+			if (mCurrentState == GameState.DONE)
 				return;
-			
+			if (mCurrentState == GameState.IDLE){
+				setActiveButtonAndMoveCount(mButton1);
+				transitionTo(GameState.RUNNING);
+				mPauseButton.setChecked(false); // set toggle to show "pause" text
+				return;
+			}
 			if ( mCurrentState == GameState.PAUSED ){
 				transitionTo(GameState.RUNNING);
 			}
