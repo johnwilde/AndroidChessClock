@@ -8,6 +8,7 @@ TODO
 	* Let user select image to be displayed on button
 	  
 DONE
+    * Add NumberFormat exception handling for bad initial time or other text input
 	* Audio feedback when clock expires
 	* Advanced FIDE time controls
 	* Bronstein/Fischer timing option

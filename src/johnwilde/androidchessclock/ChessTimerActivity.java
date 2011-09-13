@@ -539,17 +539,13 @@ public class ChessTimerActivity extends Activity {
 
     private void loadAdvancedTimeControlUserPreference() {
     	
-		int minutes1 = Integer.parseInt(mSharedPref.getString(
-				TimerOptions.Key.FIDE_MIN_PHASE1.toString(), "0"));
+		int minutes1 = getTimerOptionsValue( TimerOptions.Key.FIDE_MIN_PHASE1 );
     	
 		setInitialDuration( minutes1 * 60 );
 		
-		mPhase1NumberMoves = Integer.parseInt(mSharedPref.getString(
-				TimerOptions.Key.FIDE_MOVES_PHASE1.toString(), "0"));
-
-		mPhase2Minutes = Integer.parseInt(mSharedPref.getString(
-				TimerOptions.Key.FIDE_MIN_PHASE2.toString(), "0"));
-
+		mPhase1NumberMoves = getTimerOptionsValue( TimerOptions.Key.FIDE_MOVES_PHASE1 );
+		mPhase2Minutes = getTimerOptionsValue( TimerOptions.Key.FIDE_MIN_PHASE2 );
+		
 		loadDelayTypeUserPreference(TimerOptions.Key.ADV_DELAY_TYPE);
 		loadIncrementUserPreference(TimerOptions.Key.ADV_INCREMENT_SECONDS);
 		loadNegativeTimeUserPreference( TimerOptions.Key.ADV_NEGATIVE_TIME );
@@ -630,18 +626,32 @@ public class ChessTimerActivity extends Activity {
 	}
 
 	private void loadIncrementUserPreference(TimerOptions.Key key) {
-		int seconds = Integer.parseInt(mSharedPref.getString(key.toString(), "0"));
+		int seconds = getTimerOptionsValue( key );
 		setIncrement(seconds);
 	}
 
 	private void loadInitialTimeUserPreferences() {
 		
-		int minutes = Integer.parseInt(mSharedPref.getString(
-				TimerOptions.Key.MINUTES.toString(), "0"));
-		int seconds = Integer.parseInt(mSharedPref.getString(
-				TimerOptions.Key.SECONDS.toString(), "0"));
-		
+		int minutes = getTimerOptionsValue( TimerOptions.Key.MINUTES );
+		int seconds = getTimerOptionsValue(TimerOptions.Key.SECONDS );
+
 		setInitialDuration(minutes * 60 + seconds);
+	}
+
+	private int getTimerOptionsValue( TimerOptions.Key key ){
+	    try{
+	        String s = mSharedPref.getString(key.toString(), "0" );
+
+	        if (s.length() == 0){
+	            s = "0";
+	        }
+
+	        return ( Integer.parseInt( s ) );
+
+	    }catch (NumberFormatException ex){
+	        Log.d(TAG, ex.getMessage() );
+	        return 0;
+	    }
 	}
 
 	private void setInitialDuration(int seconds) {
