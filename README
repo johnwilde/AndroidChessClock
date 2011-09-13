@@ -1,4 +1,31 @@
-Some issues encountered during development:
+TODO
+	* Display animated icon showing Bronstein delay countdown (next to clock)
+	* Allow time to be added to each clock during a game
+	* Scroll input widget for setting clocks
+	* At end of game show a chart with the distribution of time spent per move
+	  for each player
+ 	* Allow clocks to be initialized to different times
+	* Let user select image to be displayed on button
+	  
+DONE
+	* Audio feedback when clock expires
+	* Advanced FIDE time controls
+	* Bronstein/Fischer timing option
+	* Move counter (for eventual use with official FIDE tournament time control)
+	* fixed bug whereby String.isEmpty() was being used, but
+	  this is only valid for API > 9 (i.e. not for 2.1 or 2.2 devices)
+	* Allow clocks to go negative
+	* Lock 'portrait' orientation
+	* Wake lock to prevent screen from dimming during play
+	* Make pause notification persistent (not a 'Toast')
+	* Fix bug that allows empty time field in preferences
+	* Fixed package name in manifest
+	* 'About' screen
+	* NOT going to do this: "Haptic feedback on button press" clock is usually on the 
+	  table so you can't really feel this.
+
+
+Some development notes:
 
 DYNAMIC BUTTON RESIZING
 
@@ -26,33 +53,3 @@ ICON ASSET CREATION:
   
   Also, create 512x512 hi-res icon (for website) by scaling image in inkscape 
   to a 512x512 document and using the asset builder tool again.
-  
-  
-TODO
-	* Fix bug where game pauses for no reason
-	* Display animated icon showing Bronstein delay countdown (next to clock)
-	* Allow time to be added to each clock during a game
-	* Audio feedback when clock expires
-	* Scroll input widget for setting clocks
-	* At end of game show a chart with the distribution of time spent per move
-	  for each player
- 	* Allow clocks to be initialized to different times
-	* Let user select image to be displayed on button
-	  
-DONE
-	* Advanced FIDE time controls
-	* Bronstein/Fischer timing option
-	* Move counter (for eventual use with official FIDE tournament time control)
-	* fixed bug whereby String.isEmpty() was being used, but
-	  this is only valid for API > 9 (i.e. not for 2.1 or 2.2 devices)
-	* Allow clocks to go negative
-	* Lock 'portrait' orientation
-	* Wake lock to prevent screen from dimming during play
-	* Make pause notification persistent (not a 'Toast')
-	* Fix bug that allows empty time field in preferences
-	* Fixed package name in manifest
-	* 'About' screen
-	* NOT going to do this: "Haptic feedback on button press" clock is usually on the 
-	  table so you can't really feel this.
-
-
