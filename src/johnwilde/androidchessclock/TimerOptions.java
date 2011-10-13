@@ -1,5 +1,8 @@
 package johnwilde.androidchessclock;
 
+import java.util.Arrays;
+import java.util.List;
+
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -52,17 +55,10 @@ public class TimerOptions extends PreferenceActivity
 	
 	// This enum is used to tag boolean flags in the
 	// Intent that is returned by this activity.  The ChessTimer
-	// can then take the appropriate action.
+	// can then choose to reset the clocks only when needed.
 	public enum TimerPref{
-		TIME("johnwilde.androidchessclock.NewTime"),			// user changed the initial time 
-		INCREMENT("johnwilde.androidchessclock.NewIncrement"),  // user changed the increment field
-		DELAY_TYPE("johnwilde.androidchessclock.NewDelayType"),  // user changed the delay type field
-		NEGATIVE_TIME("johnwilde.androidchessclock.NegativeTime"),  // user changed the increment field
-		SCREEN("johnwilde.androidchessclock.NewScreenDim"), 	// user changed the screen dim option
-		SHOW_MOVE_COUNTER("johnwilde.androidchessclock.NewMoveCounter"), 	// user changed the move counter option
-		SWAP_SIDES("johnwilde.androidchessclock.SwapSides"), 	// user changed the swap sides option
-		PLAY_SOUND("johnwilde.androidchessclock.PlaySound"), 	// user changed the audible notification option		
-		ADVANCED_TIME_CONTROL("johnwilde.androidchessclock.NewAdvancedOption"); 
+		LOAD_ALL("johnwilde.androidchessclock.LoadAll"),			
+		LOAD_UI("johnwilde.androidchessclock.LoadUi");
 		private String mValue;
 
 		public String toString(){
@@ -70,8 +66,8 @@ public class TimerOptions extends PreferenceActivity
 		}
 		TimerPref(String value){
 			mValue = value;
-		}
-	}	
+		}    
+	}
 
 	public enum TimeControl{FIDE, CUSTOM, DISABLED};
 	
@@ -87,53 +83,30 @@ public class TimerOptions extends PreferenceActivity
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, 
     		String key) {
+        
+        List<Key> uiKeys = Arrays.asList( new Key[] {
+                Key.SHOW_MOVE_COUNTER, 
+                Key.SWAP_SIDES, 
+                Key.SCREEN_DIM,
+                Key.PLAY_SOUND});
 
-        if (key.equals(Key.MINUTES.toString() ) ||
-        	key.equals(Key.SECONDS.toString() ) )
-        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.TIME.toString(), true));
-        
-        if (key.equals(Key.INCREMENT_SECONDS.toString() ) )
-        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.INCREMENT.toString(), true));
-
-        if (key.equals(Key.DELAY_TYPE.toString() ) )
-        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.DELAY_TYPE.toString(), true));
-        
-        if (key.equals(Key.NEGATIVE_TIME.toString() ) )
-        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.NEGATIVE_TIME.toString(), true));
-        
-        if (key.equals(Key.TIMECONTROL_TYPE.toString() ) ||
-    		key.equals(Key.FIDE_MIN_PHASE1.toString() ) ||
-    		key.equals(Key.FIDE_MIN_PHASE2.toString() ) ||
-        	key.equals(Key.FIDE_MOVES_PHASE1.toString() )||
-        	key.equals(Key.ADV_DELAY_TYPE.toString() ) ||
-        	key.equals(Key.ADV_INCREMENT_SECONDS.toString() ) ||
-        	key.equals(Key.ADV_NEGATIVE_TIME.toString()  ) ){
-        
-        	setResult(RESULT_OK, 
-        			getIntent().putExtra(TimerPref.ADVANCED_TIME_CONTROL.toString(), true));
+        if (uiKeys.contains(Key.valueOf(key))){
+            setResult(RESULT_OK, 
+                    getIntent().putExtra(TimerPref.LOAD_UI.toString(), true));
         }
-        
-        if (key.equals(Key.SCREEN_DIM.toString()) )
-        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SCREEN.toString(), true));
-
-        if (key.equals(Key.SWAP_SIDES.toString()) )
-        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SWAP_SIDES.toString(), true));
-
-        if (key.equals(Key.PLAY_SOUND.toString()) )
-        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.PLAY_SOUND.toString(), true));
-
-        if (key.equals(Key.SHOW_MOVE_COUNTER.toString()) )
-        	setResult(RESULT_OK, getIntent().putExtra(TimerPref.SHOW_MOVE_COUNTER.toString(), true));
-        
+        else{
+            setResult(RESULT_OK, 
+                    getIntent().putExtra(TimerPref.LOAD_ALL.toString(), true));
+        }
     	updateAllPreferenceScreens();
     	onContentChanged();
-
     }    
     
     
 	private void setAdvancedTimeControlPreferences() {
 		
-    	Key[] fideKeys = {Key.FIDE_MIN_PHASE1, 
+    	Key[] fideKeys = {
+    	        Key.FIDE_MIN_PHASE1, 
     			Key.FIDE_MIN_PHASE2,
     			Key.FIDE_MOVES_PHASE1,
     			Key.ADV_DELAY_TYPE,
@@ -141,7 +114,8 @@ public class TimerOptions extends PreferenceActivity
     			Key.ADV_NEGATIVE_TIME,
     			};
     	
-    	TimeControl type = TimeControl.valueOf(mSharedPreferences.getString(Key.TIMECONTROL_TYPE.toString(), "DISABLED"));
+    	TimeControl type = TimeControl.valueOf(mSharedPreferences.getString(
+    	        Key.TIMECONTROL_TYPE.toString(), "DISABLED"));
     	switch (type){
     		case FIDE:
         		setFidePreferences();
@@ -177,7 +151,6 @@ public class TimerOptions extends PreferenceActivity
 	}
 
     private void setFirstScreenSummaryText(){
-
     	Preference p = findPreference(Key.BASIC_SCREEN.toString());
     	if (p.isEnabled())
     		p.setSummary(getString(R.string.basic_screen_enabled_summary));
@@ -188,7 +161,6 @@ public class TimerOptions extends PreferenceActivity
 	    p = findPreference(Key.ADVANCED_SCREEN.toString());	    	
     	p.setSummary(getString(R.string.advanced_screen_enabled_summary) + 
     					" Currently " +  lp.getValue() + ".");
-
     }
 	
     private void setFidePreferences(){
@@ -226,8 +198,6 @@ public class TimerOptions extends PreferenceActivity
     	if ( !( cb.isChecked() == checked) )
     		cb.setChecked(checked);
     }
-
-    
     
     private void setPreferenceEnabledUsingKey(Key[] keys, boolean value){
     	for (Key key : keys){

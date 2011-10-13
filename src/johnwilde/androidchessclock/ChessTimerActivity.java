@@ -273,49 +273,14 @@ public class ChessTimerActivity extends Activity {
 				return; // no preferences were changed
 			
 			// reset clocks using new settings
-			if (data.getBooleanExtra(TimerOptions.TimerPref.TIME.toString(), false)){
+			if (data.getBooleanExtra(TimerOptions.TimerPref.LOAD_ALL.toString(), false)){
 				loadAllUserPreferences();
 				transitionTo(GameState.IDLE);
 				return; // exit early
 			}
-
-			if (data.getBooleanExtra(TimerOptions.TimerPref.NEGATIVE_TIME.toString(), false)){
-				loadNegativeTimeUserPreference(TimerOptions.Key.NEGATIVE_TIME);
+			else{
+			    loadUiPreferences();
 			}
-			
-			// set a new increment, if needed
-			if (data.getBooleanExtra(TimerOptions.TimerPref.INCREMENT.toString(), false)){
-				loadIncrementUserPreference(TimerOptions.Key.INCREMENT_SECONDS);
-			}
-			
-			if (data.getBooleanExtra(TimerOptions.TimerPref.DELAY_TYPE.toString(), false)){
-				loadDelayTypeUserPreference(TimerOptions.Key.DELAY_TYPE);
-			}
-
-			if (data.getBooleanExtra(TimerOptions.TimerPref.ADVANCED_TIME_CONTROL.toString(), false)){
-				loadTimeControlPreferences();
-				transitionTo(GameState.IDLE);
-			}
-			
-			// create a new wakelock, if needed
-			if (data.getBooleanExtra(TimerOptions.TimerPref.SCREEN.toString(), false)){
-				loadScreenDimUserPreference();
-				acquireWakeLock();
-			}
-
-			if (data.getBooleanExtra(TimerOptions.TimerPref.SHOW_MOVE_COUNTER.toString(), false)){
-				loadMoveCounterUserPreference();
-			}
-
-			if (data.getBooleanExtra(TimerOptions.TimerPref.SWAP_SIDES.toString(), false)){
-				loadSwapSidesUserPreference();
-			}
-
-			if (data.getBooleanExtra(TimerOptions.TimerPref.PLAY_SOUND.toString(), false)){
-				loadAudibleNotificationUserPreference();
-				acquireMediaPlayer();
-			}
-
 		}
 	}
 
@@ -351,7 +316,6 @@ public class ChessTimerActivity extends Activity {
 			mMediaPlayer.release();
 			mMediaPlayer = null;
 		}
-		
 	}
 
 	private void releaseWakeLock() {
@@ -371,7 +335,7 @@ public class ChessTimerActivity extends Activity {
     	Log.d(TAG, "acquired wake lock " + mWakeLock);
     }
 	
-	// All state transitions are occur here.  The logic that controls
+	// All state transitions occur here.  The logic that controls
 	// the UI elements is here.
 	public void transitionTo(GameState state){
 		GameState start = mCurrentState;
@@ -508,11 +472,15 @@ public class ChessTimerActivity extends Activity {
 	
 	private void loadAllUserPreferences() {
 		loadTimeControlPreferences();
-		loadMoveCounterUserPreference();
+		loadUiPreferences();
+	}
+
+    private void loadUiPreferences() {
+        loadMoveCounterUserPreference();
 		loadSwapSidesUserPreference();
 		loadAudibleNotificationUserPreference();
 		loadScreenDimUserPreference();
-	}
+    }
 
 	// determine whether we're using BASIC or TOURNAMENT time control
 	private void loadTimeControlPreferences() {
@@ -552,20 +520,20 @@ public class ChessTimerActivity extends Activity {
 	}
 
 	private void loadMoveCounterUserPreference() {
- 		mShowMoveCounter = mSharedPref.getBoolean(TimerOptions.Key.SHOW_MOVE_COUNTER.toString(), false);
+ 		mShowMoveCounter = mSharedPref.getBoolean(
+ 		        TimerOptions.Key.SHOW_MOVE_COUNTER.toString(), false);
 		if (mCurrentState == GameState.PAUSED)
 			setActiveButtonAndMoveCount(mActive);
 	}
 	private void loadSwapSidesUserPreference() {
- 		mWhiteOnLeft = mSharedPref.getBoolean(TimerOptions.Key.SWAP_SIDES.toString(), false);
+ 		mWhiteOnLeft = mSharedPref.getBoolean(
+ 		        TimerOptions.Key.SWAP_SIDES.toString(), false);
  		configureSides();
 	}	
 	
 	private void loadAudibleNotificationUserPreference() {
  		mPlaySoundAtEnd= mSharedPref.getBoolean(TimerOptions.Key.PLAY_SOUND.toString(), false);
 	}
-
-
 
 	private void configureSides() {
 		View whiteClock = findViewById(R.id.whiteClock);
@@ -631,10 +599,8 @@ public class ChessTimerActivity extends Activity {
 	}
 
 	private void loadInitialTimeUserPreferences() {
-		
 		int minutes = getTimerOptionsValue( TimerOptions.Key.MINUTES );
 		int seconds = getTimerOptionsValue(TimerOptions.Key.SECONDS );
-
 		setInitialDuration(minutes * 60 + seconds);
 	}
 
@@ -734,7 +700,6 @@ public class ChessTimerActivity extends Activity {
 		}
 
 		public void moveStarted() {
-			
 			if (mDelayType == DelayType.BRONSTEIN)
 				timer.start(mIncrementSeconds*1000);
 			else
@@ -859,7 +824,6 @@ public class ChessTimerActivity extends Activity {
 			
 			updateTimerText();			
 		}
-
 		
 		public void initialize() {
 			initializeWithValue(mInitialDurationSeconds * 1000);
@@ -979,71 +943,6 @@ public class ChessTimerActivity extends Activity {
 			transitionTo(GameState.DONE);
 		}
 
-		class InnerTimer {
-			long mLastUpdateTime = 0L;
-			Handler mHandler = new Handler();
-			
-			// this class will update itself (and call
-			// updateTimerText) accordingly:
-			//     if getMsToGo() > 10 * 1000, every 1000 ms
-			// 	   if getMsToGo() < 10 * 1000, every 100 ms
-			//     if getMsToGo() < 0 and getAllowNegativeTime is true, every 1000 ms
-			Runnable mUpdateTimeTask = new Runnable(){
-				boolean playedBuzzer = false;
-				public void run(){
-					long ellapsedTime = SystemClock.uptimeMillis() - mLastUpdateTime;
-					mMillisUntilFinished -= ellapsedTime;
-					mLastUpdateTime = SystemClock.uptimeMillis();
-					
-					if (getMsToGo() > 10000){
-						updateTimerText();
-						mHandler.postDelayed(mUpdateTimeTask, 1000);
-					}
-					else if (getMsToGo() < 10000 && getMsToGo() > 0){
-						updateTimerText();
-						mHandler.postDelayed(mUpdateTimeTask, 100);
-					}
-					else if (getMsToGo() < 0 && getAllowNegativeTime()){
-						updateTimerText();
-						if (mMediaPlayer != null && playedBuzzer == false){
-							mMediaPlayer.start();
-							playedBuzzer = true;
-						}
-							
-						mHandler.postDelayed(mUpdateTimeTask, 1000);
-					}
-					else{
-						mHandler.removeCallbacks(mUpdateTimeTask);
-						done();
-						return;
-					}
-				}
-			};
-						
-			void startAfterDelay(int delayMillis){
-				mLastUpdateTime = SystemClock.uptimeMillis() + delayMillis;
-				mHandler.postDelayed(mUpdateTimeTask, delayMillis);
-			}
-
-			void pause() {
-				mHandler.removeCallbacks(mUpdateTimeTask);
-				// if called from onRestoreInstanceState(), mLastUpdateTime == 0 because
-				// its value is not persisted.  No need to do anything else.
-				if (mLastUpdateTime != 0L){
-					// account for the time that has elapsed since our last update and pause the clock
-					// if using BRONSTEIN this may be negative, so check for that case.
-					long msSinceLastUpdate = ( SystemClock.uptimeMillis() - mLastUpdateTime );
-					if (msSinceLastUpdate > 0)
-						mMillisUntilFinished -= msSinceLastUpdate;
-				}
-			}
-
-			void cancel() {
-				mHandler.removeCallbacks(mUpdateTimeTask);
-			}
-
-		}
-
 		@Override
 		public boolean onLongClick(View v) {
 			// launch activity that allows user to set time and increment values
@@ -1055,6 +954,76 @@ public class ChessTimerActivity extends Activity {
 		public View getView() {
 			return mView;
 		}
+		
+		/*
+		 * Inner class to handle the update of the timer text and
+		 * playing the buzzer. The timer text updates at faster 
+		 * rate during the last 10 seconds.
+		 */
+        class InnerTimer {
+            long mLastUpdateTime = 0L;
+            Handler mHandler = new Handler();
+            
+            // this class will update itself (and call
+            // updateTimerText) accordingly:
+            //     if getMsToGo() > 10 * 1000, every 1000 ms
+            //     if getMsToGo() < 10 * 1000, every 100 ms
+            //     if getMsToGo() < 0 and getAllowNegativeTime is true, every 1000 ms
+            Runnable mUpdateTimeTask = new Runnable(){
+                boolean playedBuzzer = false;
+                public void run(){
+                    long ellapsedTime = SystemClock.uptimeMillis() - mLastUpdateTime;
+                    mMillisUntilFinished -= ellapsedTime;
+                    mLastUpdateTime = SystemClock.uptimeMillis();
+                    
+                    if (getMsToGo() > 10000){
+                        updateTimerText();
+                        mHandler.postDelayed(mUpdateTimeTask, 1000);
+                    }
+                    else if (getMsToGo() < 10000 && getMsToGo() > 0){
+                        updateTimerText();
+                        mHandler.postDelayed(mUpdateTimeTask, 100);
+                    }
+                    else if (getMsToGo() < 0 && getAllowNegativeTime()){
+                        updateTimerText();
+                        if (mMediaPlayer != null && playedBuzzer == false){
+                            mMediaPlayer.start();
+                            playedBuzzer = true;
+                        }
+                            
+                        mHandler.postDelayed(mUpdateTimeTask, 1000);
+                    }
+                    else{
+                        mHandler.removeCallbacks(mUpdateTimeTask);
+                        done();
+                        return;
+                    }
+                }
+            };
+                        
+            void startAfterDelay(int delayMillis){
+                mLastUpdateTime = SystemClock.uptimeMillis() + delayMillis;
+                mHandler.postDelayed(mUpdateTimeTask, delayMillis);
+            }
+
+            void pause() {
+                mHandler.removeCallbacks(mUpdateTimeTask);
+                // if called from onRestoreInstanceState(), mLastUpdateTime == 0 because
+                // its value is not persisted.  No need to do anything else.
+                if (mLastUpdateTime != 0L){
+                    // account for the time that has elapsed since our last update and pause the clock
+                    // if using BRONSTEIN this may be negative, so check for that case.
+                    long msSinceLastUpdate = ( SystemClock.uptimeMillis() - mLastUpdateTime );
+                    if (msSinceLastUpdate > 0)
+                        mMillisUntilFinished -= msSinceLastUpdate;
+                }
+            }
+
+            void cancel() {
+                mHandler.removeCallbacks(mUpdateTimeTask);
+            }
+
+        }
 
 	}
 	
