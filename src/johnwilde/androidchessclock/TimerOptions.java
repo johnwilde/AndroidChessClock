@@ -12,6 +12,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 /**  Activity that inflates the preferences from XML.
  * 
@@ -51,6 +52,17 @@ public class TimerOptions extends PreferenceActivity
 		Key(String value){
 			mValue = value;
 		}
+		
+		public static Key fromString(String s){
+		
+		    for (Key k : Key.values()){
+		        if (k.toString().equalsIgnoreCase(s))
+		            return k;
+		    }
+		        
+		    throw new IllegalArgumentException();
+		
+		}
 	}
 	
 	// This enum is used to tag boolean flags in the
@@ -72,6 +84,7 @@ public class TimerOptions extends PreferenceActivity
 	public enum TimeControl{FIDE, CUSTOM, DISABLED};
 	
 	SharedPreferences mSharedPreferences;
+	private static final String TAG = "TimerOptionsActivity";
 	
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -90,7 +103,7 @@ public class TimerOptions extends PreferenceActivity
                 Key.SCREEN_DIM,
                 Key.PLAY_SOUND});
 
-        if (uiKeys.contains(Key.valueOf(key))){
+        if (uiKeys.contains(Key.fromString(key))){
             setResult(RESULT_OK, 
                     getIntent().putExtra(TimerPref.LOAD_UI.toString(), true));
         }
@@ -98,9 +111,15 @@ public class TimerOptions extends PreferenceActivity
             setResult(RESULT_OK, 
                     getIntent().putExtra(TimerPref.LOAD_ALL.toString(), true));
         }
-    	updateAllPreferenceScreens();
-    	onContentChanged();
+        updateAll();
     }    
+
+    private void updateAll(){
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);        
+        doValidationAndInitialization();
+        doSummaryTextUpdates();
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
     
     
 	private void setAdvancedTimeControlPreferences() {
@@ -116,27 +135,29 @@ public class TimerOptions extends PreferenceActivity
     	
     	TimeControl type = TimeControl.valueOf(mSharedPreferences.getString(
     	        Key.TIMECONTROL_TYPE.toString(), "DISABLED"));
+    	boolean v1 = false, v2 = false;
     	switch (type){
     		case FIDE:
-        		setFidePreferences();
-        		setPreferenceEnabledUsingKey(new Key[]{Key.BASIC_SCREEN}, false);
-        		setPreferenceEnabledUsingKey(fideKeys, false);
+    		    v1 =  setPreferenceEnabledUsingKey(new Key[]{Key.BASIC_SCREEN}, false);
+    		    v2 =  setPreferenceEnabledUsingKey(fideKeys, false);
     			break;
     		case CUSTOM:
     			// allow user to set the values  
-    			setPreferenceEnabledUsingKey(new Key[]{Key.BASIC_SCREEN}, false);
-    			setPreferenceEnabledUsingKey(fideKeys, true);
+    		    v1 = setPreferenceEnabledUsingKey(new Key[]{Key.BASIC_SCREEN}, false);
+    		    v2 = setPreferenceEnabledUsingKey(fideKeys, true);
     			break;
     		case DISABLED:
-    			setPreferenceEnabledUsingKey(new Key[]{Key.BASIC_SCREEN}, true);
-    			setPreferenceEnabledUsingKey(fideKeys, false);
+    		    v1 = setPreferenceEnabledUsingKey(new Key[]{Key.BASIC_SCREEN}, true);
+    		    v2 = setPreferenceEnabledUsingKey(fideKeys, false);
     			break;
     	}
     	
     	setFideMovesPhase1SummaryText();
     	setFirstScreenSummaryText();
-    	
-	}
+    	if (v1 || v2)
+    	    onContentChanged(); // must update screen if enabled/disabled status has changed
+    	    
+    }
 
     private void setFideMovesPhase1SummaryText() {
     	String keyMin = Key.FIDE_MIN_PHASE1.toString();
@@ -180,7 +201,7 @@ public class TimerOptions extends PreferenceActivity
         setCheckBoxValue(Key.ADV_NEGATIVE_TIME, allowNegativeTime);
     }
 
-    // Helper functions that check value before making a change
+    // Helper functions that checks value before making a change.
     // This prevents stack overflow on API 7 devices
     private void setEditTextValue(Key key, String value){
     	EditTextPreference e = (EditTextPreference)findPreference(key.toString());
@@ -199,17 +220,52 @@ public class TimerOptions extends PreferenceActivity
     		cb.setChecked(checked);
     }
     
-    private void setPreferenceEnabledUsingKey(Key[] keys, boolean value){
-    	for (Key key : keys){
+    private boolean setPreferenceEnabledUsingKey(Key[] keys, boolean value){
+    	boolean changedStatusOfAKey = false;
+        for (Key key : keys){
     		Preference p = findPreference(key.toString());
+    		boolean originalValue = p.isEnabled(); 
+    		changedStatusOfAKey = changedStatusOfAKey || (originalValue != value);
     		p.setEnabled(value);
+    		
     	}
+        return changedStatusOfAKey;
     }
-	
-    private void updateAllPreferenceScreens(){
+	/*
+	 * Make any necessary changes to preference values.
+	 * 
+	 * Ensure a value was entered for all EditText fields.
+	 * Set default FIDE preferences, if needed.
+	 */
+    private void doValidationAndInitialization(){
+        for (Key k : Key.values()){
+            Log.d(TAG, "Key: " + k.toString());
+            Preference p = findPreference(k.toString());
+            if (p instanceof EditTextPreference){
+                EditTextPreference pref = (EditTextPreference)p;
+                // handle case where user entered no text
+                if (pref.getText().trim().length() == 0){
+                    pref.setText("0");
+                    Log.d(TAG, "New value: " + pref.getText());
+                }
+                
+            }
+        }
+        
+        TimeControl type = TimeControl.valueOf(mSharedPreferences.getString(
+                Key.TIMECONTROL_TYPE.toString(), "DISABLED"));
+        switch (type){
+            case FIDE:
+                setFidePreferences();
+        }
+    }
+    /*
+     * Make any necessary changes to summary text
+     * and enabled/disabled status of preference fields.
+    */
+    private void doSummaryTextUpdates(){
         // Populate the preference text descriptions with helpful text
         // that lets user know the current value of the various options.
-        setFirstScreenSummaryText();
         setTimeControlSummaryText();
         setAdvancedTimeControlPreferences();
     }
@@ -218,9 +274,9 @@ public class TimerOptions extends PreferenceActivity
     protected void onResume() {
         super.onResume();
         
-        updateAllPreferenceScreens();
+        updateAll();
 
-        // Set up a listener whenever a key changes            
+        // Set up listener that will update summary text in response to preference changes            
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -230,9 +286,6 @@ public class TimerOptions extends PreferenceActivity
         	Preference p = findPreference(k.toString());
         	if (p instanceof EditTextPreference){
         		EditTextPreference pref = (EditTextPreference)p;
-        		// handle case where user entered no text
-        		if (pref.getText().trim().length() == 0)
-        			mSharedPreferences.edit().putString(k.toString(),"0").apply();
         		pref.setSummary("Current value is: " + pref.getText());
         	}
             if (k == Key.DELAY_TYPE || k == Key.ADV_DELAY_TYPE){
@@ -254,8 +307,8 @@ public class TimerOptions extends PreferenceActivity
     protected void onPause() {
         super.onPause();
 
-        // Unregister the listener whenever a key changes            
-        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+        // Unregister the listener on exit            
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 	
 }
