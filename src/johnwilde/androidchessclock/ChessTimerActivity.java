@@ -78,7 +78,8 @@ public class ChessTimerActivity extends Activity {
     PlayerButton mButton1, mButton2;  	// The two big buttons
     Button mResetButton;				
     ToggleButton mPauseButton;
-
+    AlertDialog mPauseDialog; 
+    
     // This field holds a reference to either mButton1 or mButton2.
     //
     // if mCurrentState == IDLE:
@@ -379,6 +380,7 @@ public class ChessTimerActivity extends Activity {
         switch (state){
         case IDLE:
             mCurrentState = GameState.IDLE;
+            mResetButton.setEnabled(false);
             mPauseButton.setClickable(true); 
             mPauseButton.setTextOff(getString(R.string.pauseinit_button));
             mPauseButton.setChecked(false); // set to 'off' state
@@ -388,6 +390,7 @@ public class ChessTimerActivity extends Activity {
 
         case RUNNING:
             mCurrentState = GameState.RUNNING;
+            mResetButton.setEnabled(true);
             mPauseButton.setClickable(true); // enable 'pause'
             mPauseButton.setChecked(false);
             mPauseButton.setTextOff(getString(R.string.pauseoff_button));
@@ -407,6 +410,7 @@ public class ChessTimerActivity extends Activity {
         case DONE:
             if (mActive != null){
                 mCurrentState = GameState.DONE;
+                mResetButton.setEnabled(true);
                 mPauseButton.setClickable(false); // disable pause when DONE
                 break;
             }
@@ -480,8 +484,8 @@ public class ChessTimerActivity extends Activity {
                 mPauseButton.performClick();
             }
         });
-        AlertDialog alert = builder.create();
-        alert.show();
+        mPauseDialog = builder.create();
+        mPauseDialog.show();
     }
 
     private String getPackageVersion(){
@@ -798,14 +802,31 @@ public class ChessTimerActivity extends Activity {
         }
     }
 
+    public void confirmAndReset(){
+        mPauseButton.performClick();
+        //Ask the user if they want to reset
+        new AlertDialog.Builder(this)
+        .setIcon(android.R.drawable.ic_dialog_alert)
+        .setTitle(R.string.reset)
+        .setMessage(R.string.really_reset)
+        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override public void onClick(DialogInterface dialog, int which) {
+                mPauseDialog.cancel();
+                loadAllUserPreferences();
+                transitionTo(GameState.IDLE);
+            }
+        })
+        .setNegativeButton(R.string.no, null)
+        .show();
+    }
+    
     /**
-     * Reset the clocks.
+     * Reset the clocks after confirmation.
      */
     final class ResetButtonClickListener implements OnClickListener {
         @Override
         public void onClick(View v) {
-            loadAllUserPreferences();
-            transitionTo(GameState.IDLE);
+            confirmAndReset();
         }
     }
 

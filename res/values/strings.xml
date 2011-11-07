@@ -8,6 +8,10 @@
 	<string name="OK">OK</string>
 	<string name="unknown">Unknown</string>
 	<string name="version">version</string>
+	<string name="reset">Reset</string>
+	<string name="really_reset">Reset game?</string>
+	<string name="yes">Yes</string>
+	<string name="no">No</string>
 	<string name="pauseoff_button">Pause</string>
 	<string name="pauseon_button">Resume</string>
 	<string name="pauseinit_button">Start</string>
