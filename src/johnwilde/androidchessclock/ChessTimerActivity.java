@@ -128,8 +128,15 @@ public class ChessTimerActivity extends Activity {
         // the layout looks best in landscape orientation
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        mButton1 = new PlayerButton( new Timer(R.id.whiteClock, R.id.whiteSpinnerContainer), R.id.whiteButton, R.id.whiteMoveCounter);
-        mButton2 = new PlayerButton( new Timer(R.id.blackClock, R.id.blackSpinnerContainer), R.id.blackButton, R.id.blackMoveCounter);
+        // set default values (for first run)
+        mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);        
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        loadAllUserPreferences();
+        
+        Timer whiteTimer = new Timer(R.id.whiteClock, R.id.whiteSpinnerContainer);
+        mButton1 = new PlayerButton( whiteTimer , R.id.whiteButton, R.id.whiteMoveCounter);
+        Timer blackTimer = new Timer(R.id.blackClock, R.id.blackSpinnerContainer);
+        mButton2 = new PlayerButton( blackTimer, R.id.blackButton, R.id.blackMoveCounter);
 
         mResetButton = (Button) findViewById(R.id.reset_button);
         mPauseButton = (ToggleButton) findViewById(R.id.pause_button);
@@ -139,14 +146,10 @@ public class ChessTimerActivity extends Activity {
         mButton2.setButtonListener(new PlayerButtonClickListener(mButton2, mButton1));
 
         mResetButton.setOnClickListener(new ResetButtonClickListener());
-        mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
 
         // enable following line to clear settings if they are in a bad state
         //mSharedPref.edit().clear().apply();
-
-        // set default values (for first run)
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        loadAllUserPreferences();
 
         transitionTo(GameState.IDLE);
 
@@ -154,39 +157,6 @@ public class ChessTimerActivity extends Activity {
         acquireMediaPlayer();
 
         Log.d(TAG, "Finished onCreate()");
-    }
-    private static class SpinnerView extends View {
-        @Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            setMeasuredDimension(50, 50);
-        }
-
-        private Paint mPaint;
-        private RectF mOval;
-        private long mStartTime;
-        private int mDurationMs;
-        public SpinnerView(Context context, int durationMs) {
-            super(context);
-            mDurationMs = durationMs;
-            mStartTime = SystemClock.uptimeMillis();
-            mPaint = new Paint();
-            mPaint.setAntiAlias(true);
-            mPaint.setStyle(Paint.Style.FILL);
-            mPaint.setColor(0x88FF0000);
-            mOval = new RectF( 0, 0, 50, 50);
-
-        }
-
-        private void drawArcs(Canvas canvas, float sweep) {
-            canvas.drawArc(mOval, 0, sweep, true, mPaint);
-        }
-
-        @Override protected void onDraw(Canvas canvas) {
-            double ellapsedTime =  (double) (SystemClock.uptimeMillis() - mStartTime); 
-            double sweep = 360.0 *( 1.0 - ( (mDurationMs - ellapsedTime ) / mDurationMs) );
-            drawArcs(canvas, (float)sweep);
-            invalidate();
-        }
     }
     @Override
     public void onPause() {
@@ -219,7 +189,9 @@ public class ChessTimerActivity extends Activity {
             mPauseButton.performClick(); // pause, if not IDLE
 
         outState.putLong("Timer1", mButton1.timer.getMsToGo() );
+        outState.putLong("Timer1Delay", mButton1.timer.getMsDelayToGo());
         outState.putLong("Timer2", mButton2.timer.getMsToGo() );
+        outState.putLong("Timer2Delay", mButton2.timer.getMsDelayToGo());
         outState.putInt("MoveCounter1", mButton1.mMoveNumber );
         outState.putInt("MoveCounter2", mButton2.mMoveNumber );
         outState.putString("State", mCurrentState.toString());
@@ -247,8 +219,10 @@ public class ChessTimerActivity extends Activity {
         boolean button2Active = (mButton2.getButtonId() == activeButtonId ? true : false);
 
         mButton1.setTimeAndState(savedInstanceState.getLong("Timer1"),
+                savedInstanceState.getLong("Timer1Delay"),
                 savedInstanceState.getInt("MoveCounter1"), button1Active);
         mButton2.setTimeAndState(savedInstanceState.getLong("Timer2"), 
+                savedInstanceState.getLong("Timer2Delay"),
                 savedInstanceState.getInt("MoveCounter2"), button2Active);
 
         if (stateToRestore == GameState.DONE){
@@ -392,8 +366,8 @@ public class ChessTimerActivity extends Activity {
             mCurrentState = GameState.RUNNING;
             mResetButton.setEnabled(true);
             mPauseButton.setClickable(true); // enable 'pause'
-            mPauseButton.setChecked(false);
             mPauseButton.setTextOff(getString(R.string.pauseoff_button));
+            mPauseButton.setChecked(false);  // set toggle to show "pause" text
 
             // start the clock
             mActive.moveStarted();
@@ -719,11 +693,11 @@ public class ChessTimerActivity extends Activity {
         }
 
 
-        public void setTimeAndState(long time, int moveCount, boolean isActive){
+        public void setTimeAndState(long time, long delay, int moveCount, boolean isActive){
             if (isActive)
                 setActiveButtonAndMoveCount(this);
             mMoveNumber = moveCount;
-            timer.initializeWithValue(time);
+            timer.initializeWithValue(time, delay);
         }
 
         // Put the button into the initial 'IDLE' configuration
@@ -743,7 +717,7 @@ public class ChessTimerActivity extends Activity {
                 }
             }
 
-            timer.pause();
+            timer.moveFinished();
 
             if (mDelayType == DelayType.FISCHER)
                 timer.increment(mIncrementSeconds);
@@ -751,12 +725,7 @@ public class ChessTimerActivity extends Activity {
         }
 
         public void moveStarted() {
-            if (mDelayType == DelayType.BRONSTEIN){
-                timer.start(mIncrementSeconds*1000);
-            }
-            else{
-                timer.start(0);
-            }
+            timer.moveStarted();
         }
     }
 
@@ -811,7 +780,8 @@ public class ChessTimerActivity extends Activity {
         .setMessage(R.string.really_reset)
         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
             @Override public void onClick(DialogInterface dialog, int which) {
-                mPauseDialog.cancel();
+                if (mPauseDialog != null)
+                    mPauseDialog.cancel();
                 loadAllUserPreferences();
                 transitionTo(GameState.IDLE);
             }
@@ -842,7 +812,6 @@ public class ChessTimerActivity extends Activity {
             if (mCurrentState == GameState.IDLE){
                 setActiveButtonAndMoveCount(mButton1);
                 transitionTo(GameState.RUNNING);
-                mPauseButton.setChecked(false); // set toggle to show "pause" text
                 return;
             }
             if ( mCurrentState == GameState.PAUSED ){
@@ -868,11 +837,23 @@ public class ChessTimerActivity extends Activity {
     }
 
     // This class updates each player's clock.
+    // These variables maintain the clock state:
+    //
+    // mMsToGo: 
+    //          ms until the timer reaches 0
+    // mMsDelayToGo: 
+    //          ms until the Bronstein delay interval reaches 0
+    //
+    //
     final class Timer implements OnLongClickListener {
         TextView mView;
-        SpinnerView mSpinView;
+        InnerTimer.SpinnerView mSpinView;
         FrameLayout mSpinContainer;
-        long mMillisUntilFinished;
+        long mBronsteinMs;
+
+        // maintain state
+        long mMsToGo;
+        long mMsDelayToGo = 0;
         InnerTimer mCountDownTimer;
         boolean isRunning = false;
 
@@ -881,73 +862,113 @@ public class ChessTimerActivity extends Activity {
         DecimalFormat dfOneDigit = new DecimalFormat("0");
         DecimalFormat dfTwoDigit = new DecimalFormat("00");
 
-        Timer(int id, int spinId) {
-            mView = (TextView) findViewById(id);
+        Timer(int clockId, int spinId) {
+            mView = (TextView) findViewById(clockId);
             mSpinContainer = (FrameLayout)findViewById(spinId);
             initialize();
         }
 
-        // callback that is invoked when a move starts
-        public void moveStarted(){
-            mSpinContainer.removeAllViews();
-        }
-        // callback that is invoked when clock pauses or is otherwise stopped
-        public void clockStopped() {
-            mSpinContainer.removeAllViews();
-        }
-
-        public void initializeWithValue(long msToGo) {
-            mView.setLongClickable(true);
-            mView.setOnLongClickListener(this);
-            mMillisUntilFinished = msToGo;
-            mCountDownTimer = new InnerTimer();
-            isRunning = false;
-            mView.setTextColor( Color.BLACK );
-
-            updateTimerText();			
+        @Override
+        public boolean onLongClick(View v) {
+            // launch activity that allows user to set time and increment values
+            transitionToPauseAndToast();
+            launchPreferencesActivity();
+            return true;
         }
 
         public void initialize() {
-            initializeWithValue(mInitialDurationSeconds * 1000);
+            mBronsteinMs = (mDelayType == DelayType.BRONSTEIN) ? mIncrementSeconds * 1000 : 0;
+            mMsDelayToGo = mBronsteinMs;
+            initializeWithValue(mInitialDurationSeconds * 1000, mBronsteinMs);
             if (mDelayType ==  DelayType.FISCHER)
                 increment(mIncrementSeconds);
         }
 
-        public void increment(int mIncrementSeconds) {
-            mMillisUntilFinished += mIncrementSeconds * 1000;
-            updateTimerText();
+        public void initializeWithValue(long msToGo, long msDelayToGo) {
+            mView.setLongClickable(true);
+            mView.setOnLongClickListener(this);
+            mMsToGo = msToGo;
+            mMsDelayToGo = msDelayToGo;
+            mCountDownTimer = new InnerTimer();
+            isRunning = false;
+            mView.setTextColor( Color.BLACK );
+
+            updateTimerText();          
         }
 
-        public boolean isRunning() {
-            return isRunning;
+        // Public Interface Methods
+        
+        public void moveStarted(){
+            start();
+        }
+        public void moveFinished() {
+            // when a move finishes we must reset the delay timer
+            mMsDelayToGo = mBronsteinMs;
+            pause();
         }
 
-        public void start(int delayMillis) {
-            if (delayMillis > 0){
-                mSpinContainer.addView(new SpinnerView(ChessTimerActivity.this, delayMillis));
-            }
-            mCountDownTimer.startAfterDelay(delayMillis);
+        public void start() {
+            mCountDownTimer.start();
             isRunning = true;
         }
 
         public void pause() {
             if (mCountDownTimer != null)
-                mCountDownTimer.pause();
+                mCountDownTimer.kill();
             isRunning = false;
         }
 
         public void reset() {
-            mCountDownTimer.cancel();
+            mCountDownTimer.kill();
             initialize();
         }
+        
+        public long getMsDelayToGo() {
+            return mMsDelayToGo;
+        }
+        public long getMsToGo(){
+            return mMsToGo;
+        }        
+        public boolean isRunning() {
+            return isRunning;
+        }
+        boolean getAllowNegativeTime(){
+            return mAllowNegativeTime;
+        }
 
-        public void updateTimerText() {
+        //
+        // Callbacks invoked by the inner timer
+        //
+        
+        // callback that is invoked when the clock starts moving (after Bronstein delay)
+        private void clockStarted(){
+            mSpinContainer.removeAllViews();
+        }
+        // callback that is invoked when clock pauses or is otherwise stopped
+        private void clockStopped() {
+            mSpinContainer.removeAllViews();
+        }
+        // callback that is invoked when clock reaches 0
+        private void done() {
+            mView.setText("0.0");
+            mView.setTextColor(Color.RED);
+            if (mMediaPlayer != null)
+                mMediaPlayer.start();
+            transitionTo(GameState.DONE);
+        }
+        
+        private void increment(int incrementSeconds) {
+            mMsToGo += incrementSeconds * 1000;
+            updateTimerText();
+        }
+
+        private void updateTimerText() {
             if (getMsToGo() < 10000)
                 mView.setTextColor(Color.RED);
             else
                 mView.setTextColor(Color.BLACK);
 
-            mView.setText(formatTime(mMillisUntilFinished));
+            mView.setText(formatTime(mMsToGo));
         }
 
         private String formatTime(long millisIn) {
@@ -1012,30 +1033,6 @@ public class ChessTimerActivity extends Activity {
 
         }
 
-        long getMsToGo(){
-            return mMillisUntilFinished;
-        }
-
-        boolean getAllowNegativeTime(){
-            return mAllowNegativeTime;
-        }
-
-        public void done() {
-            mView.setText("0.0");
-            mView.setTextColor(Color.RED);
-            if (mMediaPlayer != null)
-                mMediaPlayer.start();
-            transitionTo(GameState.DONE);
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            // launch activity that allows user to set time and increment values
-            transitionToPauseAndToast();
-            launchPreferencesActivity();
-            return true;
-        }
-
         public View getView() {
             return mView;
         }
@@ -1046,9 +1043,20 @@ public class ChessTimerActivity extends Activity {
          * rate during the last 10 seconds.
          */
         class InnerTimer {
-            long mLastUpdateTime = 0L;
             Handler mHandler = new Handler();
-            private final UpdateTimeTask mUpdateTimeTask = new UpdateTimeTask();
+            private UpdateTimeTask mUpdateTimeTask;
+            boolean mPlayedBuzzer = false;
+
+            void start(){
+                mUpdateTimeTask = new UpdateTimeTask();
+                mHandler.post(mUpdateTimeTask);
+            }
+
+            void kill() {
+                Timer.this.clockStopped();
+                mHandler.removeCallbacks(mUpdateTimeTask);
+            }
+            
             // this class will update itself (and call
             // updateTimerText) accordingly:
             //     if getMsToGo() > 10 * 1000, every 1000 ms
@@ -1057,32 +1065,57 @@ public class ChessTimerActivity extends Activity {
             class UpdateTimeTask implements Runnable {
                 boolean startOfMove = true;
                 public synchronized void setMoveStartFlag(boolean value){this.startOfMove = value;}
-                boolean playedBuzzer = false;
-                public void run(){
-                    if (startOfMove){
-                        Timer.this.moveStarted(); // invoke callback
-                        setMoveStartFlag(false);
+                long startedAt;
+                long lastUpdate;
+                SpinnerView spinner;
+                static final int POST_SLOW = 1000;
+                static final int POST_FAST = 100;
+                
+                UpdateTimeTask(){
+                    this.startedAt = SystemClock.uptimeMillis();
+                    this.lastUpdate = startedAt;
+                    if (mMsDelayToGo > 0){
+                        spinner = new SpinnerView(ChessTimerActivity.this, mBronsteinMs);
+                        mSpinContainer.addView(spinner);
                     }
-                    long ellapsedTime = SystemClock.uptimeMillis() - mLastUpdateTime;
-                    mMillisUntilFinished -= ellapsedTime;
-                    mLastUpdateTime = SystemClock.uptimeMillis();
+                }
+
+                public void run(){
+                    long now = SystemClock.uptimeMillis();
+                    long dt = now - lastUpdate;
+                    lastUpdate = now;
+                    // Are we in Bronstein delay period?
+                    if ( startOfMove && mMsDelayToGo > 0 ){
+                        mMsDelayToGo -= dt;
+                        spinner.setElapsedMilliseconds(mMsDelayToGo);
+                        spinner.postInvalidate();
+                        mHandler.postDelayed(mUpdateTimeTask, POST_FAST);
+                        return;
+                    }
+                    
+                    if (startOfMove){
+                        Timer.this.clockStarted(); // invoke callback
+                        setMoveStartFlag(false);
+                        mMsDelayToGo = mBronsteinMs; // reset 
+                    }
+                    mMsToGo -= dt;
 
                     if (getMsToGo() > 10000){
                         updateTimerText();
-                        mHandler.postDelayed(mUpdateTimeTask, 1000);
+                        mHandler.postDelayed(mUpdateTimeTask, POST_SLOW);
                     }
                     else if (getMsToGo() < 10000 && getMsToGo() > 0){
                         updateTimerText();
-                        mHandler.postDelayed(mUpdateTimeTask, 100);
+                        mHandler.postDelayed(mUpdateTimeTask, POST_FAST);
                     }
                     else if (getMsToGo() < 0 && getAllowNegativeTime()){
                         updateTimerText();
-                        if (mMediaPlayer != null && playedBuzzer == false){
+                        if (mMediaPlayer != null && mPlayedBuzzer == false){
                             mMediaPlayer.start();
-                            playedBuzzer = true;
+                            mPlayedBuzzer = true;
                         }
 
-                        mHandler.postDelayed(mUpdateTimeTask, 1000);
+                        mHandler.postDelayed(mUpdateTimeTask, POST_SLOW);
                     }
                     else{
                         mHandler.removeCallbacks(mUpdateTimeTask);
@@ -1091,35 +1124,41 @@ public class ChessTimerActivity extends Activity {
                     }
                 }
             };
+            
+            private class SpinnerView extends View {
+                @Override
+                protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                    setMeasuredDimension(50, 50);
+                }
+                private Paint mPaint;
+                private RectF mOval;
+                private long msTotal;
+                private long msSoFar;
+                public SpinnerView(Context context, long msToComplete) {
+                    super(context);
+                    this.msTotal = msToComplete;
+                    this.msSoFar = 0;
+                    mPaint = new Paint();
+                    mPaint.setAntiAlias(true);
+                    mPaint.setStyle(Paint.Style.FILL);
+                    mPaint.setColor(0x88FF0000);
+                    mOval = new RectF( 0, 0, 50, 50);
+                }
 
-            void startAfterDelay(int delayMillis){
-                mUpdateTimeTask.setMoveStartFlag(true);
-                mLastUpdateTime = SystemClock.uptimeMillis() + delayMillis;
-                mHandler.postDelayed(mUpdateTimeTask, delayMillis);
-            }
+                private void drawArcs(Canvas canvas, float sweep) {
+                    canvas.drawArc(mOval, 0, sweep, true, mPaint);
+                }
+                
+                synchronized void setElapsedMilliseconds(long elapsed){
+                    this.msSoFar = elapsed;
+                }
 
-            void pause() {
-                Timer.this.clockStopped();
-                mHandler.removeCallbacks(mUpdateTimeTask);
-                // if called from onRestoreInstanceState(), mLastUpdateTime == 0 because
-                // its value is not persisted.  No need to do anything else.
-                if (mLastUpdateTime != 0L){
-                    // account for the time that has elapsed since our last update and pause the clock
-                    // if using BRONSTEIN this may be negative, so check for that case.
-                    long msSinceLastUpdate = ( SystemClock.uptimeMillis() - mLastUpdateTime );
-                    if (msSinceLastUpdate > 0)
-                        mMillisUntilFinished -= msSinceLastUpdate;
+                @Override protected void onDraw(Canvas canvas) {
+                    //Log.d(TAG,String.format("drawing spinner msTotal:%d, msSoFar:%d", msTotal, msSoFar));
+                    double sweep = 360.0 *( 1.0 - ( (float) (msTotal - msSoFar ) / (float) msTotal) );
+                    drawArcs(canvas, (float)sweep);
                 }
             }
-
-            void cancel() {
-                Timer.this.clockStopped();
-                mHandler.removeCallbacks(mUpdateTimeTask);
-            }
-
         }
-
-
     }
-
 }
