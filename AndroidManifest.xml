@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	android:versionCode="3" android:versionName="1.2"
+	android:versionCode="4" android:versionName="1.3"
 	package="johnwilde.androidchessclock">
 	<uses-sdk android:minSdkVersion="7" android:targetSdkVersion="12" />
 	<uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
@@ -14,6 +14,7 @@
 			</intent-filter>
 		</activity>
 		<activity android:name="TimerOptions"></activity>
+		<activity android:name="AdjustClock"></activity>
 
 	</application>
 </manifest>

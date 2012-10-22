@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/add_time_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="0.5in"
+        android:text="@string/add_ten_seconds" />
+
+    <Button
+        android:id="@+id/subtract_time_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="0.5in"
+        android:text="@string/subtract_ten_seconds" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/cancel_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="0.5in"
+            android:text="@string/cancel" />
+
+        <Button
+            android:id="@+id/ok_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="0.5in"
+            android:text="@string/OK" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/adjustTimeTextView"
+        style="@style/clockStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
+        android:minHeight="1in"
+        android:text="@string/new_time_value"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <ImageView
+        android:id="@+id/adjustTimePlayerView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/black" />
+
+</LinearLayout>

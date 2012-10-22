@@ -5,6 +5,7 @@
 	<string name="optionsmenu_about">About</string>
 	
 	<string name="reset_button">Reset</string>
+	<string name="cancel">Cancel</string>
 	<string name="OK">OK</string>
 	<string name="unknown">Unknown</string>
 	<string name="version">version</string>
@@ -92,7 +93,11 @@
 	<string name="about_dialog">To report bugs or view source code, visit "https://github.com/johnwilde/AndroidChessClock"</string>
 	<string name="pause_dialog">Paused</string>
 	<string name="pause_toast">Paused. Press to resume.</string>
-	
+	<string name="_0">0</string>
+	<string name="add_ten_seconds">Add Ten Seconds</string>
+	<string name="subtract_ten_seconds">Subtract Ten Seconds</string>
+	<string name="new_time_value">Large Text</string>
+    
 	
 	
 </resources>

@@ -142,7 +142,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center"
                 android:gravity="bottom"
-                android:text="0"
+                android:text="@string/_0"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:visibility="gone" >
             </TextView>
@@ -170,7 +170,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center"
                 android:gravity="bottom"
-                android:text="0"
+                android:text="@string/_0"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:visibility="gone" >
             </TextView>
