@@ -58,7 +58,7 @@ public final class R {
         public static final int menu=0x7f090000;
     }
     public static final class raw {
-        public static final int buzzer=0x7f050000;
+        public static final int bell=0x7f050000;
     }
     public static final class string {
         public static final int OK=0x7f060005;
