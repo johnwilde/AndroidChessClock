@@ -96,7 +96,7 @@
 	<string name="_0">0</string>
 	<string name="add_ten_seconds">Add Ten Seconds</string>
 	<string name="subtract_ten_seconds">Subtract Ten Seconds</string>
-	<string name="new_time_value">Large Text</string>
+	<string name="new_time_value"></string>
     
 	
 	
