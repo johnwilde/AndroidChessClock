@@ -647,11 +647,7 @@ public class ChessTimerActivity extends Activity {
     }
 
     private void loadDelayTypeUserPreference(TimerOptions.Key key) {
-        String[] delayTypes = getResources().getStringArray(
-                R.array.delay_type_values);
-        String delayTypeString = mSharedPref.getString(key.toString(),
-                delayTypes[0]);
-
+        String delayTypeString = mSharedPref.getString(key.toString(),"FISCHER");
         mDelayType = DelayType.valueOf(delayTypeString.toUpperCase());
     }
 
