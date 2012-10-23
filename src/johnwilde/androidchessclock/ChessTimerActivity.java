@@ -1,7 +1,6 @@
 package johnwilde.androidchessclock;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 
 import johnwilde.androidchessclock.TimerOptions.TimeControl;
 import android.app.Activity;
@@ -23,8 +22,8 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
-import android.os.SystemClock;
 import android.os.PowerManager.WakeLock;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -32,7 +31,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
