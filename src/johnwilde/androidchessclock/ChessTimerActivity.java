@@ -335,13 +335,6 @@ public class ChessTimerActivity extends Activity {
                         R.raw.bell);
                 if (afd == null)
                     return;
-//                mMediaPlayer = MediaPlayer.create(this, R.raw.buzzer);
-//                mMediaPlayer.start(); // no need to call prepare(); create() does that for you
-//                
-//                mp.create(this, R.raw.testmed);
-//                mp.setVolume(100, 100);
-//                mp.setOnPreparedListener(this);
-//                mp.prepare();
                 mMediaPlayer = new MediaPlayer();
                 mMediaPlayer.setDataSource(afd.getFileDescriptor(),
                         afd.getStartOffset(), afd.getLength());
@@ -920,6 +913,7 @@ public class ChessTimerActivity extends Activity {
 
         Timer(int clockId, int spinId, String playerColor) {
             mView = (TextView) findViewById(clockId);
+            mView.setFocusable(false);
             mSpinContainer = (FrameLayout) findViewById(spinId);
             mPlayerColor = playerColor;
             initialize();
