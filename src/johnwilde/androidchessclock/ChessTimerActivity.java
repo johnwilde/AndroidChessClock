@@ -31,6 +31,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -891,7 +892,7 @@ public class ChessTimerActivity extends Activity {
     // ms until the Bronstein delay interval reaches 0
     //
     //
-    final class Timer implements OnClickListener {
+    final class Timer implements OnClickListener, OnLongClickListener {
         TextView mView;
         InnerTimer.SpinnerView mSpinView;
         FrameLayout mSpinContainer;
@@ -915,9 +916,14 @@ public class ChessTimerActivity extends Activity {
 
         @Override
         public void onClick(View v) {
-            // launch activity that allows user to set time and increment values
             transitionToPauseAndToast();
             launchAdjustPlayerClockActivity(mPlayerColor, mMsToGo);
+        }
+        @Override
+        public boolean onLongClick(View v) {
+            transitionToPauseAndToast();
+            launchPreferencesActivity();
+            return true;
         }
 
         public void initialize() {
@@ -931,6 +937,7 @@ public class ChessTimerActivity extends Activity {
 
         public void initializeWithValue(long msToGo, long msDelayToGo) {
             mView.setOnClickListener(this);
+            mView.setOnLongClickListener(this);
             mMsToGo = msToGo;
             mMsDelayToGo = msDelayToGo;
             mCountDownTimer = new InnerTimer();
@@ -1159,5 +1166,6 @@ public class ChessTimerActivity extends Activity {
                 }
             }
         }
-    }
+
+          }
 }
