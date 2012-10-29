@@ -79,6 +79,7 @@ public class ChessTimerActivity extends Activity {
 
     PlayerButton mButton1, mButton2; // The two big buttons
     Button mResetButton;
+    Button mStartButton;
     ToggleButton mPauseButton;
     AlertDialog mPauseDialog;
 
@@ -111,14 +112,18 @@ public class ChessTimerActivity extends Activity {
     // used to keep the screen bright during play
     private WakeLock mWakeLock;
     // for sounding buzzer
-    MediaPlayer mMediaPlayer;
+    MediaPlayer mMediaPlayerBell;
 
     private boolean mPlaySoundAtEnd;
+
+    private MediaPlayer mMediaPlayerClick;
+
+    private boolean mPlaySoundOnClick;
 
     // Constants
     public final static String EXTRA_COLOR = "johnwilde.androidchessclock.COLOR";
     public final static String EXTRA_TIME = "johnwilde.androidchessclock.TIME";
-    
+
     private static final String TAG = "ChessTimerActivity";
     private static final int BUTTON_FADED = 25;
     private static final int BUTTON_VISIBLE = 255;
@@ -140,7 +145,7 @@ public class ChessTimerActivity extends Activity {
         loadAllUserPreferences();
 
         Timer whiteTimer = new Timer(R.id.whiteClock,
-                R.id.whiteSpinnerContainer,"white");
+                R.id.whiteSpinnerContainer, "white");
         mButton1 = new PlayerButton(whiteTimer, R.id.whiteButton,
                 R.id.whiteMoveCounter);
         Timer blackTimer = new Timer(R.id.blackClock,
@@ -149,8 +154,12 @@ public class ChessTimerActivity extends Activity {
                 R.id.blackMoveCounter);
 
         mResetButton = (Button) findViewById(R.id.reset_button);
+        mStartButton = (Button) findViewById(R.id.start_button);
+        mStartButton.setOnClickListener(new StartButtonClickListener());
+
         mPauseButton = (ToggleButton) findViewById(R.id.pause_button);
         mPauseButton.setOnClickListener(new PauseButtonClickListener());
+        mPauseButton.setVisibility(View.GONE);
 
         mButton1.setButtonListener(new PlayerButtonClickListener(mButton1,
                 mButton2));
@@ -173,7 +182,8 @@ public class ChessTimerActivity extends Activity {
     @Override
     public void onPause() {
         releaseWakeLock();
-        releaseMediaPlayer();
+        releaseMediaPlayer(mMediaPlayerBell);
+        releaseMediaPlayer(mMediaPlayerClick);
         super.onPause();
     }
 
@@ -187,7 +197,8 @@ public class ChessTimerActivity extends Activity {
     @Override
     public void onDestroy() {
         releaseWakeLock();
-        releaseMediaPlayer();
+        releaseMediaPlayer(mMediaPlayerBell);
+        releaseMediaPlayer(mMediaPlayerClick);
         super.onDestroy();
     }
 
@@ -246,7 +257,7 @@ public class ChessTimerActivity extends Activity {
         }
 
         if (stateToRestore == GameState.PAUSED) {
-            transitionToPauseAndShowDialog();
+            transitionToPauseAndToast();
             return;
         }
 
@@ -313,50 +324,60 @@ public class ChessTimerActivity extends Activity {
             long newTime = data.getLongExtra(AdjustClock.NEW_TIME, 0);
             String playerColor = data.getStringExtra(AdjustClock.COLOR);
             PlayerButton button;
-            if (playerColor.equalsIgnoreCase("white")) 
+            if (playerColor.equalsIgnoreCase("white"))
                 button = mButton1;
-            else 
+            else
                 button = mButton2;
-            
+
             button.adjustTime(newTime);
             if (mActive != null && mActive != button) {
                 button.setTransparency(BUTTON_FADED);
             }
-    
+
         }
     }
 
     private void acquireMediaPlayer() {
-        releaseMediaPlayer();
+        releaseMediaPlayer(mMediaPlayerBell);
+        releaseMediaPlayer(mMediaPlayerClick);
         if (mPlaySoundAtEnd) {
-            try {
-                AssetFileDescriptor afd = getResources().openRawResourceFd(
-                        R.raw.bell);
-                if (afd == null)
-                    return;
-                mMediaPlayer = new MediaPlayer();
-                mMediaPlayer.setDataSource(afd.getFileDescriptor(),
-                        afd.getStartOffset(), afd.getLength());
-                afd.close();
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-                mMediaPlayer.prepareAsync();
-            } catch (IOException ex) {
-                Log.d(TAG, "create failed:", ex);
-                // fall through
-            } catch (IllegalArgumentException ex) {
-                Log.d(TAG, "create failed:", ex);
-                // fall through
-            } catch (SecurityException ex) {
-                Log.d(TAG, "create failed:", ex);
-                // fall through
-            }
+            mMediaPlayerBell = getMediaPlayer(R.raw.bell);
         }
+        if (mPlaySoundOnClick) {
+            mMediaPlayerClick = getMediaPlayer(R.raw.click);
+        }
+
     }
 
-    private void releaseMediaPlayer() {
-        if (mMediaPlayer != null) {
-            mMediaPlayer.release();
-            mMediaPlayer = null;
+    private MediaPlayer getMediaPlayer(int media) {
+        MediaPlayer mediaPlayer = null;
+        try {
+            AssetFileDescriptor afd = getResources().openRawResourceFd(media);
+            if (afd == null)
+                return null;
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(afd.getFileDescriptor(),
+                    afd.getStartOffset(), afd.getLength());
+            afd.close();
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+            mediaPlayer.prepareAsync();
+        } catch (IOException ex) {
+            Log.d(TAG, "create failed:", ex);
+            // fall through
+        } catch (IllegalArgumentException ex) {
+            Log.d(TAG, "create failed:", ex);
+            // fall through
+        } catch (SecurityException ex) {
+            Log.d(TAG, "create failed:", ex);
+            // fall through
+        }
+        return mediaPlayer;
+    }
+
+    private void releaseMediaPlayer(MediaPlayer mediaPlayer) {
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
         }
     }
 
@@ -385,10 +406,10 @@ public class ChessTimerActivity extends Activity {
         switch (state) {
         case IDLE:
             mCurrentState = GameState.IDLE;
+            mStartButton.setEnabled(true);
+            mStartButton.setVisibility(View.VISIBLE);
             mResetButton.setEnabled(false);
-            mPauseButton.setClickable(true);
-            mPauseButton.setTextOff(getString(R.string.pauseinit_button));
-            mPauseButton.setChecked(false); // set to 'off' state
+            mPauseButton.setVisibility(View.GONE);
             mButton1.reset();
             mButton2.reset();
             break;
@@ -396,8 +417,10 @@ public class ChessTimerActivity extends Activity {
         case RUNNING:
             mCurrentState = GameState.RUNNING;
             mResetButton.setEnabled(true);
+            mStartButton.setEnabled(false);
+            mStartButton.setVisibility(View.GONE);
+            mPauseButton.setVisibility(View.VISIBLE);
             mPauseButton.setClickable(true); // enable 'pause'
-            mPauseButton.setTextOff(getString(R.string.pauseoff_button));
             mPauseButton.setChecked(false); // set toggle to show "pause" text
 
             // start the clock
@@ -406,6 +429,8 @@ public class ChessTimerActivity extends Activity {
 
         case PAUSED:
             mCurrentState = GameState.PAUSED;
+            mStartButton.setVisibility(View.GONE);
+            mPauseButton.setVisibility(View.VISIBLE);
             mPauseButton.setChecked(true); // Changes text on Pause button
             mPauseButton.setClickable(true); // enable 'resume'
             // pause the clock
@@ -415,6 +440,9 @@ public class ChessTimerActivity extends Activity {
         case DONE:
             if (mActive != null) {
                 mCurrentState = GameState.DONE;
+                mStartButton.setEnabled(true);
+                mStartButton.setVisibility(View.VISIBLE);
+                mPauseButton.setVisibility(View.GONE);
                 mResetButton.setEnabled(true);
                 mPauseButton.setClickable(false); // disable pause when DONE
                 break;
@@ -462,7 +490,7 @@ public class ChessTimerActivity extends Activity {
                 REQUEST_CODE_PREFERENCES);
     }
 
-    public void launchAdjustPlayerClockActivity(String color,long time) {
+    public void launchAdjustPlayerClockActivity(String color, long time) {
         // launch an activity through this intent
         Intent launchAdjustPlayerClockIntent = new Intent().setClass(this,
                 AdjustClock.class);
@@ -487,20 +515,6 @@ public class ChessTimerActivity extends Activity {
                 });
         AlertDialog alert = builder.create();
         alert.show();
-    }
-
-    public void showPauseDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.pause_dialog);
-        builder.setPositiveButton(getString(R.string.pauseon_button),
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                        mPauseButton.performClick();
-                    }
-                });
-        mPauseDialog = builder.create();
-        mPauseDialog.show();
     }
 
     private String getPackageVersion() {
@@ -590,7 +604,10 @@ public class ChessTimerActivity extends Activity {
 
     private void loadAudibleNotificationUserPreference() {
         mPlaySoundAtEnd = mSharedPref.getBoolean(
-                TimerOptions.Key.PLAY_SOUND.toString(), false);
+                TimerOptions.Key.PLAY_BELL.toString(), false);
+        mPlaySoundOnClick = mSharedPref.getBoolean(
+                TimerOptions.Key.PLAY_CLICK.toString(), false);
+        acquireMediaPlayer();
     }
 
     private void configureSides() {
@@ -648,7 +665,8 @@ public class ChessTimerActivity extends Activity {
     }
 
     private void loadDelayTypeUserPreference(TimerOptions.Key key) {
-        String delayTypeString = mSharedPref.getString(key.toString(),"FISCHER");
+        String delayTypeString = mSharedPref.getString(key.toString(),
+                "FISCHER");
         mDelayType = DelayType.valueOf(delayTypeString.toUpperCase());
     }
 
@@ -742,7 +760,7 @@ public class ChessTimerActivity extends Activity {
             mMoveNumber = moveCount;
             timer.initializeWithValue(time, delay);
         }
-        
+
         public void adjustTime(long time) {
             timer.initializeWithValue(time, timer.getMsDelayToGo());
         }
@@ -756,6 +774,7 @@ public class ChessTimerActivity extends Activity {
         }
 
         public void moveFinished() {
+
             mMoveNumber++;
 
             if (mTimeControlType == TimeControlType.TOURNAMENT) {
@@ -772,6 +791,9 @@ public class ChessTimerActivity extends Activity {
         }
 
         public void moveStarted() {
+            if (mPlaySoundOnClick) {
+                mMediaPlayerClick.start();
+            }
             timer.moveStarted();
         }
     }
@@ -851,7 +873,7 @@ public class ChessTimerActivity extends Activity {
     /**
      * Pause the clock that is running.
      */
-    final class PauseButtonClickListener implements OnClickListener {
+    final class StartButtonClickListener implements OnClickListener {
         @Override
         public void onClick(View v) {
 
@@ -862,17 +884,24 @@ public class ChessTimerActivity extends Activity {
                 transitionTo(GameState.RUNNING);
                 return;
             }
-            if (mCurrentState == GameState.PAUSED) {
-                transitionTo(GameState.RUNNING);
-            } else {
-                transitionToPauseAndShowDialog();
-            }
         }
     }
 
-    public void transitionToPauseAndShowDialog() {
-        transitionTo(GameState.PAUSED);
-        showPauseDialog();
+    /**
+     * Pause the clock that is running.
+     */
+    final class PauseButtonClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+
+            if (mCurrentState == GameState.DONE)
+                return;
+            if (mCurrentState == GameState.PAUSED) {
+                transitionTo(GameState.RUNNING);
+            } else {
+                transitionToPauseAndToast();
+            }
+        }
     }
 
     public void transitionToPauseAndToast() {
@@ -904,7 +933,7 @@ public class ChessTimerActivity extends Activity {
         InnerTimer mCountDownTimer;
         boolean isRunning = false;
 
-       private String mPlayerColor;
+        private String mPlayerColor;
 
         Timer(int clockId, int spinId, String playerColor) {
             mView = (TextView) findViewById(clockId);
@@ -919,6 +948,7 @@ public class ChessTimerActivity extends Activity {
             transitionToPauseAndToast();
             launchAdjustPlayerClockActivity(mPlayerColor, mMsToGo);
         }
+
         @Override
         public boolean onLongClick(View v) {
             transitionToPauseAndToast();
@@ -1010,8 +1040,8 @@ public class ChessTimerActivity extends Activity {
         private void done() {
             mView.setText("0.0");
             mView.setTextColor(Color.RED);
-            if (mMediaPlayer != null)
-                mMediaPlayer.start();
+            if (mPlaySoundAtEnd && mMediaPlayerBell != null)
+                mMediaPlayerBell.start();
             transitionTo(GameState.DONE);
         }
 
@@ -1028,8 +1058,6 @@ public class ChessTimerActivity extends Activity {
 
             mView.setText(Utils.formatTime(mMsToGo));
         }
-
- 
 
         public View getView() {
             return mView;
@@ -1112,8 +1140,8 @@ public class ChessTimerActivity extends Activity {
                         mHandler.postDelayed(mUpdateTimeTask, POST_FAST);
                     } else if (getMsToGo() < 0 && getAllowNegativeTime()) {
                         updateTimerText();
-                        if (mMediaPlayer != null && mPlayedBuzzer == false) {
-                            mMediaPlayer.start();
+                        if (mPlaySoundAtEnd && mMediaPlayerBell != null && mPlayedBuzzer == false) {
+                            mMediaPlayerBell.start();
                             mPlayedBuzzer = true;
                         }
 
@@ -1167,5 +1195,5 @@ public class ChessTimerActivity extends Activity {
             }
         }
 
-          }
+    }
 }

@@ -32,7 +32,8 @@ public class TimerOptions extends PreferenceActivity
 		NEGATIVE_TIME("allow_negative_time_preference"),
 		SCREEN_DIM("screen_dim_preference"),
 		SWAP_SIDES("white_on_left_preference"),
-		PLAY_SOUND("audible_notification_preference"),
+        PLAY_CLICK("audible_notification_preference_click"),
+		PLAY_BELL("audible_notification_preference_bell"),
 		SHOW_MOVE_COUNTER("show_move_count_preference"),
 		TIMECONTROL_TYPE("timecontrol_type_preference"),
 		FIDE_MOVES_PHASE1("fide_n_moves"),
@@ -101,7 +102,8 @@ public class TimerOptions extends PreferenceActivity
                 Key.SHOW_MOVE_COUNTER, 
                 Key.SWAP_SIDES, 
                 Key.SCREEN_DIM,
-                Key.PLAY_SOUND});
+                Key.PLAY_BELL,
+                Key.PLAY_CLICK});
 
         if (uiKeys.contains(Key.fromString(key))){
             setResult(RESULT_OK, 

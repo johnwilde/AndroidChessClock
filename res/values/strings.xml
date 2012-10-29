@@ -15,7 +15,7 @@
 	<string name="no">No</string>
 	<string name="pauseoff_button">Pause</string>
 	<string name="pauseon_button">Resume</string>
-	<string name="pauseinit_button">Start</string>
+	<string name="start_button">Start</string>
 	
 	<string name="time_preference_description">Time Preferences</string>
 	<string name="basic_time_preference_description">Basic Time Preferences</string>
@@ -56,8 +56,9 @@
 	<string name="screen_dim_preference">Allow screen to dim</string>
 	<string name="show_move_count_preference">Show move counter</string>
 	<string name="white_on_left_preference">White button on left</string>
-	<string name="audible_notification_preference">Play sound when clock runs out.</string>
-
+	<string name="audible_notification_preference_bell">Play sound when clock runs out.</string>
+    <string name="audible_notification_preference_click">Play sound when pressing buttons.</string>
+	
   	<string name="advanced_time_preference_description">Tournament Time Control</string>
 	<string name="summary_advanced_time_preference_description">Set tournament time control options.</string>
 	<string name="select_time_control_type_preference">Select Type</string>
@@ -97,6 +98,8 @@
 	<string name="add_ten_seconds">Add Ten Seconds</string>
 	<string name="subtract_ten_seconds">Subtract Ten Seconds</string>
 	<string name="new_time_value"></string>
+	<string name="white_button">White Button</string>
+	<string name="black_button">Black Button</string>
     
 	
 	

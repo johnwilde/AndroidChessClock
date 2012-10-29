@@ -15,7 +15,8 @@
 	<string name="no">нет</string>
     <string name="pauseoff_button">Пауза</string>
     <string name="pauseon_button">Продолжить</string>
-    <string name="pauseinit_button">Старт</string>
+    <string name="start_button">Старт</string>
+    
     <string name="time_preference_description">Установки времени</string>
     <string name="basic_time_preference_description">Основные установки времени</string>
     <string name="basic_screen_enabled_summary">Установить основные настройки времени.</string>
@@ -48,7 +49,12 @@
     <string name="screen_dim_preference">Разрешить экрану тускнеть</string>
     <string name="show_move_count_preference">Показывать счетчик ходов</string>
     <string name="white_on_left_preference">Кнопка белых слева</string>
-    <string name="audible_notification_preference">Звук при истечении времени.</string>
+   
+    <string name="audible_notification_preference_bell">Звук при истечении времени.</string>
+    <string name="audible_notification_preference_click">Воспроизведение звука при нажатии кнопок.</string>
+    
+    
+    <string name="audible_notification_preference"></string>
     <string name="advanced_time_preference_description">Настройки времени турнира</string>
     <string name="summary_advanced_time_preference_description">Установить турнирные настройки контроля времени.</string>
     <string name="select_time_control_type_preference">Выбрать тип</string>
@@ -83,4 +89,6 @@
 	<string name="add_ten_seconds">Добавить десяти секунд</string>
 	<string name="subtract_ten_seconds">Вычтите десять секунд</string>
 	<string name="new_time_value"></string>
+	<string name="white_button">белый</string>
+    <string name="black_button">черный</string>
 </resources>

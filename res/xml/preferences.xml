@@ -150,11 +150,16 @@
                 />                
                 
  	<CheckBoxPreference
-        		android:key="audible_notification_preference"
-                android:title="@string/audible_notification_preference"
+        		android:key="audible_notification_preference_bell"
+                android:title="@string/audible_notification_preference_bell"
                 android:defaultValue="true"
-                />                
-
+                />       
+                         
+    <CheckBoxPreference
+                android:key="audible_notification_preference_click"
+                android:title="@string/audible_notification_preference_click"
+                android:defaultValue="true"
+                />     
    </PreferenceCategory>
 
     
