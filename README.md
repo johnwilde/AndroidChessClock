@@ -1,3 +1,6 @@
+GOOGLE PLAY
+<https://play.google.com/store/apps/developer?id=John+Wilde>
+
 TODO
 	* Allow time to be added to each clock during a game
 	* Scroll input widget for setting clocks
