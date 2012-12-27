@@ -5,14 +5,12 @@
 ### NOTES
 
 - TODO
-	* Allow time to be added to each clock during a game
 	* Scroll input widget for setting clocks
 	* At end of game show a chart with the distribution of time spent per move
 	  for each player
- 	* Allow clocks to be initialized to different times
-	* Let user select image to be displayed on button
 
 - DONE
+	* Allow time to be modified during a game
     * Display animated icon showing Bronstein delay countdown (next to clock)
     * Add NumberFormat exception handling for bad initial time or other text input
 	* Audio feedback when clock expires
