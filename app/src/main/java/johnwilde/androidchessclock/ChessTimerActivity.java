@@ -184,6 +184,8 @@ public class ChessTimerActivity extends Activity {
         releaseWakeLock();
         releaseMediaPlayer(mMediaPlayerBell);
         releaseMediaPlayer(mMediaPlayerClick);
+        mMediaPlayerBell = null;
+        mMediaPlayerClick = null;
         super.onPause();
     }
 
@@ -199,6 +201,8 @@ public class ChessTimerActivity extends Activity {
         releaseWakeLock();
         releaseMediaPlayer(mMediaPlayerBell);
         releaseMediaPlayer(mMediaPlayerClick);
+        mMediaPlayerBell = null;
+        mMediaPlayerClick = null;
         super.onDestroy();
     }
 
@@ -377,7 +381,6 @@ public class ChessTimerActivity extends Activity {
     private void releaseMediaPlayer(MediaPlayer mediaPlayer) {
         if (mediaPlayer != null) {
             mediaPlayer.release();
-            mediaPlayer = null;
         }
     }
 
@@ -1132,10 +1135,7 @@ public class ChessTimerActivity extends Activity {
                     }
                     mMsToGo -= dt;
 
-                    if (getMsToGo() > 10000) {
-                        updateTimerText();
-                        mHandler.postDelayed(mUpdateTimeTask, POST_SLOW);
-                    } else if (getMsToGo() < 10000 && getMsToGo() > 0) {
+                    if (getMsToGo() > 0) {
                         updateTimerText();
                         mHandler.postDelayed(mUpdateTimeTask, POST_FAST);
                     } else if (getMsToGo() < 0 && getAllowNegativeTime()) {
