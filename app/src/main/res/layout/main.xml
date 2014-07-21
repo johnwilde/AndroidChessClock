@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="top"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <LinearLayout
             android:id="@+id/leftSpinnerContainer"
@@ -102,7 +102,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="right|center_vertical"
-            android:gravity="center_vertical|right" >
+            android:gravity="center_vertical|right">
 
             <FrameLayout
                 android:id="@+id/blackSpinnerContainer"
@@ -110,7 +110,17 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical" >
             </FrameLayout>
+
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/overflowButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:background="@null"
+            android:src="@drawable/ic_action_overflow" />
+
     </LinearLayout>
 
     <LinearLayout

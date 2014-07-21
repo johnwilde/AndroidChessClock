@@ -80,6 +80,7 @@ public class ChessTimerActivity extends Activity {
     PlayerButton mButton1, mButton2; // The two big buttons
     Button mResetButton;
     Button mStartButton;
+    ImageButton mOverflowButton;
     ToggleButton mPauseButton;
     AlertDialog mPauseDialog;
 
@@ -167,6 +168,9 @@ public class ChessTimerActivity extends Activity {
                 mButton1));
 
         mResetButton.setOnClickListener(new ResetButtonClickListener());
+
+        mOverflowButton = (ImageButton) findViewById(R.id.overflowButton);
+        mOverflowButton.setOnClickListener(new OverflowButtonClickListener());
 
         // enable following line to clear settings if they are in a bad state
         // mSharedPref.edit().clear().apply();
@@ -861,6 +865,17 @@ public class ChessTimerActivity extends Activity {
                                 transitionTo(GameState.IDLE);
                             }
                         }).setNegativeButton(R.string.no, null).show();
+    }
+
+    /**
+     *  Show preferences
+     */
+    final class OverflowButtonClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+            transitionToPauseAndToast();
+            launchPreferencesActivity();
+        }
     }
 
     /**
