@@ -1,4 +1,28 @@
-# ignore the ./bin directory
-bin/
-.classpath
-.project
+.DS_Store
+.idea/
+.metadata/
+.settings/
+bin
+gen
+out/
+local.properties
+*.swp
+*.orig
+*.swp
+
+# intelliJ files
+*.iml
+*.eml
+*.ipr
+*.iws
+*.apk
+*.patch
+*.diff
+module_*.xml
+BuildConfig.java
+.gradle/
+build/
+tags
+.tx/config
+src/main/assets/crashlytics-build.properties
+src/main/res/values/com_crashlytics_export_strings.xml
