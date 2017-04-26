@@ -16,15 +16,11 @@ import android.widget.TextView;
 import johnwilde.androidchessclock.ChessTimerActivity.DelayType;
 import johnwilde.androidchessclock.ChessTimerActivity.GameState;
 
-/**
- * Created by johnwilde on 4/25/17.
- */ // This class updates each player's clock.
+// This class updates each player's clock.
 // These variables maintain the clock state:
 //
-// mMsToGo:
-// ms until the timer reaches 0
-// mMsDelayToGo:
-// ms until the Bronstein delay interval reaches 0
+// mMsToGo: ms until the timer reaches 0
+// mMsDelayToGo: ms until the Bronstein delay interval reaches 0
 //
 //
 final class Timer implements OnClickListener, OnLongClickListener {
@@ -150,8 +146,8 @@ final class Timer implements OnClickListener, OnLongClickListener {
     private void done() {
         mView.setText("0.0");
         mView.setTextColor(Color.RED);
-        if (mChessTimerActivity.shouldPlaySoundAtEnd() && mChessTimerActivity.mMediaPlayerBell != null) {
-            mChessTimerActivity.mMediaPlayerBell.start();
+        if (mChessTimerActivity.shouldPlaySoundAtEnd()) {
+            mChessTimerActivity.playBell();
         }
         mChessTimerActivity.transitionTo(GameState.DONE);
     }
@@ -257,9 +253,8 @@ final class Timer implements OnClickListener, OnLongClickListener {
                     mHandler.postDelayed(mUpdateTimeTask, POST_FAST);
                 } else if (getMsToGo() < 0 && getAllowNegativeTime()) {
                     updateTimerText();
-                    if (mChessTimerActivity.shouldPlaySoundAtEnd()
-                            && mChessTimerActivity.mMediaPlayerBell != null && mPlayedBuzzer == false) {
-                        mChessTimerActivity.mMediaPlayerBell.start();
+                    if (mChessTimerActivity.shouldPlaySoundAtEnd() && mPlayedBuzzer == false) {
+                        mChessTimerActivity.playBell();
                         mPlayedBuzzer = true;
                     }
 

@@ -1,10 +1,8 @@
 package johnwilde.androidchessclock;
 
-import java.io.IOException;
-
-import johnwilde.androidchessclock.TimerOptions.TimeControl;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,7 +11,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
@@ -31,6 +29,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import java.io.IOException;
+
+import johnwilde.androidchessclock.TimerOptions.TimeControl;
 
 /**
  * Activity holding two clocks and two buttons.
@@ -105,7 +107,9 @@ public class ChessTimerActivity extends Activity {
     // used to keep the screen bright during play
     private WakeLock mWakeLock;
     // for sounding buzzer
-    MediaPlayer mMediaPlayerBell;
+    int mBellId;
+    int mClickId;
+    SoundPool mSoundPool;
 
     public boolean shouldPlaySoundAtEnd() {
         return mPlaySoundAtEnd;
@@ -113,7 +117,6 @@ public class ChessTimerActivity extends Activity {
 
     private boolean mPlaySoundAtEnd;
 
-    private MediaPlayer mMediaPlayerClick;
 
     private boolean mPlaySoundOnClick;
 
@@ -182,10 +185,7 @@ public class ChessTimerActivity extends Activity {
     @Override
     public void onPause() {
         releaseWakeLock();
-        releaseMediaPlayer(mMediaPlayerBell);
-        releaseMediaPlayer(mMediaPlayerClick);
-        mMediaPlayerBell = null;
-        mMediaPlayerClick = null;
+        releaseMediaPlayer();
         super.onPause();
     }
 
@@ -199,10 +199,7 @@ public class ChessTimerActivity extends Activity {
     @Override
     public void onDestroy() {
         releaseWakeLock();
-        releaseMediaPlayer(mMediaPlayerBell);
-        releaseMediaPlayer(mMediaPlayerClick);
-        mMediaPlayerBell = null;
-        mMediaPlayerClick = null;
+        releaseMediaPlayer();
         super.onDestroy();
     }
 
@@ -340,29 +337,24 @@ public class ChessTimerActivity extends Activity {
     }
 
     private void acquireMediaPlayer() {
-        releaseMediaPlayer(mMediaPlayerBell);
-        releaseMediaPlayer(mMediaPlayerClick);
+        mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 100);
         if (mPlaySoundAtEnd) {
-            mMediaPlayerBell = getMediaPlayer(R.raw.bell);
+            mBellId = getMediaPlayer(R.raw.bell);
         }
         if (mPlaySoundOnClick) {
-            mMediaPlayerClick = getMediaPlayer(R.raw.click);
+            mClickId = getMediaPlayer(R.raw.click);
         }
 
     }
 
-    private MediaPlayer getMediaPlayer(int media) {
-        MediaPlayer mediaPlayer = null;
+    private int getMediaPlayer(int media) {
+        int id = -1;
         try {
             AssetFileDescriptor afd = getResources().openRawResourceFd(media);
             if (afd == null)
-                return null;
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(afd.getFileDescriptor(),
-                    afd.getStartOffset(), afd.getLength());
+                return id;
+            id = mSoundPool.load(afd, 1);
             afd.close();
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-            mediaPlayer.prepareAsync();
         } catch (IOException ex) {
             Log.d(TAG, "create failed:", ex);
             // fall through
@@ -373,15 +365,40 @@ public class ChessTimerActivity extends Activity {
             Log.d(TAG, "create failed:", ex);
             // fall through
         }
-        return mediaPlayer;
+        return id;
     }
 
-    private void releaseMediaPlayer(MediaPlayer mediaPlayer) {
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
+    private void releaseMediaPlayer() {
+        if (mSoundPool != null) {
+            mSoundPool.release();
+            mSoundPool = null;
+            mClickId = -1;
+            mBellId = -1;
         }
     }
 
+    void playBell() {
+        playSound(mBellId);
+    }
+
+    void playClick() {
+        playSound(mClickId);
+    }
+
+    private void playSound(int soundID) {
+        if (mSoundPool == null) {
+            return;
+        }
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        float curVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        float leftVolume = curVolume / maxVolume;
+        float rightVolume = curVolume / maxVolume;
+        int priority = 1;
+        int no_loop = 0;
+        float normal_playback_rate = 1f;
+        mSoundPool.play(soundID, leftVolume, rightVolume, priority, no_loop, normal_playback_rate);
+    }
     private void releaseWakeLock() {
         if (mWakeLock != null) {
             if (mWakeLock.isHeld()) {
@@ -792,7 +809,7 @@ public class ChessTimerActivity extends Activity {
 
         public void moveStarted() {
             if (mPlaySoundOnClick) {
-                mMediaPlayerClick.start();
+                playClick();
             }
             timer.moveStarted();
         }
