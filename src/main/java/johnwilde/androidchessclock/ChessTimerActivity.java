@@ -1,8 +1,5 @@
 package johnwilde.androidchessclock;
 
-import java.io.IOException;
-
-import johnwilde.androidchessclock.TimerOptions.TimeControl;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -13,17 +10,11 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.AssetFileDescriptor;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -31,7 +22,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -39,6 +29,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import java.io.IOException;
+
+import johnwilde.androidchessclock.TimerOptions.TimeControl;
 
 /**
  * Activity holding two clocks and two buttons.
@@ -113,11 +107,16 @@ public class ChessTimerActivity extends Activity {
     // used to keep the screen bright during play
     private WakeLock mWakeLock;
     // for sounding buzzer
-    MediaPlayer mMediaPlayerBell;
+    int mBellId;
+    int mClickId;
+    SoundPool mSoundPool;
+
+    public boolean shouldPlaySoundAtEnd() {
+        return mPlaySoundAtEnd;
+    }
 
     private boolean mPlaySoundAtEnd;
 
-    private MediaPlayer mMediaPlayerClick;
 
     private boolean mPlaySoundOnClick;
 
@@ -145,11 +144,11 @@ public class ChessTimerActivity extends Activity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         loadAllUserPreferences();
 
-        Timer whiteTimer = new Timer(R.id.whiteClock,
+        Timer whiteTimer = new Timer(this, R.id.whiteClock,
                 R.id.whiteSpinnerContainer, "white");
         mButton1 = new PlayerButton(whiteTimer, R.id.whiteButton,
                 R.id.whiteMoveCounter);
-        Timer blackTimer = new Timer(R.id.blackClock,
+        Timer blackTimer = new Timer(this, R.id.blackClock,
                 R.id.blackSpinnerContainer, "black");
         mButton2 = new PlayerButton(blackTimer, R.id.blackButton,
                 R.id.blackMoveCounter);
@@ -186,10 +185,7 @@ public class ChessTimerActivity extends Activity {
     @Override
     public void onPause() {
         releaseWakeLock();
-        releaseMediaPlayer(mMediaPlayerBell);
-        releaseMediaPlayer(mMediaPlayerClick);
-        mMediaPlayerBell = null;
-        mMediaPlayerClick = null;
+        releaseMediaPlayer();
         super.onPause();
     }
 
@@ -203,10 +199,7 @@ public class ChessTimerActivity extends Activity {
     @Override
     public void onDestroy() {
         releaseWakeLock();
-        releaseMediaPlayer(mMediaPlayerBell);
-        releaseMediaPlayer(mMediaPlayerClick);
-        mMediaPlayerBell = null;
-        mMediaPlayerClick = null;
+        releaseMediaPlayer();
         super.onDestroy();
     }
 
@@ -247,10 +240,8 @@ public class ChessTimerActivity extends Activity {
             return;
 
         long activeButtonId = savedInstanceState.getInt("ActiveButton");
-        boolean button1Active = (mButton1.getButtonId() == activeButtonId ? true
-                : false);
-        boolean button2Active = (mButton2.getButtonId() == activeButtonId ? true
-                : false);
+        boolean button1Active = mButton1.getButtonId() == activeButtonId;
+        boolean button2Active = mButton2.getButtonId() == activeButtonId;
 
         mButton1.setTimeAndState(savedInstanceState.getLong("Timer1"),
                 savedInstanceState.getLong("Timer1Delay"),
@@ -346,29 +337,24 @@ public class ChessTimerActivity extends Activity {
     }
 
     private void acquireMediaPlayer() {
-        releaseMediaPlayer(mMediaPlayerBell);
-        releaseMediaPlayer(mMediaPlayerClick);
+        mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 100);
         if (mPlaySoundAtEnd) {
-            mMediaPlayerBell = getMediaPlayer(R.raw.bell);
+            mBellId = getMediaPlayer(R.raw.bell);
         }
         if (mPlaySoundOnClick) {
-            mMediaPlayerClick = getMediaPlayer(R.raw.click);
+            mClickId = getMediaPlayer(R.raw.click);
         }
 
     }
 
-    private MediaPlayer getMediaPlayer(int media) {
-        MediaPlayer mediaPlayer = null;
+    private int getMediaPlayer(int media) {
+        int id = -1;
         try {
             AssetFileDescriptor afd = getResources().openRawResourceFd(media);
             if (afd == null)
-                return null;
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(afd.getFileDescriptor(),
-                    afd.getStartOffset(), afd.getLength());
+                return id;
+            id = mSoundPool.load(afd, 1);
             afd.close();
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-            mediaPlayer.prepareAsync();
         } catch (IOException ex) {
             Log.d(TAG, "create failed:", ex);
             // fall through
@@ -379,15 +365,40 @@ public class ChessTimerActivity extends Activity {
             Log.d(TAG, "create failed:", ex);
             // fall through
         }
-        return mediaPlayer;
+        return id;
     }
 
-    private void releaseMediaPlayer(MediaPlayer mediaPlayer) {
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
+    private void releaseMediaPlayer() {
+        if (mSoundPool != null) {
+            mSoundPool.release();
+            mSoundPool = null;
+            mClickId = -1;
+            mBellId = -1;
         }
     }
 
+    void playBell() {
+        playSound(mBellId);
+    }
+
+    void playClick() {
+        playSound(mClickId);
+    }
+
+    private void playSound(int soundID) {
+        if (mSoundPool == null) {
+            return;
+        }
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        float curVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        float leftVolume = curVolume / maxVolume;
+        float rightVolume = curVolume / maxVolume;
+        int priority = 1;
+        int no_loop = 0;
+        float normal_playback_rate = 1f;
+        mSoundPool.play(soundID, leftVolume, rightVolume, priority, no_loop, normal_playback_rate);
+    }
     private void releaseWakeLock() {
         if (mWakeLock != null) {
             if (mWakeLock.isHeld()) {
@@ -730,7 +741,6 @@ public class ChessTimerActivity extends Activity {
         Timer timer;
         ImageButton button;
         TextView mMoveCounter;
-        boolean isFaded = false;
         private int mId;
         private int mMoveNumber;
 
@@ -799,7 +809,7 @@ public class ChessTimerActivity extends Activity {
 
         public void moveStarted() {
             if (mPlaySoundOnClick) {
-                mMediaPlayerClick.start();
+                playClick();
             }
             timer.moveStarted();
         }
@@ -930,285 +940,4 @@ public class ChessTimerActivity extends Activity {
                 Toast.LENGTH_SHORT).show();
     }
 
-    // This class updates each player's clock.
-    // These variables maintain the clock state:
-    //
-    // mMsToGo:
-    // ms until the timer reaches 0
-    // mMsDelayToGo:
-    // ms until the Bronstein delay interval reaches 0
-    //
-    //
-    final class Timer implements OnClickListener, OnLongClickListener {
-        TextView mView;
-        InnerTimer.SpinnerView mSpinView;
-        FrameLayout mSpinContainer;
-        long mBronsteinMs;
-
-        // maintain state
-        long mMsToGo;
-        long mMsDelayToGo = 0;
-        InnerTimer mCountDownTimer;
-        boolean isRunning = false;
-
-        private String mPlayerColor;
-
-        Timer(int clockId, int spinId, String playerColor) {
-            mView = (TextView) findViewById(clockId);
-            mView.setFocusable(false);
-            mSpinContainer = (FrameLayout) findViewById(spinId);
-            mPlayerColor = playerColor;
-            initialize();
-        }
-
-        @Override
-        public void onClick(View v) {
-            transitionToPauseAndToast();
-            launchAdjustPlayerClockActivity(mPlayerColor, mMsToGo);
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            transitionToPauseAndToast();
-            launchPreferencesActivity();
-            return true;
-        }
-
-        public void initialize() {
-            mBronsteinMs = (mDelayType == DelayType.BRONSTEIN) ? mIncrementSeconds * 1000
-                    : 0;
-            mMsDelayToGo = mBronsteinMs;
-            initializeWithValue(mInitialDurationSeconds * 1000, mBronsteinMs);
-            if (mDelayType == DelayType.FISCHER)
-                increment(mIncrementSeconds);
-        }
-
-        public void initializeWithValue(long msToGo, long msDelayToGo) {
-            mView.setOnClickListener(this);
-            mView.setOnLongClickListener(this);
-            mMsToGo = msToGo;
-            mMsDelayToGo = msDelayToGo;
-            mCountDownTimer = new InnerTimer();
-            isRunning = false;
-            mView.setTextColor(Color.BLACK);
-
-            updateTimerText();
-        }
-
-        // Public Interface Methods
-
-        public void moveStarted() {
-            start();
-        }
-
-        public void moveFinished() {
-            // when a move finishes we must reset the delay timer
-            mMsDelayToGo = mBronsteinMs;
-            pause();
-        }
-
-        public void start() {
-            mCountDownTimer.start();
-            isRunning = true;
-        }
-
-        public void pause() {
-            if (mCountDownTimer != null)
-                mCountDownTimer.kill();
-            isRunning = false;
-        }
-
-        public void reset() {
-            mCountDownTimer.kill();
-            initialize();
-        }
-
-        public long getMsDelayToGo() {
-            return mMsDelayToGo;
-        }
-
-        public long getMsToGo() {
-            return mMsToGo;
-        }
-
-        public boolean isRunning() {
-            return isRunning;
-        }
-
-        boolean getAllowNegativeTime() {
-            return mAllowNegativeTime;
-        }
-
-        //
-        // Callbacks invoked by the inner timer
-        //
-
-        // callback that is invoked when the clock starts moving (after
-        // Bronstein delay)
-        private void clockStarted() {
-            mSpinContainer.removeAllViews();
-        }
-
-        // callback that is invoked when clock pauses or is otherwise stopped
-        private void clockStopped() {
-            mSpinContainer.removeAllViews();
-        }
-
-        // callback that is invoked when clock reaches 0
-        private void done() {
-            mView.setText("0.0");
-            mView.setTextColor(Color.RED);
-            if (mPlaySoundAtEnd && mMediaPlayerBell != null)
-                mMediaPlayerBell.start();
-            transitionTo(GameState.DONE);
-        }
-
-        private void increment(int incrementSeconds) {
-            mMsToGo += incrementSeconds * 1000;
-            updateTimerText();
-        }
-
-        private void updateTimerText() {
-            if (getMsToGo() < 10000)
-                mView.setTextColor(Color.RED);
-            else
-                mView.setTextColor(Color.BLACK);
-
-            mView.setText(Utils.formatTime(mMsToGo));
-        }
-
-        public View getView() {
-            return mView;
-        }
-
-        /*
-         * Inner class to handle the update of the timer text and playing the
-         * buzzer. The timer text updates at faster rate during the last 10
-         * seconds.
-         */
-        class InnerTimer {
-            Handler mHandler = new Handler();
-            private UpdateTimeTask mUpdateTimeTask;
-            boolean mPlayedBuzzer = false;
-
-            void start() {
-                mUpdateTimeTask = new UpdateTimeTask();
-                mHandler.post(mUpdateTimeTask);
-            }
-
-            void kill() {
-                Timer.this.clockStopped();
-                mHandler.removeCallbacks(mUpdateTimeTask);
-            }
-
-            // this class will update itself (and call
-            // updateTimerText) accordingly:
-            // if getMsToGo() > 10 * 1000, every 1000 ms
-            // if getMsToGo() < 10 * 1000, every 100 ms
-            // if getMsToGo() < 0 and getAllowNegativeTime is true, every 1000
-            // ms
-            class UpdateTimeTask implements Runnable {
-                boolean startOfMove = true;
-
-                public synchronized void setMoveStartFlag(boolean value) {
-                    this.startOfMove = value;
-                }
-
-                long startedAt;
-                long lastUpdate;
-                SpinnerView spinner;
-                static final int POST_SLOW = 1000;
-                static final int POST_FAST = 100;
-
-                UpdateTimeTask() {
-                    this.startedAt = SystemClock.uptimeMillis();
-                    this.lastUpdate = startedAt;
-                    if (mMsDelayToGo > 0) {
-                        spinner = new SpinnerView(ChessTimerActivity.this,
-                                mBronsteinMs);
-                        mSpinContainer.addView(spinner);
-                    }
-                }
-
-                public void run() {
-                    long now = SystemClock.uptimeMillis();
-                    long dt = now - lastUpdate;
-                    lastUpdate = now;
-                    // Are we in Bronstein delay period?
-                    if (startOfMove && mMsDelayToGo > 0) {
-                        mMsDelayToGo -= dt;
-                        spinner.setElapsedMilliseconds(mMsDelayToGo);
-                        spinner.postInvalidate();
-                        mHandler.postDelayed(mUpdateTimeTask, POST_FAST);
-                        return;
-                    }
-
-                    if (startOfMove) {
-                        Timer.this.clockStarted(); // invoke callback
-                        setMoveStartFlag(false);
-                        mMsDelayToGo = mBronsteinMs; // reset
-                    }
-                    mMsToGo -= dt;
-
-                    if (getMsToGo() > 0) {
-                        updateTimerText();
-                        mHandler.postDelayed(mUpdateTimeTask, POST_FAST);
-                    } else if (getMsToGo() < 0 && getAllowNegativeTime()) {
-                        updateTimerText();
-                        if (mPlaySoundAtEnd && mMediaPlayerBell != null && mPlayedBuzzer == false) {
-                            mMediaPlayerBell.start();
-                            mPlayedBuzzer = true;
-                        }
-
-                        mHandler.postDelayed(mUpdateTimeTask, POST_SLOW);
-                    } else {
-                        mHandler.removeCallbacks(mUpdateTimeTask);
-                        done();
-                        return;
-                    }
-                }
-            };
-
-            private class SpinnerView extends View {
-                @Override
-                protected void onMeasure(int widthMeasureSpec,
-                        int heightMeasureSpec) {
-                    setMeasuredDimension(50, 50);
-                }
-
-                private Paint mPaint;
-                private RectF mOval;
-                private long msTotal;
-                private long msSoFar;
-
-                public SpinnerView(Context context, long msToComplete) {
-                    super(context);
-                    this.msTotal = msToComplete;
-                    this.msSoFar = 0;
-                    mPaint = new Paint();
-                    mPaint.setAntiAlias(true);
-                    mPaint.setStyle(Paint.Style.FILL);
-                    mPaint.setColor(0x88FF0000);
-                    mOval = new RectF(0, 0, 50, 50);
-                }
-
-                private void drawArcs(Canvas canvas, float sweep) {
-                    canvas.drawArc(mOval, 0, sweep, true, mPaint);
-                }
-
-                synchronized void setElapsedMilliseconds(long elapsed) {
-                    this.msSoFar = elapsed;
-                }
-
-                @Override
-                protected void onDraw(Canvas canvas) {
-                    // Log.d(TAG,String.format("drawing spinner msTotal:%d, msSoFar:%d",
-                    // msTotal, msSoFar));
-                    double sweep = 360.0 * (1.0 - ((float) (msTotal - msSoFar) / (float) msTotal));
-                    drawArcs(canvas, (float) sweep);
-                }
-            }
-        }
-
-    }
 }

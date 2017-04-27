@@ -54,7 +54,6 @@
     <string name="audible_notification_preference_click">Воспроизведение звука при нажатии кнопок.</string>
     
     
-    <string name="audible_notification_preference"></string>
     <string name="advanced_time_preference_description">Настройки времени турнира</string>
     <string name="summary_advanced_time_preference_description">Установить турнирные настройки контроля времени.</string>
     <string name="select_time_control_type_preference">Выбрать тип</string>
