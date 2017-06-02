@@ -31,6 +31,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import johnwilde.androidchessclock.TimerOptions.TimeControl;
 
@@ -685,7 +686,7 @@ public class ChessTimerActivity extends Activity {
     private void loadDelayTypeUserPreference(TimerOptions.Key key) {
         String delayTypeString = mSharedPref.getString(key.toString(),
                 "FISCHER");
-        mDelayType = DelayType.valueOf(delayTypeString.toUpperCase());
+        mDelayType = DelayType.valueOf(delayTypeString.toUpperCase(Locale.US));
     }
 
     private void loadScreenDimUserPreference() {
