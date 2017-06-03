@@ -13,8 +13,6 @@ import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -22,6 +20,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -100,13 +100,10 @@ public class ChessTimerActivity extends Activity {
     boolean mAllowNegativeTime = false;
     boolean mShowMoveCounter = false;
     private boolean mWhiteOnLeft = false;
-    private int mWakeLockType;
     // set when using TOURNAMENT time control
     private int mPhase1NumberMoves;
     private int mPhase2Minutes;
 
-    // used to keep the screen bright during play
-    private WakeLock mWakeLock;
     // for sounding buzzer
     int mBellId;
     int mClickId;
@@ -177,7 +174,6 @@ public class ChessTimerActivity extends Activity {
 
         transitionTo(GameState.IDLE);
 
-        acquireWakeLock();
         acquireMediaPlayer();
 
         Log.d(TAG, "Finished onCreate()");
@@ -185,21 +181,18 @@ public class ChessTimerActivity extends Activity {
 
     @Override
     public void onPause() {
-        releaseWakeLock();
         releaseMediaPlayer();
         super.onPause();
     }
 
     @Override
     public void onResume() {
-        acquireWakeLock();
         acquireMediaPlayer();
         super.onResume();
     }
 
     @Override
     public void onDestroy() {
-        releaseWakeLock();
         releaseMediaPlayer();
         super.onDestroy();
     }
@@ -400,22 +393,6 @@ public class ChessTimerActivity extends Activity {
         float normal_playback_rate = 1f;
         mSoundPool.play(soundID, leftVolume, rightVolume, priority, no_loop, normal_playback_rate);
     }
-    private void releaseWakeLock() {
-        if (mWakeLock != null) {
-            if (mWakeLock.isHeld()) {
-                mWakeLock.release();
-                Log.d(TAG, "released wake lock " + mWakeLock);
-            }
-        }
-    }
-
-    private void acquireWakeLock() {
-        releaseWakeLock();
-        PowerManager pm = (PowerManager) getSystemService(ChessTimerActivity.POWER_SERVICE);
-        mWakeLock = pm.newWakeLock(mWakeLockType, TAG);
-        mWakeLock.acquire();
-        Log.d(TAG, "acquired wake lock " + mWakeLock);
-    }
 
     // All state transitions occur here. The logic that controls
     // the UI elements is here.
@@ -434,6 +411,9 @@ public class ChessTimerActivity extends Activity {
             break;
 
         case RUNNING:
+            if (!allowScreenToDim()) {
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
             mCurrentState = GameState.RUNNING;
             mResetButton.setEnabled(true);
             mStartButton.setEnabled(false);
@@ -447,6 +427,7 @@ public class ChessTimerActivity extends Activity {
             break;
 
         case PAUSED:
+            getWindow().clearFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
             mCurrentState = GameState.PAUSED;
             mStartButton.setVisibility(View.GONE);
             mPauseButton.setVisibility(View.VISIBLE);
@@ -457,6 +438,7 @@ public class ChessTimerActivity extends Activity {
             break;
 
         case DONE:
+            getWindow().clearFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
             if (mActive != null) {
                 mCurrentState = GameState.DONE;
                 mStartButton.setEnabled(true);
@@ -568,7 +550,6 @@ public class ChessTimerActivity extends Activity {
         loadMoveCounterUserPreference();
         loadSwapSidesUserPreference();
         loadAudibleNotificationUserPreference();
-        loadScreenDimUserPreference();
     }
 
     // determine whether we're using BASIC or TOURNAMENT time control
@@ -689,12 +670,8 @@ public class ChessTimerActivity extends Activity {
         mDelayType = DelayType.valueOf(delayTypeString.toUpperCase(Locale.US));
     }
 
-    private void loadScreenDimUserPreference() {
-        boolean allowScreenToDim = mSharedPref.getBoolean(
-                TimerOptions.Key.SCREEN_DIM.toString(), true);
-        /** Create a PowerManager object so we can get the wakelock */
-        mWakeLockType = allowScreenToDim ? PowerManager.SCREEN_DIM_WAKE_LOCK
-                : PowerManager.SCREEN_BRIGHT_WAKE_LOCK;
+    private boolean allowScreenToDim() {
+        return mSharedPref.getBoolean(TimerOptions.Key.SCREEN_DIM.toString(), true);
     }
 
     private void loadIncrementUserPreference(TimerOptions.Key key) {
