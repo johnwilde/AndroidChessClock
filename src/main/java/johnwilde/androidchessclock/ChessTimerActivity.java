@@ -572,10 +572,10 @@ public class ChessTimerActivity extends Activity {
 
     // determine whether we're using BASIC or TOURNAMENT time control
     private void loadTimeControlPreferences() {
-        TimerOptions.TimeControl timeControl = TimerOptions.TimeControl
-                .valueOf(mSharedPref.getString(
-                        TimerOptions.Key.TIMECONTROL_TYPE.toString(),
-                        "DISABLED"));
+        String s = mSharedPref.getString(
+                TimerOptions.Key.TIMECONTROL_TYPE.toString(),
+                "DISABLED");
+        TimerOptions.TimeControl timeControl = TimerOptions.TimeControl.valueOf(s);
 
         if (timeControl == TimeControl.DISABLED) {
             mTimeControlType = TimeControlType.BASIC;
@@ -762,7 +762,8 @@ public class ChessTimerActivity extends Activity {
 
         // 0 is fully transparent, 255 is fully opaque
         private void setTransparency(int alpha) {
-            if (button == null) {
+            if (button == null)
+            {
                 Log.e(TAG, "Button is NULL");
             }
 

@@ -63,10 +63,11 @@
         <item>Собственная (Пользовательская)</item>
         <item> Основная (Отключено)</item>
     </string-array>
+
     <string-array name="timecontrol_type_values">
-        <item>ФИДЕ</item>
-        <item>Пользовательская</item>
-        <item>Отключено</item>
+        <item>FIDE</item>
+        <item>CUSTOM</item>
+        <item>DISABLED</item>
     </string-array>
 
     <string name="fide_minutes1_title">Минуты для первых N ходов.</string>
