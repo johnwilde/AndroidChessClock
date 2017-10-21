@@ -762,7 +762,8 @@ public class ChessTimerActivity extends Activity {
 
         // 0 is fully transparent, 255 is fully opaque
         private void setTransparency(int alpha) {
-            if (button == null) {
+            if (button == null)
+            {
                 Log.e(TAG, "Button is NULL");
             }
 
