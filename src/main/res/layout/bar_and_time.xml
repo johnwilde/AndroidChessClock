@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bar_container"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:paddingLeft="2.5dp"
+    android:paddingRight="2.5dp"
+    android:weightSum="1.0"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/padding"
+        android:layout_width="50dp"
+        android:layout_height="0dp"
+        tools:layout_weight=".99"
+        android:background="@android:color/holo_red_dark"/>
+
+    <FrameLayout
+        android:id="@+id/bar"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        tools:layout_weight=".01"
+        android:background="@android:color/holo_red_dark">
+
+        <TextView
+            android:id="@+id/bar_text"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:background="@android:color/darker_gray"
+            android:layout_gravity="top"
+            android:textColor="@android:color/white"
+            android:text="1"/>
+    </FrameLayout>
+</LinearLayout>

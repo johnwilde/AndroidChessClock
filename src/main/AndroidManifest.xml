@@ -1,20 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	android:versionCode="9" android:versionName="1.5"
-	package="johnwilde.androidchessclock">
-	<uses-sdk android:minSdkVersion="7" android:targetSdkVersion="25" />
-	<uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
+    package="johnwilde.androidchessclock"
+    android:versionCode="9"
+    android:versionName="1.5">
 
-	<application android:icon="@drawable/ic_launcher"
-		android:label="@string/app_name" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-		<activity android:name="ChessTimerActivity" android:label="@string/app_name">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-		</activity>
-		<activity android:name="TimerOptions"></activity>
-		<activity android:name="AdjustClock"></activity>
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="26" />
 
-	</application>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+        <activity
+            android:name=".ChessTimerActivity"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".TimerPreferenceFragment" />
+        <activity android:name=".AdjustClock" />
+        <activity
+            android:name=".BarChartActivity"
+            android:screenOrientation="landscape" />
+        <activity android:name=".TimerPreferenceActivity"></activity>
+    </application>
+
 </manifest>

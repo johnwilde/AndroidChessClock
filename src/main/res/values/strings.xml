@@ -3,7 +3,7 @@
     <string name="app_name">Chess Clock</string>
 	<string name="optionsmenu_preferences">Settings</string>
 	<string name="optionsmenu_about">About</string>
-	
+
 	<string name="reset_button">Reset</string>
 	<string name="cancel">Cancel</string>
 	<string name="OK">OK</string>
@@ -13,22 +13,22 @@
 	<string name="really_reset">Reset game?</string>
 	<string name="yes">Yes</string>
 	<string name="no">No</string>
+	<string name="stats">Stats</string>
 	<string name="pauseoff_button">Pause</string>
 	<string name="pauseon_button">Resume</string>
 	<string name="start_button">Start</string>
-	
+
 	<string name="time_preference_description">Time Preferences</string>
-	<string name="basic_time_preference_description">Basic Time Preferences</string>
-	
+	<string name="basic_time_preference_description">Simple Time Control</string>
+	<string name="adjust_basic_time_preference_description">Adjust Settings</string>
+
 	<string name="basic_screen_enabled_summary">Set basic time control options.</string>
-	<string name="basic_screen_disabled_summary">Currently disabled, using advanced time control.</string>
 	<string name="advanced_screen_enabled_summary">Set advanced time control options.</string>
-	<string name="advanced_screen_disabled_summary">Currently disabled, using basic time control.</string>
-	
+
 	<string name="initial_minutes_preference">Initial Minutes</string>
 	<string name="summary_initial_minutes_preference">Set number of minutes</string>
 	<string name="dialog_title_initial_minutes_preference">Please enter number of minutes</string>
-	
+
 	<string name="initial_seconds_preference">Initial Seconds</string>
 	<string name="summary_initial_seconds_preference">Set number of seconds</string>
 	<string name="dialog_title_initial_seconds_preference">Please enter number of seconds</string>
@@ -44,12 +44,12 @@
         <item>Bonus (Fischer)</item>
         <item>Delay (Bronstein)</item>
     </string-array>
-    
-    <string-array name="delay_type_values">
+
+	<string-array name="delay_type_values">
         <item>FISCHER</item>
         <item>BRONSTEIN</item>
     </string-array>
-    
+
 	<string name="allow_negative_time_preference">Allow clocks to go negative.</string>
 
 	<string name="display_options_preference_description">Display and Sound Preferences</string>
@@ -58,38 +58,34 @@
 	<string name="white_on_left_preference">White button on left</string>
 	<string name="audible_notification_preference_bell">Play sound when clock runs out.</string>
     <string name="audible_notification_preference_click">Play sound when pressing buttons.</string>
-	
-  	<string name="advanced_time_preference_description">Tournament Time Control</string>
+
+	<string name="advanced_time_preference_description">Tournament Time Control</string>
 	<string name="summary_advanced_time_preference_description">Set tournament time control options.</string>
 	<string name="select_time_control_type_preference">Select Type</string>
 
     <string-array name="timecontrol_type_descriptions">
         <item>Tournament time control (FIDE)</item>
         <item>Personal time control (CUSTOM)</item>
-        <item>Basic Time Preferences (DISABLED)</item>
     </string-array>
-    
-    <string-array name="timecontrol_type_values">
+
+	<string-array name="timecontrol_type_values">
         <item>FIDE</item>
         <item>CUSTOM</item>
-        <item>DISABLED</item>
     </string-array>
-	
+
 	<string name="fide_minutes1_title">Minutes for first N moves.</string>
 	<string name="fide_minutes1_title_part1">Minutes for first</string>
 	<string name="fide_minutes1_title_part2">moves.</string>
-	<string name="fide_minutes1_summary"></string>
 	<string name="fide_minutes1_dialogtitle">Please enter number of minutes</string>
-	                
+
 	<string name="fide_n_moves_title">Number of moves for first phase.</string>
-	<string name="fide_n_moves_summary"></string>
 	<string name="fide_n_moves_dialogtitle">Please enter number of moves.</string>
-	
+
 	<string name="fide_minutes2_title">Extra minutes for second phase.</string>
-	<string name="fide_minutes2_summary"></string>
 	<string name="fide_minutes2_dialogtitle">Please enter number of minutes</string>
-	
-	
+
+
+	<string name="move_times">Move Times</string>
 	<string name="move_counter_text">Move</string>
 	<string name="about_dialog">To report bugs or view source code, visit "https://github.com/johnwilde/AndroidChessClock"</string>
 	<string name="pause_dialog">Paused</string>
@@ -97,10 +93,6 @@
 	<string name="_0">0</string>
 	<string name="add_ten_seconds">Add Ten Seconds</string>
 	<string name="subtract_ten_seconds">Subtract Ten Seconds</string>
-	<string name="new_time_value"></string>
 	<string name="white_button">White Button</string>
 	<string name="black_button">Black Button</string>
-    
-	
-	
 </resources>

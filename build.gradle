@@ -1,16 +1,26 @@
 buildscript {
+    ext.kotlin_version = '1.1.60'
+
     repositories {
+        google()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.4.0-alpha6'
+        classpath 'com.android.tools.build:gradle:3.1.0-alpha04'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
-apply plugin: 'com.android.application'
 
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+
+ext {
+    supportLibVersion = '26.1.0'
+}
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 26
+    buildToolsVersion '27.0.1'
 
     buildTypes {
         release {
@@ -18,3 +28,16 @@ android {
         }
     }
 }
+
+repositories {
+    google()
+    jcenter()
+    mavenCentral()
+}
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    // Support Libraries
+    implementation "com.android.support:appcompat-v7:$supportLibVersion"
+}
+
+apply plugin: 'kotlin-android-extensions'

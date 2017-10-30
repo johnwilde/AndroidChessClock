@@ -2,166 +2,155 @@
 
 <!-- Define the options on the preferences screen  -->
 
-<PreferenceScreen
-        xmlns:android="http://schemas.android.com/apk/res/android">
-        
-        <PreferenceCategory
-        android:title="@string/time_preference_description">
-        
-	<PreferenceScreen
-			android:title="@string/basic_time_preference_description"
-			android:key="basic_time_control_preference_screen">
-    <PreferenceCategory>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-        <EditTextPreference
-                android:key="initial_minutes_preference"
-                android:title="@string/initial_minutes_preference"
-                android:summary="@string/summary_initial_minutes_preference"
-                android:dialogTitle="@string/dialog_title_initial_minutes_preference"
-                android:numeric="integer"
-                android:defaultValue="5"
-                />
-                
+    <PreferenceCategory android:title="@string/time_preference_description">
+        <johnwilde.androidchessclock.RadioCheckBoxPreference
+            android:defaultValue="true"
+            android:key="simple_time_control_checkbox"
+            android:title="@string/basic_time_preference_description" />
 
-        <EditTextPreference
-                android:key="initial_seconds_preference"
-                android:title="@string/initial_seconds_preference"
-                android:summary="@string/summary_initial_seconds_preference"
-                android:dialogTitle="@string/dialog_title_initial_seconds_preference" 
-                android:numeric="integer"
-                android:defaultValue="0"
+        <PreferenceScreen
+            android:summary="@string/adjust_basic_time_preference_description"
+            android:key="basic_time_control_preference_screen">
+
+            <PreferenceCategory>
+
+                <EditTextPreference
+                    android:defaultValue="5"
+                    android:dialogTitle="@string/dialog_title_initial_minutes_preference"
+                    android:key="initial_minutes_preference"
+                    android:numeric="integer"
+                    android:summary="@string/summary_initial_minutes_preference"
+                    android:title="@string/initial_minutes_preference" />
+
+
+                <EditTextPreference
+                    android:defaultValue="0"
+                    android:dialogTitle="@string/dialog_title_initial_seconds_preference"
+                    android:key="initial_seconds_preference"
+                    android:numeric="integer"
+                    android:summary="@string/summary_initial_seconds_preference"
+                    android:title="@string/initial_seconds_preference" />
+
+                <EditTextPreference
+                    android:defaultValue="0"
+                    android:dialogTitle="@string/dialog_title_increment_preference"
+                    android:key="increment_preference"
+                    android:numeric="integer"
+                    android:summary="@string/summary_increment_preference"
+                    android:title="@string/increment_preference" />
+
+                <ListPreference
+                    android:defaultValue="Fischer"
+                    android:entries="@array/delay_type_descriptions"
+                    android:entryValues="@array/delay_type_values"
+                    android:key="delay_type_preference"
+                    android:summary="@string/summary_delay_type_preference"
+                    android:title="@string/delay_type_preference" />
+
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="allow_negative_time_preference"
+                    android:title="@string/allow_negative_time_preference" />
+
+            </PreferenceCategory>
+
+        </PreferenceScreen>
+
+        <johnwilde.androidchessclock.RadioCheckBoxPreference
+            android:defaultValue="false"
+            android:key="tournament_time_control_checkbox"
+            android:title="@string/advanced_time_preference_description" />
+
+        <PreferenceScreen
+            android:key="advanced_time_control_preference_screen">
+            <PreferenceCategory>
+
+                <ListPreference
+                    android:defaultValue="FIDE"
+                    android:entries="@array/timecontrol_type_descriptions"
+                    android:entryValues="@array/timecontrol_type_values"
+                    android:key="timecontrol_type_preference"
+                    android:title="@string/select_time_control_type_preference" />
                 />
-                
-        <EditTextPreference
-                android:key="increment_preference"
-                android:title="@string/increment_preference"
-                android:summary="@string/summary_increment_preference"
-                android:dialogTitle="@string/dialog_title_increment_preference" 
-                android:numeric="integer"
-                android:defaultValue="0"
-                />
-                
-	    <ListPreference
-           android:title="@string/delay_type_preference" 
-           android:summary="@string/summary_delay_type_preference"
-           android:key="delay_type_preference"
-           android:defaultValue="Fischer"
-           android:entries="@array/delay_type_descriptions"
-           android:entryValues="@array/delay_type_values" />    
-                
-        <CheckBoxPreference
-                android:key="allow_negative_time_preference"
-                android:title="@string/allow_negative_time_preference"
-                android:defaultValue="false"
-                />
-                
+
+                <EditTextPreference
+                    android:defaultValue="40"
+                    android:dialogTitle="@string/fide_n_moves_dialogtitle"
+                    android:key="fide_n_moves"
+                    android:numeric="integer"
+                    android:title="@string/fide_n_moves_title" />
+
+                <EditTextPreference
+                    android:defaultValue="90"
+                    android:dialogTitle="@string/fide_minutes1_dialogtitle"
+                    android:key="fide_minutes1"
+                    android:numeric="integer"
+                    android:title="@string/fide_minutes1_title" />
+
+                <EditTextPreference
+                    android:defaultValue="30"
+                    android:dialogTitle="@string/fide_minutes2_dialogtitle"
+                    android:key="fide_minutes2"
+                    android:numeric="integer"
+                    android:title="@string/fide_minutes2_title" />
+
+                <EditTextPreference
+                    android:defaultValue="0"
+                    android:dialogTitle="@string/dialog_title_increment_preference"
+                    android:key="advanced_increment_preference"
+                    android:numeric="integer"
+                    android:summary="@string/summary_increment_preference"
+                    android:title="@string/increment_preference" />
+
+                <ListPreference
+                    android:defaultValue="Fischer"
+                    android:entries="@array/delay_type_descriptions"
+                    android:entryValues="@array/delay_type_values"
+                    android:key="advanced_delay_type_preference"
+                    android:summary="@string/summary_delay_type_preference"
+                    android:title="@string/delay_type_preference" />
+
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="advanced_allow_negative_time_preference"
+                    android:title="@string/allow_negative_time_preference" />
+
+            </PreferenceCategory>
+
+        </PreferenceScreen>
+
     </PreferenceCategory>
-	
-	</PreferenceScreen>
 
-	<PreferenceScreen
-			android:title="@string/advanced_time_preference_description"
-			android:key="advanced_time_control_preference_screen">
-    <PreferenceCategory>
+    <PreferenceCategory android:title="@string/display_options_preference_description">
 
-        <ListPreference
-             	android:title="@string/select_time_control_type_preference"
-                android:key="timecontrol_type_preference"
-                android:defaultValue="DISABLED"
- 	            android:entries="@array/timecontrol_type_descriptions"
-    	        android:entryValues="@array/timecontrol_type_values" />    
-                />
-
-        <EditTextPreference
-                android:key="fide_n_moves"
-                android:title="@string/fide_n_moves_title"
-                android:summary="@string/fide_n_moves_summary"
-                android:dialogTitle="@string/fide_n_moves_dialogtitle"
-                android:numeric="integer"
-                android:defaultValue="40"
-                />
-
-        <EditTextPreference
-                android:key="fide_minutes1"
-                android:title="@string/fide_minutes1_title"
-                android:summary="@string/fide_minutes1_summary"
-                android:dialogTitle="@string/fide_minutes1_dialogtitle"
-                android:numeric="integer"
-                android:defaultValue="90"
-                />
-                
-        <EditTextPreference
-                android:key="fide_minutes2"
-                android:title="@string/fide_minutes2_title"
-                android:summary="@string/fide_minutes2_summary"
-                android:dialogTitle="@string/fide_minutes2_dialogtitle"
-                android:numeric="integer"
-                android:defaultValue="30"
-                />
-
-        <EditTextPreference
-                android:key="advanced_increment_preference"
-                android:title="@string/increment_preference"
-                android:summary="@string/summary_increment_preference"
-                android:dialogTitle="@string/dialog_title_increment_preference" 
-                android:numeric="integer"
-                android:defaultValue="0"
-                />
-                
-	    <ListPreference
-           android:title="@string/delay_type_preference" 
-           android:summary="@string/summary_delay_type_preference"
-           android:key="advanced_delay_type_preference"
-           android:defaultValue="Fischer"
-           android:entries="@array/delay_type_descriptions"
-           android:entryValues="@array/delay_type_values" />    
-                
         <CheckBoxPreference
-                android:key="advanced_allow_negative_time_preference"
-                android:title="@string/allow_negative_time_preference"
-                android:defaultValue="false"
-                />
+            android:defaultValue="false"
+            android:key="screen_dim_preference"
+            android:title="@string/screen_dim_preference" />
 
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="show_move_count_preference"
+            android:title="@string/show_move_count_preference" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="white_on_left_preference"
+            android:title="@string/white_on_left_preference" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="audible_notification_preference_bell"
+            android:title="@string/audible_notification_preference_bell" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="audible_notification_preference_click"
+            android:title="@string/audible_notification_preference_click" />
     </PreferenceCategory>
-	
-	</PreferenceScreen>
-	
-	</PreferenceCategory>
 
-   <PreferenceCategory
-            android:title="@string/display_options_preference_description">
 
-        <CheckBoxPreference
-        		android:key="screen_dim_preference"
-                android:title="@string/screen_dim_preference"
-                android:defaultValue="false"
-                />
-                
- 	<CheckBoxPreference
-        		android:key="show_move_count_preference"
-                android:title="@string/show_move_count_preference"
-                android:defaultValue="true"
-                />                
-
- 	<CheckBoxPreference
-        		android:key="white_on_left_preference"
-                android:title="@string/white_on_left_preference"
-                android:defaultValue="true"
-                />                
-                
- 	<CheckBoxPreference
-        		android:key="audible_notification_preference_bell"
-                android:title="@string/audible_notification_preference_bell"
-                android:defaultValue="true"
-                />       
-                         
-    <CheckBoxPreference
-                android:key="audible_notification_preference_click"
-                android:title="@string/audible_notification_preference_click"
-                android:defaultValue="true"
-                />     
-   </PreferenceCategory>
-
-    
 </PreferenceScreen>
 
