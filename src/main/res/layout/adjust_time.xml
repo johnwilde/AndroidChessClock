@@ -47,7 +47,6 @@
         android:clickable="false"
         android:focusable="false"
         android:minHeight="1in"
-        android:text="@string/new_time_value"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <ImageView

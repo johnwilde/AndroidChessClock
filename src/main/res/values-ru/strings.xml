@@ -20,9 +20,7 @@
     <string name="time_preference_description">Установки времени</string>
     <string name="basic_time_preference_description">Основные установки времени</string>
     <string name="basic_screen_enabled_summary">Установить основные настройки времени.</string>
-    <string name="basic_screen_disabled_summary">Сейчас отключено, используются расширенные настройки.</string>
     <string name="advanced_screen_enabled_summary">Установить расширенные настройки времени.</string>
-    <string name="advanced_screen_disabled_summary">Сейчас отключено, используются основные настройки времени.</string>
     <string name="initial_minutes_preference">Начальное количество минут</string>
     <string name="summary_initial_minutes_preference">Установить количество минут</string>
     <string name="dialog_title_initial_minutes_preference">Пожалуйста, введите количество минут</string>
@@ -61,24 +59,19 @@
     <string-array name="timecontrol_type_descriptions">
         <item>Турнирная (ФИДЕ)</item>
         <item>Собственная (Пользовательская)</item>
-        <item> Основная (Отключено)</item>
     </string-array>
     <string-array name="timecontrol_type_values">
-        <item>ФИДЕ</item>
-        <item>Пользовательская</item>
-        <item>Отключено</item>
+        <item>FIDE</item>
+        <item>CUSTOM</item>
     </string-array>
 
     <string name="fide_minutes1_title">Минуты для первых N ходов.</string>
     <string name="fide_minutes1_title_part1">Минуты для первых</string>
     <string name="fide_minutes1_title_part2">ходов.</string>
-    <string name="fide_minutes1_summary"></string>
     <string name="fide_minutes1_dialogtitle">Пожалуйста, введите количество минут.</string>
     <string name="fide_n_moves_title">Количество ходов для первой фазы.</string>
-    <string name="fide_n_moves_summary"></string>
     <string name="fide_n_moves_dialogtitle">Пожалуйста, введите количество ходов.</string>
     <string name="fide_minutes2_title">Дополнительные минуты для второй фазы.</string>
-    <string name="fide_minutes2_summary"></string>
     <string name="fide_minutes2_dialogtitle">Пожалуйста, введите количество минут.</string>
     <string name="move_counter_text">Ход</string>
     <string name="about_dialog">Что бы сообщить об ошибке или просмотреть исходный код, посетите "https://github.com/johnwilde/AndroidChessClock"</string>
@@ -87,7 +80,9 @@
 	<string name="_0">0</string>
 	<string name="add_ten_seconds">Добавить десяти секунд</string>
 	<string name="subtract_ten_seconds">Вычтите десять секунд</string>
-	<string name="new_time_value"></string>
 	<string name="white_button">белый</string>
     <string name="black_button">черный</string>
+    <string name="stats">Статистика</string>
+    <string name="adjust_basic_time_preference_description">" Настройка параметров"</string>
+    <string name="move_times">" Время перемещения"</string>
 </resources>

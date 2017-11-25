@@ -6,10 +6,10 @@
 
 - TODO
 	* Scroll input widget for setting clocks
-	* At end of game show a chart with the distribution of time spent per move
 	  for each player
 
 - DONE
+	* At end of game show a chart with the distribution of time spent per move
 	* Allow time to be modified during a game
     * Display animated icon showing Bronstein delay countdown (next to clock)
     * Add NumberFormat exception handling for bad initial time or other text input
