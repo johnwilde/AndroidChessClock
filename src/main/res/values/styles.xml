@@ -1,30 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-	<style name="clockStyle" parent="android:Widget.Holo.EditText">
-		<item name="android:layout_width">match_parent</item>
-		<item name="android:layout_height">wrap_content</item>
-		<item name="android:textSize">40sp</item>
-		<item name="android:gravity">center</item>
-	</style>
-	
-	<style name="tinyButton" >
-		<item name="android:text"></item> 
-		<item name="android:gravity">center</item>
-		<item name="android:layout_weight">10000</item>
-		<item name="android:layout_width">wrap_content</item>
-		<item name="android:layout_height">wrap_content</item>
-		<item name="android:visibility">gone</item>
-		<item name="android:padding">10dp</item>
-	</style>
-	
-	<style name="bigButton" >
-		<item name="android:button">@null</item>
-		<item name="android:text"></item>
-		<item name="android:gravity">center</item>
-		<item name="android:layout_weight">1</item>
-		<item name="android:layout_width">match_parent</item>
-		<item name="android:layout_height">match_parent</item>
-		<item name="android:padding">10dp</item>
-	</style>
-	
+
+    <style name="clockStyle" parent="android:Widget.Holo.EditText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">60sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="tinyButton">
+        <item name="android:text"></item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_weight">10000</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:visibility">gone</item>
+        <item name="android:padding">10dp</item>
+    </style>
+
+    <style name="bigButton">
+        <item name="android:button">@null</item>
+        <item name="android:text"></item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:padding">10dp</item>
+    </style>
+
+    <!-- inherit from the AppCompat theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <!-- your app branding color for the app bar -->
+        <item name="colorPrimary">@color/primary</item>
+        <!-- darker variant for the status bar and contextual app bars -->
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <!-- theme UI controls like checkboxes and text fields -->
+        <item name="colorAccent">@color/accent</item>
+        <!--Hide status bar-->
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
 </resources>

@@ -3,26 +3,18 @@ package johnwilde.androidchessclock
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 
-
-
 class BarChartActivity : Activity() {
+    lateinit var dependencyInjection : DependencyInjection
     companion object {
-        private val WHITE_MS = "white_ms"
-        private val BLACK_MS = "black_ms"
-
         @JvmStatic
-        fun createIntent(context: Context, whiteMs: ArrayList<Long>, blackMs: ArrayList<Long>) : Intent {
+        fun createIntent(context: Context) : Intent {
             val intent = Intent(context, BarChartActivity::class.java)
-            intent.putExtra(WHITE_MS, whiteMs)
-            intent.putExtra(BLACK_MS, blackMs)
             return intent
         }
     }
@@ -31,10 +23,9 @@ class BarChartActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        @Suppress("UNCHECKED_CAST")
-        whiteMs = intent.getSerializableExtra(WHITE_MS) as ArrayList<Long>
-        @Suppress("UNCHECKED_CAST")
-        blackMs = intent.getSerializableExtra(BLACK_MS) as ArrayList<Long>
+        dependencyInjection = ChessApplication.getDependencyInjection(this)
+        whiteMs = dependencyInjection.clockManager.white.moveTimes
+        blackMs = dependencyInjection.clockManager.black.moveTimes
         if (whiteMs.size > blackMs.size) blackMs.add(0)
         if (blackMs.size > whiteMs.size) whiteMs.add(0)
         setContentView(R.layout.bar_chart_container)

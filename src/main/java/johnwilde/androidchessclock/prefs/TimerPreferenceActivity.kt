@@ -1,14 +1,13 @@
-package johnwilde.androidchessclock
+package johnwilde.androidchessclock.prefs
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.preference.PreferenceActivity
 import android.preference.PreferenceManager
+import android.support.v7.app.AppCompatActivity
+import johnwilde.androidchessclock.prefs.TimerPreferenceFragment.Key
 
-import johnwilde.androidchessclock.TimerPreferenceFragment.Key;
-
-class TimerPreferenceActivity : PreferenceActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
-    lateinit var fragment : TimerPreferenceFragment
+class TimerPreferenceActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
+    var fragment : TimerPreferenceFragment = TimerPreferenceFragment()
 
     companion object {
         @JvmField
@@ -20,8 +19,9 @@ class TimerPreferenceActivity : PreferenceActivity(), SharedPreferences.OnShared
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Display the fragment as the main content.
-        fragmentManager.beginTransaction()
-                .replace(android.R.id.content, TimerPreferenceFragment())
+        fragmentManager
+                .beginTransaction()
+                .replace(android.R.id.content, fragment)
                 .commit()
     }
 
@@ -38,7 +38,6 @@ class TimerPreferenceActivity : PreferenceActivity(), SharedPreferences.OnShared
     override fun onResume() {
         super.onResume()
         updateAll(null)
-        register()
     }
 
     override fun onPause() {
@@ -49,9 +48,6 @@ class TimerPreferenceActivity : PreferenceActivity(), SharedPreferences.OnShared
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences,
                                            key: String) {
         val uiKeys = listOf(
-                Key.SHOW_MOVE_COUNTER,
-                Key.SWAP_SIDES,
-                Key.SCREEN_DIM,
                 Key.PLAY_BELL,
                 Key.PLAY_CLICK);
 
@@ -67,8 +63,8 @@ class TimerPreferenceActivity : PreferenceActivity(), SharedPreferences.OnShared
     private fun updateAll(key : String?) {
         unregister()
         fragment.updateCheckbox(key)
-        fragment.doValidationAndInitialization();
-        fragment.doSummaryTextUpdates();
+        fragment.doValidationAndInitialization()
+        fragment.doSummaryTextUpdates()
         register()
     }
 }

@@ -2,7 +2,7 @@ package johnwilde.androidchessclock;
 
 import java.text.DecimalFormat;
 
- class Utils {
+public class Utils {
     public static String formatTime(long millisIn) {
         // formatters for displaying text in timer
         DecimalFormat dfOneDecimal = new DecimalFormat("0.0");
