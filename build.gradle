@@ -33,11 +33,22 @@ repositories {
     google()
     jcenter()
     mavenCentral()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
 }
 dependencies {
+    implementation 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
+    implementation 'com.android.support:support-v4:26.1.0'
+    implementation 'com.hannesdorfmann.mosby3:mvi:3.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'com.jakewharton.timber:timber:4.6.0'
     // Support Libraries
+    implementation "com.android.support:design:$supportLibVersion"
+    implementation "com.android.support:transition:$supportLibVersion"
     implementation "com.android.support:appcompat-v7:$supportLibVersion"
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
 }
 
 apply plugin: 'kotlin-android-extensions'

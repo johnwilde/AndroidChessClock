@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/clockButton"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="center"
+              android:orientation="vertical">
+
+        <CheckedTextView
+            android:id="@+id/clock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            style="@style/clockStyle"
+            android:checked="false"
+            android:focusable="false"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/clock_text_color"
+            android:layout_gravity="bottom"
+            tools:text="12:13"
+            android:gravity="center" />
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:contentDescription="@string/white_button"
+            android:scaleType="fitCenter"
+            tools:src="@drawable/white" >
+        </ImageButton>
+
+        <TextView
+            android:id="@+id/moveCount"
+            android:layout_gravity="bottom|center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="1"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:textColor="@color/accent"
+            android:visibility="visible" >
+        </TextView>
+    </FrameLayout>
+</LinearLayout>

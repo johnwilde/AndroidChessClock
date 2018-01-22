@@ -18,11 +18,12 @@
 
     <item android:id="@+id/optionsmenu_preferences" 
         android:title="@string/optionsmenu_preferences"
-        android:showAsAction="ifRoom" 
+          android:onClick="onSettingsClick"
          />
 
 	<item android:id="@+id/optionsmenu_about" 
         android:title="@string/optionsmenu_about"
+          android:onClick="onAboutClick"
          />
 
 

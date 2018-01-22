@@ -13,6 +13,9 @@ import android.widget.TextView;
  * Activity that lets user adjust a player's clock
  */
 public class AdjustClock extends Activity {
+    // Constants
+    public final static String EXTRA_COLOR = "johnwilde.androidchessclock.COLOR";
+    public final static String EXTRA_TIME = "johnwilde.androidchessclock.TIME";
 
     private static final String TAG = "AdjustClockActivity";
     private TextView mView;
@@ -29,8 +32,8 @@ public class AdjustClock extends Activity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-        mColor = intent.getStringExtra(ChessTimerActivity.EXTRA_COLOR);
-        long time = intent.getLongExtra(ChessTimerActivity.EXTRA_TIME, 0);
+        mColor = intent.getStringExtra(EXTRA_COLOR);
+        long time = intent.getLongExtra(EXTRA_TIME, 0);
 
         setContentView(R.layout.adjust_time);
         mStartTime = time;

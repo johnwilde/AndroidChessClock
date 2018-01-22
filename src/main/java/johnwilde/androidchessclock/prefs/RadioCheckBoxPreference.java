@@ -1,4 +1,4 @@
-package johnwilde.androidchessclock;
+package johnwilde.androidchessclock.prefs;
 
 import android.annotation.TargetApi;
 import android.content.Context;

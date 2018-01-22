@@ -5,7 +5,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory android:title="@string/time_preference_description">
-        <johnwilde.androidchessclock.RadioCheckBoxPreference
+        <johnwilde.androidchessclock.prefs.RadioCheckBoxPreference
             android:defaultValue="true"
             android:key="simple_time_control_checkbox"
             android:title="@string/basic_time_preference_description" />
@@ -58,7 +58,7 @@
 
         </PreferenceScreen>
 
-        <johnwilde.androidchessclock.RadioCheckBoxPreference
+        <johnwilde.androidchessclock.prefs.RadioCheckBoxPreference
             android:defaultValue="false"
             android:key="tournament_time_control_checkbox"
             android:title="@string/advanced_time_preference_description" />
@@ -126,21 +126,6 @@
     <PreferenceCategory android:title="@string/display_options_preference_description">
 
         <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="screen_dim_preference"
-            android:title="@string/screen_dim_preference" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="show_move_count_preference"
-            android:title="@string/show_move_count_preference" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="white_on_left_preference"
-            android:title="@string/white_on_left_preference" />
-
-        <CheckBoxPreference
             android:defaultValue="true"
             android:key="audible_notification_preference_bell"
             android:title="@string/audible_notification_preference_bell" />
@@ -150,7 +135,5 @@
             android:key="audible_notification_preference_click"
             android:title="@string/audible_notification_preference_click" />
     </PreferenceCategory>
-
-
 </PreferenceScreen>
 

@@ -1,7 +1,5 @@
-package johnwilde.androidchessclock;
+package johnwilde.androidchessclock.prefs;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -10,12 +8,10 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.util.Log;
 import android.widget.BaseAdapter;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.sql.Time;
+import johnwilde.androidchessclock.R;
+import timber.log.Timber;
 
 /**  Activity that inflates the preferences from XML.
  * 
@@ -32,11 +28,8 @@ public class TimerPreferenceFragment extends PreferenceFragment {
 		INCREMENT_SECONDS("increment_preference"),
 		DELAY_TYPE("delay_type_preference"),
 		NEGATIVE_TIME("allow_negative_time_preference"),
-		SCREEN_DIM("screen_dim_preference"),
-		SWAP_SIDES("white_on_left_preference"),
         PLAY_CLICK("audible_notification_preference_click"),
 		PLAY_BELL("audible_notification_preference_bell"),
-		SHOW_MOVE_COUNTER("show_move_count_preference"),
 		TIMECONTROL_TYPE("timecontrol_type_preference"),
 		FIDE_MOVES_PHASE1("fide_n_moves"),
 		FIDE_MIN_PHASE1("fide_minutes1"),
@@ -72,8 +65,6 @@ public class TimerPreferenceFragment extends PreferenceFragment {
 	
 	public enum TimeControl{FIDE, CUSTOM};
 	
-	private static final String TAG = "TimerOptionsActivity";
-	
     @Override
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,12 +82,6 @@ public class TimerPreferenceFragment extends PreferenceFragment {
             }
         });
     }
-
-	@Override
-	public void onAttach(Context context) {
-		super.onAttach(context);
-		((TimerPreferenceActivity) context).fragment = this;
-	}
 
 	private void setAdvancedTimeControlPreferences() {
 		
@@ -163,7 +148,7 @@ public class TimerPreferenceFragment extends PreferenceFragment {
         int FIDE_PHASE2_MIN = 30;
         int FIDE_PHASE1_MOVES = 40;
         int FIDE_INCREMENT_SEC = 30;
-        String delayType = ChessTimerActivity.DelayType.FISCHER.name();
+        String delayType = PreferencesUtil.DelayType.FISCHER.name();
         boolean allowNegativeTime = false;
         
         setEditTextValue(Key.FIDE_MIN_PHASE1, "" + FIDE_PHASE1_MIN);
@@ -212,14 +197,13 @@ public class TimerPreferenceFragment extends PreferenceFragment {
 	 */
     public void doValidationAndInitialization(){
         for (Key k : Key.values()){
-            Log.d(TAG, "Key: " + k.toString());
+            Timber.d("Key:", k.toString());
             Preference p = findPreference(k.toString());
             if (p instanceof EditTextPreference){
                 EditTextPreference pref = (EditTextPreference)p;
                 // handle case where user entered no text
                 if (pref.getText().trim().length() == 0){
                     pref.setText("0");
-                    Log.d(TAG, "New value: " + pref.getText());
                 }
             }
         }
