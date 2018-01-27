@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.support.transition.TransitionManager
 import android.support.v4.widget.DrawerLayout
 import android.view.MenuItem
@@ -198,12 +197,11 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
     }
 
     private fun getPackageVersion(): String {
-        try {
-            val manager = packageManager.getPackageInfo(
-                    packageName, 0)
-            return manager.versionName
+        return try {
+            val manager = packageManager.getPackageInfo(packageName, 0)
+            manager.versionName
         } catch (e: PackageManager.NameNotFoundException) {
-            return getString(R.string.unknown)
+            getString(R.string.unknown)
         }
     }
 
