@@ -1,9 +1,13 @@
 package johnwilde.androidchessclock.prefs
 
+import android.content.Context
 import android.content.SharedPreferences
+import android.preference.PreferenceManager
+import johnwilde.androidchessclock.R
 import timber.log.Timber
 
-class PreferencesUtil(val sharedPreferences: SharedPreferences) {
+class PreferencesUtil(context: Context) {
+    val sharedPreferences : SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     enum class TimeControlType {
         BASIC, TOURNAMENT
     }
@@ -22,6 +26,8 @@ class PreferencesUtil(val sharedPreferences: SharedPreferences) {
     var allowNegativeTime: Boolean = false
 
     init {
+        // set default values (for first run)
+        PreferenceManager.setDefaultValues(context, R.xml.preferences, false)
         loadAllUserPreferences()
     }
 

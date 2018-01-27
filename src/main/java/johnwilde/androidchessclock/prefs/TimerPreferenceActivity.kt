@@ -6,14 +6,13 @@ import android.preference.PreferenceManager
 import android.support.v7.app.AppCompatActivity
 import johnwilde.androidchessclock.prefs.TimerPreferenceFragment.Key
 
-class TimerPreferenceActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
+class TimerPreferenceActivity : AppCompatActivity(),
+        SharedPreferences.OnSharedPreferenceChangeListener {
     var fragment : TimerPreferenceFragment = TimerPreferenceFragment()
 
     companion object {
-        @JvmField
-        val LOAD_ALL = "johnwilde.androidchessclock.LoadAll"
-        @JvmField
-        val LOAD_UI = "johnwilde.androidchessclock.LoadUi"
+        @JvmField val LOAD_ALL = "johnwilde.androidchessclock.LoadAll"
+        @JvmField val LOAD_UI = "johnwilde.androidchessclock.LoadUi"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

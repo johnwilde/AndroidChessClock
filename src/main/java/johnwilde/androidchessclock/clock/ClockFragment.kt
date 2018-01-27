@@ -30,7 +30,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         private val COLOR = "ARG_COLOR"
 
         fun newInstance(color: ClockView.Color): ClockFragment {
-            val args: Bundle = Bundle()
+            val args = Bundle()
             args.putSerializable(COLOR, color)
             val fragment = ClockFragment()
             fragment.arguments = args
@@ -46,7 +46,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         // initialize the singleton "business logic"
         val dependencyInjection = ChessApplication.getDependencyInjection(context!!)
         preferences = dependencyInjection.preferenceUtil
-        color = arguments.getSerializable(COLOR) as ClockView.Color
+        color = arguments!!.getSerializable(COLOR) as ClockView.Color
         clockManager = dependencyInjection.clockManager
         super.onAttach(context)
     }
@@ -56,14 +56,13 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(
-            inflater: LayoutInflater?,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?): View {
-        return inflater!!.inflate(R.layout.clock_button, container, false)
+    override fun onCreateView(inflater: LayoutInflater,
+                              container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.clock_button, container, false)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         button.setImageResource(if (color == ClockView.Color.WHITE) R.drawable.white else R.drawable.black)
         clock.setOnClickListener({ launchAdjustPlayerClockActivity() })
@@ -84,7 +83,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     private fun renderPromptToMove(viewState: PromptToMove) {
-        Toast.makeText(activity.applicationContext, R.string.tap_other_button, Toast.LENGTH_SHORT)
+        Toast.makeText(activity!!.applicationContext, R.string.tap_other_button, Toast.LENGTH_SHORT)
                 .show()
     }
 

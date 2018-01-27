@@ -38,31 +38,31 @@ class ClockManager(val preferencesUtil: PreferencesUtil) {
     // Player button was hit
     fun moveEnd(color: ClockView.Color) : Observable<ClockViewState> {
         return when (gameState) {
-            GameState.PAUSED,
-            GameState.NOT_STARTED -> {
-                if (color == active.color) {
-                    // Must tap non-active color to resume/start game
-                    val otherColor = forOtherColor(color).color
-                    Observable.just<ClockViewState>(PromptToMove(otherColor))
-                } else {
-                    // Start / resume play
-                    clickObservable.onNext(Click())
-                    startPlayerClock(forOtherColor(color))
-                    forColor(color).getMoveEndObservables()
+                    GameState.PAUSED,
+                    GameState.NOT_STARTED -> {
+                        if (color == active.color) {
+                            // Must tap non-active color to resume/start game
+                            val otherColor = forOtherColor(color).color
+                            Observable.just<ClockViewState>(PromptToMove(otherColor))
+                        } else {
+                            // Start / resume play
+                            clickObservable.onNext(Click())
+                            startPlayerClock(forOtherColor(color))
+                            forColor(color).getMoveEndObservables()
+                        }
+                    }
+                    GameState.PLAYING -> {
+                        // Switch turns
+                        if (color == active.color) {
+                            clickObservable.onNext(Click())
+                            startPlayerClock(forOtherColor(color))
+                            forColor(color).onMoveEnd()
+                        } else {
+                            forColor(color).getMoveEndObservables()
+                        }
+                    }
+                    GameState.FINISHED -> Observable.just(DoNothing())
                 }
-            }
-            GameState.PLAYING -> {
-                // Switch turns
-                if (color == active.color) {
-                    clickObservable.onNext(Click())
-                    startPlayerClock(forOtherColor(color))
-                    forColor(color).onMoveEnd()
-                } else {
-                    forColor(color).getMoveEndObservables()
-                }
-            }
-            GameState.FINISHED -> Observable.just(DoNothing())
-        }
     }
 
     // Play/Pause button was hit

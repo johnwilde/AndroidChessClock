@@ -20,9 +20,9 @@ class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
     lateinit var preferences : PreferencesUtil
 
     // for sounding buzzer
-    internal var mBellId: Int = 0
-    internal var mClickId: Int = 0
-    internal var mSoundPool: SoundPool? = null
+    private var mBellId: Int = 0
+    private var mClickId: Int = 0
+    private var mSoundPool: SoundPool? = null
 
     override fun createPresenter(): SoundViewPresenter {
         return SoundViewPresenter(clockManager)
@@ -41,10 +41,10 @@ class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater?,
+            inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?): View {
-        return inflater!!.inflate(R.layout.empty, container, false)
+        return inflater.inflate(R.layout.empty, container, false)
     }
 
     override fun onResume() {
@@ -105,11 +105,11 @@ class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
         }
     }
 
-    internal fun playBell() {
+    private fun playBell() {
         playSound(mBellId)
     }
 
-    internal fun playClick() {
+    private fun playClick() {
         playSound(mClickId)
     }
 
@@ -117,7 +117,7 @@ class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
         if (mSoundPool == null) {
             return
         }
-        val audioManager = activity.getSystemService(Context.AUDIO_SERVICE) as AudioManager?
+        val audioManager = activity!!.getSystemService(Context.AUDIO_SERVICE) as AudioManager?
         val curVolume = audioManager!!.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).toFloat()
         val leftVolume = curVolume / maxVolume

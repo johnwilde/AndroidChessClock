@@ -12,16 +12,6 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
     // "forwards" intents from ClockView to TimerLogic (from view to business logic)
     override fun bindIntents() {
 
-//        var binder = object : ViewIntentBinder<ClockView, Any> {
-//            override fun bind(view: ClockView): Observable<Any> {
-//                return view.clickIntent()
-//            }
-//        }
-//        var f = Function<Any, Observable<ClockViewState>>({timer.onButtonClick()})
-//        var clicks = intent(binder)
-//                .flatMap(f)
-
-        Timber.d("bindIntents for %s", color)
         var stateUpdates = intent(ClockView::clickIntent)
                 .flatMap {
                     clockManager.moveEnd(color)

@@ -4,7 +4,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
-import android.preference.PreferenceManager
+import android.os.PersistableBundle
 import android.support.transition.TransitionManager
 import android.support.v4.widget.DrawerLayout
 import android.view.MenuItem
@@ -14,7 +14,10 @@ import com.hannesdorfmann.mosby3.mvi.MviActivity
 import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
-import johnwilde.androidchessclock.*
+import johnwilde.androidchessclock.BarChartActivity
+import johnwilde.androidchessclock.ChessApplication
+import johnwilde.androidchessclock.DependencyInjection
+import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.clock.ClockFragment
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.prefs.TimerPreferenceActivity
@@ -24,6 +27,7 @@ import timber.log.Timber
 
 var REQUEST_CODE_PREFERENCES : Int = 1
 var REQUEST_CODE_ADJUST_TIME : Int = 2
+val RESET_DIALOG_SHOWING = "RESET_DIALOG_SHOWING"
 
 class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPauseView {
 
@@ -44,9 +48,6 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         drawerLayout.addDrawerListener(drawerListener)
         views = arrayOf(leftContainer, buttons, rightContainer)
 
-        // set default values (for first run)
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
-
         supportFragmentManager.findFragmentByTag("sound") ?:
             supportFragmentManager
                     .beginTransaction()
@@ -65,26 +66,30 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
                         .replace(R.id.right, ClockFragment.newInstance(ClockView.Color.BLACK), "right")
                         .commit()
 
+        reset_button.setOnClickListener {
+            showResetDialog()
+        }
         swap_sides.setOnClickListener {
             swapSides()
         }
-        reset_button.setOnClickListener {
-            launchResetDialog()
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        if (savedInstanceState!!.getBoolean(RESET_DIALOG_SHOWING, false)) {
+            showResetDialog()
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        Timber.d("MainActivity onResume")
-        dialog?.dismiss()
-    }
-
-    override fun onPause() {
-        super.onPause()
+    override fun onSaveInstanceState(outState: Bundle?) {
+        outState!!.putBoolean(RESET_DIALOG_SHOWING, dialog?.isShowing ?: false)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        // https://stackoverflow.com/questions/15244179/dismissing-dialog-on-activity-finish
+        dialog?.dismiss()
         drawerLayout.removeDrawerListener(drawerListener)
     }
 
@@ -102,11 +107,11 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         return drawerListener.subject
     }
 
-    fun launchStatsActivity() {
+    private fun launchStatsActivity() {
         startActivity(BarChartActivity.createIntent(this))
     }
 
-    fun launchResetDialog() {
+    private fun showResetDialog() {
         dependencyInjection.clockManager.pause()
         dialog = AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -140,7 +145,7 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         }
     }
 
-    fun renderSpinner(spinnerViewState: SpinnerViewState) {
+    private fun renderSpinner(spinnerViewState: SpinnerViewState) {
         spinner.msTotal = dependencyInjection.preferenceUtil.getBronsteinDelayMs()
         spinner.msSoFar = spinnerViewState.msDelayToGo
         if (spinnerViewState.msDelayToGo > 0) {
@@ -151,7 +156,7 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         }
     }
 
-    fun swapSides() {
+    private fun swapSides() {
         TransitionManager.beginDelayedTransition(mainContainer)
         mainContainer.removeAllViews()
         views.reverse()
@@ -166,15 +171,15 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         }
     }
 
-    fun onSettingsClick(item: MenuItem){
+    fun onSettingsClick(item: MenuItem) {
         launchPreferencesActivity()
     }
 
-    fun onAboutClick(item: MenuItem){
+    fun onAboutClick(item: MenuItem) {
         showAboutDialog()
     }
 
-    fun launchPreferencesActivity() {
+    private fun launchPreferencesActivity() {
         // launch an activity through this intent
         val launchPreferencesIntent = Intent().setClass(this,
                 TimerPreferenceActivity::class.java)
@@ -182,12 +187,12 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         startActivityForResult(launchPreferencesIntent, REQUEST_CODE_PREFERENCES)
     }
 
-    fun showAboutDialog() {
+    private fun showAboutDialog() {
         val builder = AlertDialog.Builder(this)
         val title = getString(R.string.app_name)
         val about = getString(R.string.about_dialog)
         val message = title + ", " + getString(R.string.version) + ": " + getPackageVersion() + "\n\n" + about
-        builder.setMessage(message).setPositiveButton(getString(R.string.OK)) { dialog, id -> dialog.cancel() }
+        builder.setMessage(message).setPositiveButton(getString(R.string.OK)) { dialog, _ -> dialog.cancel() }
         val alert = builder.create()
         alert.show()
     }
@@ -226,10 +231,9 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         }
     }
 
-    class SimpleDrawerListener() : DrawerLayout.SimpleDrawerListener() {
+    class SimpleDrawerListener : DrawerLayout.SimpleDrawerListener() {
         var subject : PublishSubject<Any> = PublishSubject.create()
-        override fun onDrawerOpened(drawerView: View?) {
-            super.onDrawerOpened(drawerView)
+        override fun onDrawerOpened(drawerView: View) {
             subject.onNext(1)
         }
     }
