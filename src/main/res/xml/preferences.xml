@@ -134,6 +134,11 @@
             android:defaultValue="true"
             android:key="audible_notification_preference_click"
             android:title="@string/audible_notification_preference_click" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="show_time_gap"
+            android:title="@string/show_time_gap" />
     </PreferenceCategory>
 </PreferenceScreen>
 

@@ -98,4 +98,5 @@
 
     <string name="tap_other_button">Tap other button to resume.</string>
     <string name="new_game">New game</string>
+    <string name="show_time_gap">Show time gap</string>
 </resources>

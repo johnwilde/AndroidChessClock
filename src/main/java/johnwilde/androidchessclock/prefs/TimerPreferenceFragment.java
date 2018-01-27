@@ -40,7 +40,8 @@ public class TimerPreferenceFragment extends PreferenceFragment {
 		BASIC_SCREEN("basic_time_control_preference_screen"),
         SIMPLE_TIME_CONTROL_CHECKBOX("simple_time_control_checkbox"),
         TOURNAMENT_TIME_CONTROL_CHECKBOX("tournament_time_control_checkbox"),
-		ADVANCED_SCREEN("advanced_time_control_preference_screen");
+		ADVANCED_SCREEN("advanced_time_control_preference_screen"),
+        TIME_GAP("show_time_gap");
 		private String mValue;
 
 		public String toString(){

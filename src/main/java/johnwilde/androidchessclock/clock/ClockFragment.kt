@@ -79,7 +79,14 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         when(viewState) {
             is ButtonViewState -> renderClock(viewState)
             is PromptToMove -> renderPromptToMove(viewState)
+            is TimeGapViewState -> renderTimeGap(viewState)
         }
+    }
+
+    private fun renderTimeGap(viewState: TimeGapViewState) {
+        timeGap.visibility = if (viewState.enabled && preferences.showTimeGap) View.VISIBLE else View.GONE
+        timeGap.text = Utils.formatTimeGap(viewState.msGap)
+        timeGap.isChecked = viewState.msGap < 0
     }
 
     private fun renderPromptToMove(viewState: PromptToMove) {
@@ -88,7 +95,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     fun renderClock(buttonViewState: ButtonViewState) {
-        clock.text = Utils.formatTime(buttonViewState.msToGo)
+        clock.text = Utils.formatClockTime(buttonViewState.msToGo)
         clock.alpha = if (buttonViewState.enabled) 1.0f else .1f
         clock.isChecked = buttonViewState.msToGo < 10_000
         button.drawable.alpha = if (buttonViewState.enabled) BUTTON_VISIBLE else BUTTON_FADED

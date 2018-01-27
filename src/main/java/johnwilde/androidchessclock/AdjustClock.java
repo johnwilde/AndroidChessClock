@@ -87,7 +87,7 @@ public class AdjustClock extends Activity {
     }
 
     protected void updateTimeView() {
-        mView.setText(Utils.formatTime(mTime));
+        mView.setText(Utils.INSTANCE.formatClockTime(mTime));
         mView.invalidate();
     }
     

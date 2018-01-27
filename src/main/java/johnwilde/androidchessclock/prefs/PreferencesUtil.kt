@@ -24,6 +24,7 @@ class PreferencesUtil(context: Context) {
     var playBuzzerAtEnd: Boolean = false
     var playSoundOnButtonTap: Boolean = false
     var allowNegativeTime: Boolean = false
+    var showTimeGap: Boolean = true
 
     init {
         // set default values (for first run)
@@ -94,6 +95,8 @@ class PreferencesUtil(context: Context) {
                 TimerPreferenceFragment.Key.PLAY_BELL.toString(), false)
         playSoundOnButtonTap = sharedPreferences.getBoolean(
                 TimerPreferenceFragment.Key.PLAY_CLICK.toString(), false)
+        showTimeGap = sharedPreferences.getBoolean(
+                TimerPreferenceFragment.Key.TIME_GAP.toString(), true)
     }
 
     private fun loadNegativeTimeUserPreference(key: TimerPreferenceFragment.Key) {

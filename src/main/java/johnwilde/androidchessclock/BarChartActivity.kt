@@ -47,11 +47,11 @@ class BarChartActivity : Activity() {
             twoBarContainer.addView(
                     addBar(p1[i].toFloat() / maxValue,
                             Color.WHITE,
-                            Utils.formatTime(p1[i])))
+                            Utils.formatClockTime(p1[i])))
             twoBarContainer.addView(
                     addBar(p2[i].toFloat() / maxValue,
                             Color.BLACK,
-                            Utils.formatTime(p2[i])))
+                            Utils.formatClockTime(p2[i])))
             twoBar.findViewById<TextView>(R.id.move_count).setText((i + 1).toString())
             container.addView(twoBar)
         }

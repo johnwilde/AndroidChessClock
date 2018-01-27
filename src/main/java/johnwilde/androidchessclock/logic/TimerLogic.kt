@@ -4,9 +4,11 @@ import android.os.Handler
 import android.os.SystemClock
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.PublishSubject
 import johnwilde.androidchessclock.clock.ButtonViewState
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
+import johnwilde.androidchessclock.clock.TimeGapViewState
 import johnwilde.androidchessclock.main.PlayPauseViewState
 import johnwilde.androidchessclock.main.SpinnerViewState
 import johnwilde.androidchessclock.prefs.PreferencesUtil
@@ -24,6 +26,7 @@ class TimerLogic(val manager: ClockManager,
     var playedBuzzer : Boolean = false
     val moveTimes : ArrayList<Long> = ArrayList()
     var handler = Handler()
+    var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     var clockUpdateSubject: BehaviorSubject<ClockViewState> = BehaviorSubject.create()
     var spinner: BehaviorSubject<PlayPauseViewState> = BehaviorSubject.create()
     var buzzer: BehaviorSubject<SoundViewState> = BehaviorSubject.create()
@@ -32,6 +35,15 @@ class TimerLogic(val manager: ClockManager,
 
     init {
         setInitialTime()
+    }
+
+    fun subscribeToOtherClock() {
+        manager.forOtherColor(color).msToGoUpdateSubject.subscribe { ms ->
+            if (manager.active != this) {
+                // Update the time-gap clock
+                clockUpdateSubject.onNext(TimeGapViewState(true, msToGo - ms))
+            }
+        }
     }
 
     private fun setInitialTime() {
@@ -48,14 +60,21 @@ class TimerLogic(val manager: ClockManager,
         return ButtonViewState(enabled, msToGo, "")
     }
 
+    fun updateAndPublishMsToGo(newValue: Long) {
+        msToGo = newValue
+        msToGoUpdateSubject.onNext(newValue)
+    }
+
     fun onMoveStart() {
         msDelayToGo = preferencesUtil.getBronsteinDelayMs()
-        msToGo += preferencesUtil.getFischerDelayMs()
+        updateAndPublishMsToGo(msToGo + preferencesUtil.getFischerDelayMs())
         moveCount += 1
         msToGoMoveStart = msDelayToGo + msToGo
         // This task will publish clock updates to clockUpdateSubject
         updateTimeTask = UpdateTimeTask()
         handler.post(updateTimeTask)
+        // Hide the time-gap clock
+        clockUpdateSubject.onNext(TimeGapViewState(false, 0))
     }
 
     fun pause() {
@@ -78,7 +97,7 @@ class TimerLogic(val manager: ClockManager,
         moveTimes.add(msMoveTime)
         if (preferencesUtil.timeControlType != PreferencesUtil.TimeControlType.BASIC) {
             if (moveCount == preferencesUtil.phase1NumberOfMoves) {
-                msToGo += preferencesUtil.phase1Minutes * 60 * 1000
+                updateAndPublishMsToGo(msToGo + preferencesUtil.phase1Minutes * 60 * 1000)
             }
         }
         // At end of turn, dim the button and remove the spinner
@@ -110,7 +129,7 @@ class TimerLogic(val manager: ClockManager,
     internal inner class UpdateTimeTask : Runnable {
         var lastUpdateMs: Long =  SystemClock.uptimeMillis()
 
-        fun publishUpdates() : Boolean {
+        private fun publishUpdates() : Boolean {
             val now = SystemClock.uptimeMillis()
             val dt = now - lastUpdateMs
             lastUpdateMs = now
@@ -122,7 +141,7 @@ class TimerLogic(val manager: ClockManager,
                 spinner.onNext(SpinnerViewState(msDelayToGo))
                 true
             } else {
-                msToGo -= dt
+                updateAndPublishMsToGo(msToGo - dt)
                 // After decrementing clock, publish new time
                 clockUpdateSubject.onNext(ButtonViewState(true, msToGo, moveCount.toString()))
                 if (msToGo > 0) {
@@ -149,7 +168,7 @@ class TimerLogic(val manager: ClockManager,
 
     fun setNewTime(newTime: Long) {
         val enabled = if (manager.gameState == ClockManager.GameState.NOT_STARTED) true else manager.active == this
-        msToGo = newTime
+        updateAndPublishMsToGo(newTime)
         clockUpdateSubject.onNext(ButtonViewState(enabled, msToGo, moveCount.toString()))
     }
 }

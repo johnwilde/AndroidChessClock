@@ -33,6 +33,8 @@ class ClockManager(val preferencesUtil: PreferencesUtil) {
                     if (!preferencesUtil.allowNegativeTime) setGameStateAndPublish(GameState.FINISHED)
             }
         }
+        white.subscribeToOtherClock()
+        black.subscribeToOtherClock()
     }
 
     // Player button was hit
