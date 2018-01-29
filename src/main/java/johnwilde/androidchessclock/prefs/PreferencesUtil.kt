@@ -53,7 +53,6 @@ class PreferencesUtil(context: Context) {
         loadAudibleNotificationUserPreference()
     }
 
-
     // determine whether we're using BASIC or TOURNAMENT time control
     private fun loadTimeControlPreferences() {
         val simpleTimeControl = sharedPreferences.getBoolean(

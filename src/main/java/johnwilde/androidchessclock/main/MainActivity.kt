@@ -127,7 +127,7 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
     }
 
     override fun render(viewState: PlayPauseViewState) {
-        Timber.d("%s", viewState)
+//        Timber.d("%s", viewState)
         when (viewState) {
             is PlayPauseState -> {
                 // Show "PLAY" when checked, "PAUSE" when not checked

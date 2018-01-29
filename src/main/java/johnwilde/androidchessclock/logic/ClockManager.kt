@@ -27,7 +27,7 @@ class ClockManager(val preferencesUtil: PreferencesUtil) {
 
     init {
         // Allows the manager to know when a clock has expired (and game is finished)
-        buzzerObservable.subscribe { a ->
+        val ignored = buzzerObservable.subscribe { a ->
             when (a) {
                 is Buzzer ->
                     if (!preferencesUtil.allowNegativeTime) setGameStateAndPublish(GameState.FINISHED)
@@ -63,7 +63,7 @@ class ClockManager(val preferencesUtil: PreferencesUtil) {
                             forColor(color).getMoveEndObservables()
                         }
                     }
-                    GameState.FINISHED -> Observable.just(DoNothing())
+                    GameState.FINISHED -> Observable.empty()
                 }
     }
 

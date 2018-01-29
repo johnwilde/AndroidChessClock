@@ -1,6 +1,10 @@
 package johnwilde.androidchessclock.clock
 
 sealed class ClockViewState
+data class FullViewState(
+        val button : ButtonViewState,
+        val timeGap : TimeGapViewState = TimeGapViewState( 0),
+        val prompt : PromptToMove? = null ) : ClockViewState()
 data class ButtonViewState(
         val enabled: Boolean,
         val msToGo: Long,
@@ -8,7 +12,5 @@ data class ButtonViewState(
 data class PromptToMove(
         val color: ClockView.Color) : ClockViewState()
 data class TimeGapViewState(
-        val enabled: Boolean,
         val msGap: Long) : ClockViewState()
-class DoNothing : ClockViewState()
 

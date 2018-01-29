@@ -35,6 +35,20 @@
             tools:src="@drawable/white" >
         </ImageButton>
 
+        <CheckedTextView
+            android:id="@+id/timeGap"
+            style="@style/clockStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:background="@null"
+            android:checked="false"
+            android:focusable="false"
+            android:gravity="center"
+            android:textColor="@color/time_gap_text_color"
+            tools:text="12:13"/>
+
         <TextView
             android:id="@+id/moveCount"
             android:layout_gravity="bottom|center"

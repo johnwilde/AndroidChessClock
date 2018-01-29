@@ -76,15 +76,14 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     // Update the button's enabled state and the time text
     override fun render(viewState: ClockViewState) {
         Timber.d("%s: %s", color, viewState)
-        when(viewState) {
-            is ButtonViewState -> renderClock(viewState)
-            is PromptToMove -> renderPromptToMove(viewState)
-            is TimeGapViewState -> renderTimeGap(viewState)
-        }
+        val state = viewState as FullViewState
+        renderClock(state.button)
+        renderTimeGap(state.timeGap)
+        if (state.prompt != null) renderPromptToMove(state.prompt)
     }
 
     private fun renderTimeGap(viewState: TimeGapViewState) {
-        timeGap.visibility = if (viewState.enabled && preferences.showTimeGap) View.VISIBLE else View.GONE
+        timeGap.visibility = if (preferences.showTimeGap) View.VISIBLE else View.GONE
         timeGap.text = Utils.formatTimeGap(viewState.msGap)
         timeGap.isChecked = viewState.msGap < 0
     }
@@ -94,7 +93,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
                 .show()
     }
 
-    fun renderClock(buttonViewState: ButtonViewState) {
+    private fun renderClock(buttonViewState: ButtonViewState) {
         clock.text = Utils.formatClockTime(buttonViewState.msToGo)
         clock.alpha = if (buttonViewState.enabled) 1.0f else .1f
         clock.isChecked = buttonViewState.msToGo < 10_000
@@ -103,7 +102,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         moveCount.visibility = if (moveCount.text.isBlank()) View.INVISIBLE else View.VISIBLE
     }
 
-    fun launchAdjustPlayerClockActivity() {
+    private fun launchAdjustPlayerClockActivity() {
         // launch an activity through this intent
         val launchAdjustPlayerClockIntent = Intent().setClass(activity, AdjustClock::class.java)
         launchAdjustPlayerClockIntent.putExtra(AdjustClock.EXTRA_COLOR, color.toString())

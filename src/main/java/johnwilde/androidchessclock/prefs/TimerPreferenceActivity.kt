@@ -47,6 +47,7 @@ class TimerPreferenceActivity : AppCompatActivity(),
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences,
                                            key: String) {
         val uiKeys = listOf(
+                Key.TIME_GAP,
                 Key.PLAY_BELL,
                 Key.PLAY_CLICK);
 

@@ -87,4 +87,5 @@
     <string name="move_times">" Время перемещения"</string>
     <string name="tap_other_button">" Нажмите другую кнопку для возобновления."</string>
     <string name="new_game">"Новая игра "</string>
+    <string name="show_time_gap">Показывать промежуток времени</string>
 </resources>

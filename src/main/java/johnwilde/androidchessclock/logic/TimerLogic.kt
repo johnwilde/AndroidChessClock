@@ -14,6 +14,7 @@ import johnwilde.androidchessclock.main.SpinnerViewState
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.sound.Buzzer
 import johnwilde.androidchessclock.sound.SoundViewState
+import timber.log.Timber
 
 const val POST_FAST : Long = 100
 class TimerLogic(val manager: ClockManager,
@@ -27,7 +28,7 @@ class TimerLogic(val manager: ClockManager,
     val moveTimes : ArrayList<Long> = ArrayList()
     var handler = Handler()
     var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
-    var clockUpdateSubject: BehaviorSubject<ClockViewState> = BehaviorSubject.create()
+    var clockUpdateSubject: PublishSubject<ClockViewState> = PublishSubject.create()
     var spinner: BehaviorSubject<PlayPauseViewState> = BehaviorSubject.create()
     var buzzer: BehaviorSubject<SoundViewState> = BehaviorSubject.create()
 
@@ -38,10 +39,10 @@ class TimerLogic(val manager: ClockManager,
     }
 
     fun subscribeToOtherClock() {
-        manager.forOtherColor(color).msToGoUpdateSubject.subscribe { ms ->
+        val ignored = manager.forOtherColor(color).msToGoUpdateSubject.subscribe { ms ->
             if (manager.active != this) {
                 // Update the time-gap clock
-                clockUpdateSubject.onNext(TimeGapViewState(true, msToGo - ms))
+                clockUpdateSubject.onNext(TimeGapViewState(msToGo - ms))
             }
         }
     }
@@ -57,7 +58,9 @@ class TimerLogic(val manager: ClockManager,
 
     fun initialState() : ButtonViewState {
         val enabled = if (manager.gameState == ClockManager.GameState.NOT_STARTED) true else manager.active == this
-        return ButtonViewState(enabled, msToGo, "")
+        val state =  ButtonViewState(enabled, msToGo, "")
+        Timber.d("%s initialState: %s", color, state)
+        return state
     }
 
     fun updateAndPublishMsToGo(newValue: Long) {
@@ -74,7 +77,7 @@ class TimerLogic(val manager: ClockManager,
         updateTimeTask = UpdateTimeTask()
         handler.post(updateTimeTask)
         // Hide the time-gap clock
-        clockUpdateSubject.onNext(TimeGapViewState(false, 0))
+        clockUpdateSubject.onNext(TimeGapViewState( 0))
     }
 
     fun pause() {
@@ -120,6 +123,7 @@ class TimerLogic(val manager: ClockManager,
         setInitialTime()
         spinner.onNext(SpinnerViewState(0))
         clockUpdateSubject.onNext(initialState())
+        clockUpdateSubject.onNext(TimeGapViewState( 0))
     }
 
     // this class will update itself (and call updateTimerText) accordingly:
