@@ -55,4 +55,8 @@ dependencies {
     implementation "com.android.support:design:$supportLibVersion"
     implementation "com.android.support:transition:$supportLibVersion"
     implementation "com.android.support:appcompat-v7:$supportLibVersion"
+
+    // Testing
+    testImplementation 'junit:junit:4.12'
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-alpha02"
 }

@@ -12,9 +12,9 @@ import johnwilde.androidchessclock.sound.Click
 import johnwilde.androidchessclock.sound.SoundViewState
 import timber.log.Timber
 
-class ClockManager(val preferencesUtil: PreferencesUtil) {
-    val white = TimerLogic(this, ClockView.Color.WHITE, preferencesUtil)
-    val black = TimerLogic(this, ClockView.Color.BLACK, preferencesUtil)
+class ClockManager(val preferencesUtil: PreferencesUtil, val timeSource: TimeSource) {
+    val white = TimerLogic(this, ClockView.Color.WHITE, preferencesUtil, timeSource)
+    val black = TimerLogic(this, ClockView.Color.BLACK, preferencesUtil, timeSource)
     var active = white
 
     enum class GameState {NOT_STARTED, PAUSED, PLAYING, FINISHED}
@@ -72,23 +72,22 @@ class ClockManager(val preferencesUtil: PreferencesUtil) {
 
     // Play/Pause button was hit
     fun playPause() : Observable<PlayPauseViewState> {
-        return when(gameState) {
+        when(gameState) {
             GameState.PLAYING -> {
                 // Pause game
                 setGameStateAndPublish(GameState.PAUSED)
                 active.pause()
-                Observable.just(PlayPauseState(true, true))
             }
             GameState.PAUSED,
             GameState.NOT_STARTED -> {
                 // Start / resume game
                 startPlayerClock(active)
                 forOtherColor(active.color).publishMoveEnd() // dim other clock
-                Observable.just(PlayPauseState(false, false))
             }
             // button is disabled when in finished state, so this shouldn't be possible
-            GameState.FINISHED -> Observable.empty()
+            GameState.FINISHED -> {}
         }
+        return Observable.empty()
     }
 
     // Drawer was opened

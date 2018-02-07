@@ -1,6 +1,5 @@
 package johnwilde.androidchessclock.logic
 
-import android.os.SystemClock
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -20,7 +19,8 @@ import java.util.concurrent.TimeUnit
 
 class TimerLogic(val manager: ClockManager,
                  val color: ClockView.Color,
-                 val preferencesUtil: PreferencesUtil) {
+                 val preferencesUtil: PreferencesUtil,
+                 val timeSource: TimeSource) {
     var moveCount : Int = 0
     var msToGo : Long = 0
     var msDelayToGo: Long = 0
@@ -130,10 +130,10 @@ class TimerLogic(val manager: ClockManager,
     }
 
     private inner class UpdateTime {
-        private var lastUpdateMs: Long = SystemClock.uptimeMillis()
+        private var lastUpdateMs: Long = timeSource.currentTimeMillis()
 
         fun publishUpdates(): Boolean {
-            val now = SystemClock.uptimeMillis()
+            val now = timeSource.currentTimeMillis()
             val dt = now - lastUpdateMs
             lastUpdateMs = now
 
