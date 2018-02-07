@@ -24,13 +24,13 @@ class TestSchedulerRule : TestRule {
         return object : Statement() {
             @Throws(Throwable::class)
             override fun evaluate() {
-                RxJavaPlugins.setIoSchedulerHandler { scheduler -> testScheduler }
-                RxJavaPlugins.setComputationSchedulerHandler { scheduler -> testScheduler }
-                RxJavaPlugins.setNewThreadSchedulerHandler { scheduler -> testScheduler }
-                RxAndroidPlugins.setMainThreadSchedulerHandler { scheduler -> immediate }
+                RxJavaPlugins.setIoSchedulerHandler { _ -> testScheduler }
+                RxJavaPlugins.setComputationSchedulerHandler { _ -> testScheduler }
+                RxJavaPlugins.setNewThreadSchedulerHandler { _ -> testScheduler }
+                RxAndroidPlugins.setMainThreadSchedulerHandler { _ -> immediate }
 
                 // https@ //github.com/peter-tackage/rxjava2-scheduler-examples/blob/master/main-thread-example/app/src/test/java/com/petertackage/rxjava2scheduling/MainPresenterTest.java
-                RxAndroidPlugins.setInitMainThreadSchedulerHandler { scheduler -> Schedulers.trampoline() }
+                RxAndroidPlugins.setInitMainThreadSchedulerHandler { _ -> Schedulers.trampoline() }
 
                 try {
                     base.evaluate()

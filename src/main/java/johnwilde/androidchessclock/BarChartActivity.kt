@@ -7,7 +7,9 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.TextView
+import kotlinx.android.synthetic.main.bar_and_time.view.*
+import kotlinx.android.synthetic.main.bar_chart_container.*
+import kotlinx.android.synthetic.main.two_bar.view.*
 
 class BarChartActivity : Activity() {
     lateinit var dependencyInjection : DependencyInjection
@@ -18,54 +20,51 @@ class BarChartActivity : Activity() {
             return intent
         }
     }
-    private var blackMs = ArrayList<Long>()
-    private var whiteMs = ArrayList<Long>()
+    private lateinit var blackMs : LongArray
+    private lateinit var whiteMs : LongArray
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dependencyInjection = ChessApplication.getDependencyInjection(this)
-        whiteMs = dependencyInjection.clockManager.white.moveTimes
-        blackMs = dependencyInjection.clockManager.black.moveTimes
-        if (whiteMs.size > blackMs.size) blackMs.add(0)
-        if (blackMs.size > whiteMs.size) whiteMs.add(0)
         setContentView(R.layout.bar_chart_container)
     }
 
     override fun onResume() {
         super.onResume()
-        val container = findViewById<LinearLayout>(R.id.container)
-        container.removeAllViews()
+        bar_chart_container.removeAllViews()
+        whiteMs = dependencyInjection.clockManager.white.moveTimes
+        blackMs = dependencyInjection.clockManager.black.moveTimes
         addViews(whiteMs, blackMs)
     }
 
-    private fun addViews(p1: ArrayList<Long>, p2: ArrayList<Long>) {
-        val container = findViewById<LinearLayout>(R.id.container)
-        val maxValue = Math.max(p1.max()?:0, p2.max()?:0).toFloat()
-        for (i in 0..p1.lastIndex) {
-            val twoBar = layoutInflater.inflate(R.layout.two_bar, null)
-            val twoBarContainer = twoBar.findViewById<LinearLayout>(R.id.two_bar_container)
-            twoBarContainer.addView(
-                    addBar(p1[i].toFloat() / maxValue,
+    private fun addViews(whiteMoves: LongArray, blackMoves: LongArray) {
+        val maxValue = Math.max(whiteMoves.max()?:0, blackMoves.max()?:0).toFloat()
+        for (i in 0..whiteMoves.lastIndex) {
+            val bars = layoutInflater.inflate(R.layout.two_bar, null)
+            bars.two_bar_container.addView(
+                    addBar(whiteMoves[i].toFloat() / maxValue,
                             Color.WHITE,
-                            Utils.formatClockTime(p1[i])))
-            twoBarContainer.addView(
-                    addBar(p2[i].toFloat() / maxValue,
-                            Color.BLACK,
-                            Utils.formatClockTime(p2[i])))
-            twoBar.findViewById<TextView>(R.id.move_count).setText((i + 1).toString())
-            container.addView(twoBar)
+                            Utils.formatClockTime(whiteMoves[i])))
+
+            // check size of black's list, it might be less than white
+            if (i <= blackMoves.lastIndex) {
+                bars.two_bar_container.addView(
+                        addBar(blackMoves[i].toFloat() / maxValue,
+                                Color.BLACK,
+                                Utils.formatClockTime(blackMoves[i])))
+            }
+            bars.move_count.text = ((i + 1).toString())
+            bar_chart_container.addView(bars)
         }
     }
 
     private fun addBar(percent: Float, colorInt: Int, time: String): View? {
-        val barContainer = layoutInflater.inflate(R.layout.bar_and_time, null)
-        val padding = barContainer.findViewById<View>(R.id.padding)
-        val bar = barContainer.findViewById<View>(R.id.bar)
-        bar.findViewById<TextView>(R.id.bar_text).text = time
-        bar.setBackgroundColor(colorInt)
-        setWeight(padding, (1 - percent))
-        setWeight(bar, percent)
-        return barContainer
+        val view = layoutInflater.inflate(R.layout.bar_and_time, null)
+        view.bar_text.text = time
+        view.bar.setBackgroundColor(colorInt)
+        setWeight(view.padding, (1 - percent))
+        setWeight(view.bar, percent)
+        return view
     }
 
     private fun setWeight(v: View, w: Float) {

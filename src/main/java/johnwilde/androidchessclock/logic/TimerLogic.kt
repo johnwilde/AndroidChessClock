@@ -21,12 +21,10 @@ class TimerLogic(val manager: ClockManager,
                  val color: ClockView.Color,
                  val preferencesUtil: PreferencesUtil,
                  val timeSource: TimeSource) {
-    var moveCount : Int = 0
     var msToGo : Long = 0
     var msDelayToGo: Long = 0
     var msToGoMoveStart : Long = 0
     var playedBuzzer : Boolean = false
-    val moveTimes : ArrayList<Long> = ArrayList()
 
     private var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     // Player buttons, time and time-gap
@@ -36,8 +34,29 @@ class TimerLogic(val manager: ClockManager,
     // When time runs out send an update
     var buzzer: BehaviorSubject<SoundViewState> = BehaviorSubject.create()
 
-    private var clockTask = UpdateTime()
     private var clockSubscription: Disposable? = null
+
+    private inner class MoveCounter {
+        var count : Int = 0 // number of moves for this player
+        val moveTimes = mutableListOf<Long>() // array of time for each move (ms)
+
+        fun newMove() {
+            count += 1
+            msToGoMoveStart = msDelayToGo + msToGo
+            moveTimes.add(0)
+        }
+
+        fun updateMoveTime() {
+            val msMoveTime = msToGoMoveStart - msDelayToGo - msToGo
+            moveTimes[moveTimes.lastIndex] = msMoveTime
+        }
+
+        fun display() : String {
+            return count.toString()
+        }
+    }
+    private var moveCounter = MoveCounter()
+    val moveTimes get() = moveCounter.moveTimes.toLongArray()
 
     init {
         setInitialTime()
@@ -55,9 +74,8 @@ class TimerLogic(val manager: ClockManager,
     private fun setInitialTime() {
         msToGo  = (preferencesUtil.initialDurationSeconds * 1000).toLong()
         msDelayToGo = 0
-        moveCount = 0
         playedBuzzer = false
-        moveTimes.clear()
+        moveCounter = MoveCounter()
     }
 
     fun initialState() : ButtonViewState {
@@ -67,42 +85,41 @@ class TimerLogic(val manager: ClockManager,
         return state
     }
 
-    fun updateAndPublishMsToGo(newValue: Long) {
-        msToGo = newValue
-        msToGoUpdateSubject.onNext(newValue)
-    }
-
     fun onMoveStart() {
         msDelayToGo = preferencesUtil.getBronsteinDelayMs()
         updateAndPublishMsToGo(msToGo + preferencesUtil.getFischerDelayMs())
-        moveCount += 1
-        msToGoMoveStart = msDelayToGo + msToGo
+        moveCounter.newMove()
+
         // This task will publish clock updates to clockUpdateSubject
         resume()
+
         // Hide the time-gap clock
         clockUpdateSubject.onNext(TimeGapViewState( 0))
     }
 
     fun onMoveEnd() {
         pause()
-        val msMoveTime = msToGoMoveStart - msDelayToGo - msToGo
-        moveTimes.add(msMoveTime)
+        moveCounter.updateMoveTime()
         if (preferencesUtil.timeControlType != PreferencesUtil.TimeControlType.BASIC) {
-            if (moveCount == preferencesUtil.phase1NumberOfMoves) {
+            if (moveCounter.count == preferencesUtil.phase1NumberOfMoves) {
                 updateAndPublishMsToGo(msToGo + preferencesUtil.phase1Minutes * 60 * 1000)
             }
         }
-        // At end of turn, dim the button and remove the spinner
-        publishMoveEnd()
+        publishInactiveState()
     }
 
-    fun publishMoveEnd() {
+    fun publishInactiveState() {
+        // At end of turn, dim the button and remove the spinner
         spinner.onNext(SpinnerViewState(0))
         clockUpdateSubject.onNext(ButtonViewState(false, msToGo, ""))
     }
 
+    fun onTimeExpired() {
+        moveCounter.updateMoveTime()
+    }
+
     fun reset() {
-        pause()
+        disposeTimeSequenceSubscription()
         setInitialTime()
         spinner.onNext(SpinnerViewState(0))
         clockUpdateSubject.onNext(initialState())
@@ -115,6 +132,18 @@ class TimerLogic(val manager: ClockManager,
     }
 
     fun pause() {
+        moveCounter.updateMoveTime()
+        disposeTimeSequenceSubscription()
+    }
+
+    private fun updateAndPublishMsToGo(newValue: Long) {
+        msToGo = newValue
+        msToGoUpdateSubject.onNext(newValue)
+    }
+
+
+    // Stop the interval updates
+    private fun disposeTimeSequenceSubscription() {
         if (clockSubscription != null && !clockSubscription!!.isDisposed()) {
             Timber.d("Disposing subscription to timer state")
             // This stops the timer interval
@@ -122,16 +151,22 @@ class TimerLogic(val manager: ClockManager,
         }
     }
 
+    // Return observable that on subscription will cause various subjects to start emitting
+    // state updates.  When subscription is disposed the state updates will stop.
     private fun timeSequence() : Observable<Any> {
-        clockTask = UpdateTime()
+        val clockTask = UpdateTime()
         return Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.computation())
                 .map { if (!clockTask.publishUpdates()) pause() }
     }
 
+    // Responsible for updating `msToGo` and `msDelayToGo` timer state
+    // The state variables are updated on each call to publishUpdates, and the
+    // new view states are published to clock update, spinner, and buzzer subjects.
     private inner class UpdateTime {
         private var lastUpdateMs: Long = timeSource.currentTimeMillis()
 
+        // Returns false when time has elapsed (and user doesn't want negative time)
         fun publishUpdates(): Boolean {
             val now = timeSource.currentTimeMillis()
             val dt = now - lastUpdateMs
@@ -140,13 +175,13 @@ class TimerLogic(val manager: ClockManager,
             return if (msDelayToGo > 0) {
                 // While in Bronstein period, we just decrement delay time
                 msDelayToGo -= dt
-                clockUpdateSubject.onNext(ButtonViewState(true, msToGo, moveCount.toString()))
+                clockUpdateSubject.onNext(ButtonViewState(true, msToGo, moveCounter.display()))
                 spinner.onNext(SpinnerViewState(msDelayToGo))
                 true
             } else {
                 updateAndPublishMsToGo(msToGo - dt)
                 // After decrementing clock, publish new time
-                clockUpdateSubject.onNext(ButtonViewState(true, msToGo, moveCount.toString()))
+                clockUpdateSubject.onNext(ButtonViewState(true, msToGo, moveCounter.display()))
                 if (msToGo > 0) {
                     true
                 } else {
@@ -163,6 +198,6 @@ class TimerLogic(val manager: ClockManager,
     fun setNewTime(newTime: Long) {
         val enabled = if (manager.gameState == ClockManager.GameState.NOT_STARTED) true else manager.active == this
         updateAndPublishMsToGo(newTime)
-        clockUpdateSubject.onNext(ButtonViewState(enabled, msToGo, moveCount.toString()))
+        clockUpdateSubject.onNext(ButtonViewState(enabled, msToGo, moveCounter.display()))
     }
 }

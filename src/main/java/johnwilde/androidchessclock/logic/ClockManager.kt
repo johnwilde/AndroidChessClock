@@ -29,8 +29,12 @@ class ClockManager(val preferencesUtil: PreferencesUtil, val timeSource: TimeSou
         // Allows the manager to know when a clock has expired (and game is finished)
         val ignored = buzzerObservable.subscribe { a ->
             when (a) {
-                is Buzzer ->
-                    if (!preferencesUtil.allowNegativeTime) setGameStateAndPublish(GameState.FINISHED)
+                is Buzzer -> {
+                    if (!preferencesUtil.allowNegativeTime) {
+                        setGameStateAndPublish(GameState.FINISHED)
+                        active.onTimeExpired()
+                    }
+                }
             }
         }
         // Allow clocks to receive time updates from each other (enables time-gap display)
@@ -52,7 +56,7 @@ class ClockManager(val preferencesUtil: PreferencesUtil, val timeSource: TimeSou
                     // Start / resume play
                     clickObservable.onNext(Click())
                     startPlayerClock(forOtherColor(color))
-                    forColor(color).publishMoveEnd()
+                    forColor(color).publishInactiveState()
                 }
             }
             GameState.PLAYING -> {
@@ -61,8 +65,6 @@ class ClockManager(val preferencesUtil: PreferencesUtil, val timeSource: TimeSou
                     clickObservable.onNext(Click())
                     startPlayerClock(forOtherColor(color))
                     forColor(color).onMoveEnd()
-                } else {
-                    forColor(color).publishMoveEnd()
                 }
             }
             GameState.FINISHED -> { } // nothing
@@ -82,7 +84,7 @@ class ClockManager(val preferencesUtil: PreferencesUtil, val timeSource: TimeSou
             GameState.NOT_STARTED -> {
                 // Start / resume game
                 startPlayerClock(active)
-                forOtherColor(active.color).publishMoveEnd() // dim other clock
+                forOtherColor(active.color).publishInactiveState() // dim other clock
             }
             // button is disabled when in finished state, so this shouldn't be possible
             GameState.FINISHED -> {}

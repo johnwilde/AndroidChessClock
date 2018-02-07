@@ -19,7 +19,7 @@
 
     <LinearLayout
         android:orientation="horizontal"
-        android:id="@+id/container"
+        android:id="@+id/bar_chart_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
     </LinearLayout>
