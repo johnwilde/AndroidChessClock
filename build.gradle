@@ -46,6 +46,10 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:4.6.0'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
+
+    // Experimental
+    implementation 'androidx.core:core-ktx:0.1'
+
     // Support Libraries
     implementation "com.android.support:support-v4:$supportLibVersion"
     implementation "com.android.support:design:$supportLibVersion"

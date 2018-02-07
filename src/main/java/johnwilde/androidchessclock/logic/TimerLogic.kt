@@ -1,8 +1,9 @@
 package johnwilde.androidchessclock.logic
 
-import android.os.Handler
 import android.os.SystemClock
 import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import johnwilde.androidchessclock.clock.ButtonViewState
@@ -15,8 +16,8 @@ import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.sound.Buzzer
 import johnwilde.androidchessclock.sound.SoundViewState
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
-const val POST_FAST : Long = 100
 class TimerLogic(val manager: ClockManager,
                  val color: ClockView.Color,
                  val preferencesUtil: PreferencesUtil) {
@@ -26,13 +27,17 @@ class TimerLogic(val manager: ClockManager,
     var msToGoMoveStart : Long = 0
     var playedBuzzer : Boolean = false
     val moveTimes : ArrayList<Long> = ArrayList()
-    var handler = Handler()
-    var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
+
+    private var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
+    // Player buttons, time and time-gap
     var clockUpdateSubject: PublishSubject<ClockViewState> = PublishSubject.create()
+    // Updates for view that draws Bronstein-delay circle
     var spinner: BehaviorSubject<PlayPauseViewState> = BehaviorSubject.create()
+    // When time runs out send an update
     var buzzer: BehaviorSubject<SoundViewState> = BehaviorSubject.create()
 
-    private var updateTimeTask: UpdateTimeTask? = null
+    private var clockTask = UpdateTime()
+    private var clockSubscription: Disposable? = null
 
     init {
         setInitialTime()
@@ -52,7 +57,6 @@ class TimerLogic(val manager: ClockManager,
         msDelayToGo = 0
         moveCount = 0
         playedBuzzer = false
-        updateTimeTask = null
         moveTimes.clear()
     }
 
@@ -74,28 +78,13 @@ class TimerLogic(val manager: ClockManager,
         moveCount += 1
         msToGoMoveStart = msDelayToGo + msToGo
         // This task will publish clock updates to clockUpdateSubject
-        updateTimeTask = UpdateTimeTask()
-        handler.post(updateTimeTask)
+        resume()
         // Hide the time-gap clock
         clockUpdateSubject.onNext(TimeGapViewState( 0))
     }
 
-    fun pause() {
-        if (updateTimeTask != null) {
-            updateTimeTask!!.kill()
-        }
-    }
-
-    fun resume() {
-        // This task will publish clock updates to clockUpdateSubject
-        updateTimeTask = UpdateTimeTask()
-        handler.post(updateTimeTask)
-    }
-
-    fun onMoveEnd() : Observable<ClockViewState> {
-        if (updateTimeTask != null) {
-            updateTimeTask!!.kill()
-        }
+    fun onMoveEnd() {
+        pause()
         val msMoveTime = msToGoMoveStart - msDelayToGo - msToGo
         moveTimes.add(msMoveTime)
         if (preferencesUtil.timeControlType != PreferencesUtil.TimeControlType.BASIC) {
@@ -104,36 +93,46 @@ class TimerLogic(val manager: ClockManager,
             }
         }
         // At end of turn, dim the button and remove the spinner
-        return getMoveEndObservables()
-    }
-
-    fun getMoveEndObservables() : Observable<ClockViewState> {
-        spinner.onNext(SpinnerViewState(0))
-        return Observable.just(ButtonViewState(false, msToGo, ""))
+        publishMoveEnd()
     }
 
     fun publishMoveEnd() {
-        for (o in getMoveEndObservables().blockingIterable()) {
-            clockUpdateSubject.onNext(o)
-        }
+        spinner.onNext(SpinnerViewState(0))
+        clockUpdateSubject.onNext(ButtonViewState(false, msToGo, ""))
     }
 
     fun reset() {
-        handler.removeCallbacks(updateTimeTask)
+        pause()
         setInitialTime()
         spinner.onNext(SpinnerViewState(0))
         clockUpdateSubject.onNext(initialState())
         clockUpdateSubject.onNext(TimeGapViewState( 0))
     }
 
-    // this class will update itself (and call updateTimerText) accordingly:
-    // if getMsToGo() > 10 * 1000, every 1000 ms
-    // if getMsToGo() < 10 * 1000, every 100 ms
-    // if getMsToGo() < 0 and getAllowNegativeTime is true, every 1000  ms
-    internal inner class UpdateTimeTask : Runnable {
-        var lastUpdateMs: Long =  SystemClock.uptimeMillis()
+    fun resume() {
+        Timber.d("Start new subscription to timer state")
+        clockSubscription = timeSequence().subscribe()
+    }
 
-        private fun publishUpdates() : Boolean {
+    fun pause() {
+        if (clockSubscription != null && !clockSubscription!!.isDisposed()) {
+            Timber.d("Disposing subscription to timer state")
+            // This stops the timer interval
+            clockSubscription!!.dispose()
+        }
+    }
+
+    private fun timeSequence() : Observable<Any> {
+        clockTask = UpdateTime()
+        return Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.computation())
+                .map { if (!clockTask.publishUpdates()) pause() }
+    }
+
+    private inner class UpdateTime {
+        private var lastUpdateMs: Long = SystemClock.uptimeMillis()
+
+        fun publishUpdates(): Boolean {
             val now = SystemClock.uptimeMillis()
             val dt = now - lastUpdateMs
             lastUpdateMs = now
@@ -158,15 +157,6 @@ class TimerLogic(val manager: ClockManager,
                     preferencesUtil.allowNegativeTime // continues update if true
                 }
             }
-        }
-
-        override fun run() {
-            if (publishUpdates()) handler.postDelayed(updateTimeTask, POST_FAST)
-        }
-
-        fun kill() {
-            publishUpdates()
-            handler.removeCallbacks(this)
         }
     }
 

@@ -37,6 +37,7 @@ class SpinnerView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
+        // TODO: figure out why removing this condition freezes the app (after a delay)
         if (msTotal > 0) {
             val sweep = 360.0f * (1.0f - (msTotal - msSoFar).toFloat() / msTotal.toFloat())
             canvas.drawArc(mOval, 0f, sweep, true, mPaint)

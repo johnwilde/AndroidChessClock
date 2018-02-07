@@ -33,38 +33,41 @@ class ClockManager(val preferencesUtil: PreferencesUtil) {
                     if (!preferencesUtil.allowNegativeTime) setGameStateAndPublish(GameState.FINISHED)
             }
         }
+        // Allow clocks to receive time updates from each other (enables time-gap display)
         white.subscribeToOtherClock()
         black.subscribeToOtherClock()
     }
 
     // Player button was hit
     fun moveEnd(color: ClockView.Color) : Observable<ClockViewState> {
-        return when (gameState) {
-                    GameState.PAUSED,
-                    GameState.NOT_STARTED -> {
-                        if (color == active.color) {
-                            // Must tap non-active color to resume/start game
-                            val otherColor = forOtherColor(color).color
-                            Observable.just<ClockViewState>(PromptToMove(otherColor))
-                        } else {
-                            // Start / resume play
-                            clickObservable.onNext(Click())
-                            startPlayerClock(forOtherColor(color))
-                            forColor(color).getMoveEndObservables()
-                        }
-                    }
-                    GameState.PLAYING -> {
-                        // Switch turns
-                        if (color == active.color) {
-                            clickObservable.onNext(Click())
-                            startPlayerClock(forOtherColor(color))
-                            forColor(color).onMoveEnd()
-                        } else {
-                            forColor(color).getMoveEndObservables()
-                        }
-                    }
-                    GameState.FINISHED -> Observable.empty()
+        var result = Observable.empty<ClockViewState>()
+        when (gameState) {
+            GameState.PAUSED,
+            GameState.NOT_STARTED -> {
+                if (color == active.color) {
+                    // Must tap non-active color to resume/start game
+                    val otherColor = forOtherColor(color).color
+                    result = Observable.just<ClockViewState>(PromptToMove(otherColor))
+                } else {
+                    // Start / resume play
+                    clickObservable.onNext(Click())
+                    startPlayerClock(forOtherColor(color))
+                    forColor(color).publishMoveEnd()
                 }
+            }
+            GameState.PLAYING -> {
+                // Switch turns
+                if (color == active.color) {
+                    clickObservable.onNext(Click())
+                    startPlayerClock(forOtherColor(color))
+                    forColor(color).onMoveEnd()
+                } else {
+                    forColor(color).publishMoveEnd()
+                }
+            }
+            GameState.FINISHED -> { } // nothing
+        }
+        return result
     }
 
     // Play/Pause button was hit
@@ -83,7 +86,8 @@ class ClockManager(val preferencesUtil: PreferencesUtil) {
                 forOtherColor(active.color).publishMoveEnd() // dim other clock
                 Observable.just(PlayPauseState(false, false))
             }
-            GameState.FINISHED -> Observable.just(PlayPauseState(true, false))
+            // button is disabled when in finished state, so this shouldn't be possible
+            GameState.FINISHED -> Observable.empty()
         }
     }
 
@@ -91,10 +95,7 @@ class ClockManager(val preferencesUtil: PreferencesUtil) {
     fun pause() : Observable<PlayPauseViewState> {
         return when(gameState) {
             GameState.PLAYING -> playPause()
-            GameState.PAUSED, GameState.NOT_STARTED ->
-                Observable.just(PlayPauseState(true, false))
-            GameState.FINISHED ->
-                Observable.just(PlayPauseState(true, false, false))
+            GameState.PAUSED, GameState.NOT_STARTED, GameState.FINISHED -> Observable.empty()
         }
     }
 
@@ -108,10 +109,10 @@ class ClockManager(val preferencesUtil: PreferencesUtil) {
     private fun setGameStateAndPublish(state : GameState) {
         gameState = state
         val update = when (state) {
-            GameState.PAUSED -> PlayPauseState(true, true)
             GameState.NOT_STARTED -> PlayPauseState(true, false)
+            GameState.PLAYING -> PlayPauseState(false, false)
+            GameState.PAUSED -> PlayPauseState(true, true)
             GameState.FINISHED -> PlayPauseState(true, false, false)
-            else -> PlayPauseState(false, false)
         }
         playPauseSubject.onNext(update)
     }

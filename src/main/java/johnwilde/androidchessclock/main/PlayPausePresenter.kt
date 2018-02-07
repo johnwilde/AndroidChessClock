@@ -2,6 +2,7 @@ package johnwilde.androidchessclock.main
 
 import com.hannesdorfmann.mosby3.mvi.MviBasePresenter
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import johnwilde.androidchessclock.logic.ClockManager
 import timber.log.Timber
 
@@ -26,6 +27,7 @@ class PlayPausePresenter(val clockManager: ClockManager)
                 clockManager.spinnerObservable,
                 // Allows play/pause button to react to game state change triggered by a player button tap
                 clockManager.playPauseSubject)
+                .observeOn(AndroidSchedulers.mainThread())
 
         subscribeViewState(updates, PlayPauseView::render)
     }
