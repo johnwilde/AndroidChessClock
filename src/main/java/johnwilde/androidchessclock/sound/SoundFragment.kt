@@ -8,16 +8,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.hannesdorfmann.mosby3.mvi.MviFragment
-import johnwilde.androidchessclock.ChessApplication
+import dagger.android.support.AndroidSupportInjection
+import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.logic.ClockManager
 import johnwilde.androidchessclock.prefs.PreferencesUtil
-import johnwilde.androidchessclock.R
 import timber.log.Timber
 import java.io.IOException
+import javax.inject.Inject
 
 class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
-    lateinit var clockManager : ClockManager
-    lateinit var preferences : PreferencesUtil
+    @Inject lateinit var clockManager : ClockManager
+    @Inject lateinit var preferences : PreferencesUtil
 
     // for sounding buzzer
     private var mBellId: Int = 0
@@ -29,9 +30,7 @@ class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
     }
 
     override fun onAttach(context: Context?) {
-        val dependencyInjection = ChessApplication.getDependencyInjection(context!!)
-        preferences = dependencyInjection.preferenceUtil
-        clockManager = dependencyInjection.clockManager
+        AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
 

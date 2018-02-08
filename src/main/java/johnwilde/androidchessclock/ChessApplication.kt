@@ -1,19 +1,17 @@
 
 package johnwilde.androidchessclock
 
-import android.app.Application
 import android.content.Context
 import com.squareup.leakcanary.LeakCanary
 import com.squareup.leakcanary.RefWatcher
-import johnwilde.androidchessclock.DependencyInjection
+import dagger.android.AndroidInjector
+import dagger.android.support.DaggerApplication
 import timber.log.Timber
 
 /**
  * A custom Application class mainly used to provide dependency injection
  */
-class ChessApplication : Application() {
-
-    lateinit var dependencyInjection : DependencyInjection
+class ChessApplication : DaggerApplication() {
 
     init {
         if (BuildConfig.DEBUG) {
@@ -32,20 +30,17 @@ class ChessApplication : Application() {
         }
         refWatcher = LeakCanary.install(this)
         Timber.d("Starting Application")
-        dependencyInjection = DependencyInjection(this)
     }
 
     companion object {
-
-        fun getDependencyInjection(context: Context): DependencyInjection {
-            return (context.applicationContext as ChessApplication).dependencyInjection
-        }
-
-
         fun getRefWatcher(context: Context): RefWatcher? {
             val application = context.applicationContext as ChessApplication
             return application.refWatcher
         }
+    }
+
+    override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
+        return DaggerAppComponent.builder().create(this)
     }
 }
 

@@ -10,21 +10,25 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.hannesdorfmann.mosby3.mvi.MviFragment
 import com.jakewharton.rxbinding2.view.RxView
+import dagger.android.support.AndroidSupportInjection
 import io.reactivex.Observable
-import johnwilde.androidchessclock.*
+import johnwilde.androidchessclock.AdjustClock
+import johnwilde.androidchessclock.R
+import johnwilde.androidchessclock.Utils
 import johnwilde.androidchessclock.logic.ClockManager
 import johnwilde.androidchessclock.main.REQUEST_CODE_ADJUST_TIME
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import kotlinx.android.synthetic.main.clock_button.*
 import timber.log.Timber
+import javax.inject.Inject
 
 // This "View" represents one button and the TextView that shows the time remaining
 const val BUTTON_FADED : Int = 25
 const val BUTTON_VISIBLE : Int = 255
 class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     lateinit var color : ClockView.Color
-    lateinit var clockManager : ClockManager
-    lateinit var preferences : PreferencesUtil
+    @Inject lateinit var clockManager : ClockManager
+    @Inject lateinit var preferences : PreferencesUtil
 
     companion object {
         private val COLOR = "ARG_COLOR"
@@ -43,12 +47,9 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     override fun onAttach(context: Context?) {
-        // initialize the singleton "business logic"
-        val dependencyInjection = ChessApplication.getDependencyInjection(context!!)
-        preferences = dependencyInjection.preferenceUtil
-        color = arguments!!.getSerializable(COLOR) as ClockView.Color
-        clockManager = dependencyInjection.clockManager
+        AndroidSupportInjection.inject(this)
         super.onAttach(context)
+        color = arguments!!.getSerializable(COLOR) as ClockView.Color
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

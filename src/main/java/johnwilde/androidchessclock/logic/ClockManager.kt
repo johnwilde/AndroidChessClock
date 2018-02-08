@@ -11,8 +11,11 @@ import johnwilde.androidchessclock.sound.Buzzer
 import johnwilde.androidchessclock.sound.Click
 import johnwilde.androidchessclock.sound.SoundViewState
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ClockManager(val preferencesUtil: PreferencesUtil, val timeSource: TimeSource) {
+@Singleton
+class ClockManager @Inject constructor(val preferencesUtil: PreferencesUtil, timeSource: TimeSource) {
     val white = TimerLogic(this, ClockView.Color.WHITE, preferencesUtil, timeSource)
     val black = TimerLogic(this, ClockView.Color.BLACK, preferencesUtil, timeSource)
     var active = white

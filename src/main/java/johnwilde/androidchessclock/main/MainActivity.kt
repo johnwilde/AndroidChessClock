@@ -11,37 +11,50 @@ import android.view.View
 import android.widget.Toast
 import com.hannesdorfmann.mosby3.mvi.MviActivity
 import com.jakewharton.rxbinding2.view.RxView
+import dagger.android.AndroidInjection
+import dagger.android.AndroidInjector
+import dagger.android.DispatchingAndroidInjector
+import dagger.android.support.HasSupportFragmentInjector
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import johnwilde.androidchessclock.BarChartActivity
-import johnwilde.androidchessclock.ChessApplication
-import johnwilde.androidchessclock.DependencyInjection
 import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.clock.ClockFragment
 import johnwilde.androidchessclock.clock.ClockView
+import johnwilde.androidchessclock.logic.ClockManager
+import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.prefs.TimerPreferenceActivity
 import johnwilde.androidchessclock.sound.SoundFragment
 import kotlinx.android.synthetic.main.main_activity.*
 import timber.log.Timber
+import javax.inject.Inject
+
 
 var REQUEST_CODE_PREFERENCES : Int = 1
 var REQUEST_CODE_ADJUST_TIME : Int = 2
 val RESET_DIALOG_SHOWING = "RESET_DIALOG_SHOWING"
 
-class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPauseView {
+class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPauseView,
+        HasSupportFragmentInjector {
+
+    override fun supportFragmentInjector(): AndroidInjector<android.support.v4.app.Fragment> {
+        return fragmentInjector
+    }
+
+    @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<android.support.v4.app.Fragment>
+
+    @Inject lateinit var clockManager : ClockManager
+    @Inject lateinit var preferenceUtil : PreferencesUtil
 
     var views : Array<View> = emptyArray()
-    lateinit var dependencyInjection : DependencyInjection
     var dialog : AlertDialog? = null
     lateinit var drawerListener : SimpleDrawerListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         Timber.d("MainActivity onCreate")
         setContentView(R.layout.main_activity)
-
-        // initialize the singleton "business logic"
-        dependencyInjection = ChessApplication.getDependencyInjection(this)
 
         drawerListener = SimpleDrawerListener()
         drawerLayout.addDrawerListener(drawerListener)
@@ -95,7 +108,7 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
     override fun createPresenter(): PlayPausePresenter {
         // This component controls the state of the play / pause button and renders the
         // spinner view (during Bronstein delay)
-        return PlayPausePresenter(dependencyInjection.clockManager)
+        return PlayPausePresenter(clockManager)
     }
 
     override fun playPauseIntent(): Observable<Any> {
@@ -111,14 +124,14 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
     }
 
     private fun showResetDialog() {
-        dependencyInjection.clockManager.pause()
+        clockManager.pause()
         dialog = AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle(R.string.reset)
                 .setMessage(R.string.really_reset)
                 .setPositiveButton(R.string.yes, {
                     _, _ ->
-                    dependencyInjection.clockManager.reset()
+                    clockManager.reset()
                     Toast.makeText(applicationContext, R.string.new_game, Toast.LENGTH_SHORT).show()
                 })
                 .setNeutralButton(R.string.stats, { _, _ -> launchStatsActivity() })
@@ -145,7 +158,7 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
     }
 
     private fun renderSpinner(spinnerViewState: SpinnerViewState) {
-        spinner.msTotal = dependencyInjection.preferenceUtil.getBronsteinDelayMs()
+        spinner.msTotal =  preferenceUtil.getBronsteinDelayMs()
         spinner.msSoFar = spinnerViewState.msDelayToGo
         if (spinnerViewState.msDelayToGo > 0) {
             spinner.visibility = View.VISIBLE
@@ -221,10 +234,10 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
             // reset clocks using new settings
             if (data.getBooleanExtra(
                     TimerPreferenceActivity.LOAD_ALL, false)) {
-                dependencyInjection.preferenceUtil.loadAllUserPreferences()
-                dependencyInjection.clockManager.reset()
+                preferenceUtil.loadAllUserPreferences()
+                clockManager.reset()
             } else {
-                dependencyInjection.preferenceUtil.loadUiPreferences()
+                preferenceUtil.loadUiPreferences()
             }
         }
     }

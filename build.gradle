@@ -17,6 +17,7 @@ apply plugin: 'kotlin-android-extensions'
 
 ext {
     supportLibVersion = '27.0.2'
+    daggerVersion = '2.14.1'
 }
 
 android {
@@ -46,6 +47,13 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:4.6.0'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
+
+    // Dagger
+    implementation "com.google.dagger:dagger:$daggerVersion"
+    kapt "com.google.dagger:dagger-compiler:$daggerVersion"
+    implementation "com.google.dagger:dagger-android:$daggerVersion"
+    implementation "com.google.dagger:dagger-android-support:$daggerVersion"
+    kapt "com.google.dagger:dagger-android-processor:$daggerVersion"
 
     // Experimental
     implementation 'androidx.core:core-ktx:0.1'

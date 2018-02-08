@@ -7,12 +7,14 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
+import dagger.android.AndroidInjection
+import johnwilde.androidchessclock.logic.ClockManager
 import kotlinx.android.synthetic.main.bar_and_time.view.*
 import kotlinx.android.synthetic.main.bar_chart_container.*
 import kotlinx.android.synthetic.main.two_bar.view.*
+import javax.inject.Inject
 
 class BarChartActivity : Activity() {
-    lateinit var dependencyInjection : DependencyInjection
     companion object {
         @JvmStatic
         fun createIntent(context: Context) : Intent {
@@ -20,20 +22,22 @@ class BarChartActivity : Activity() {
             return intent
         }
     }
+
+    @Inject lateinit var clockManager : ClockManager
     private lateinit var blackMs : LongArray
     private lateinit var whiteMs : LongArray
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-        dependencyInjection = ChessApplication.getDependencyInjection(this)
         setContentView(R.layout.bar_chart_container)
     }
 
     override fun onResume() {
         super.onResume()
         bar_chart_container.removeAllViews()
-        whiteMs = dependencyInjection.clockManager.white.moveTimes
-        blackMs = dependencyInjection.clockManager.black.moveTimes
+        whiteMs = clockManager.white.moveTimes
+        blackMs = clockManager.black.moveTimes
         addViews(whiteMs, blackMs)
     }
 

@@ -5,8 +5,11 @@ import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import johnwilde.androidchessclock.R
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class PreferencesUtil(context: Context) {
+@Singleton
+class PreferencesUtil @Inject constructor(context: Context) {
     val sharedPreferences : SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     enum class TimeControlType {
         BASIC, TOURNAMENT
