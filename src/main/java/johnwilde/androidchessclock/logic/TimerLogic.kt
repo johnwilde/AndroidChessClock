@@ -20,12 +20,13 @@ import java.util.concurrent.TimeUnit
 
 class TimerLogic(val color: ClockView.Color,
                  var preferencesUtil: PreferencesUtil,
-                 var stateHolder : GameStateHolder,
+                 private var stateHolder : GameStateHolder,
                  var timeSource: TimeSource) {
     var msToGo : Long = 0
     var msDelayToGo: Long = 0
     var msToGoMoveStart : Long = 0
     var playedBuzzer : Boolean = false
+
 
     private var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     // Player buttons, time and time-gap
@@ -63,11 +64,17 @@ class TimerLogic(val color: ClockView.Color,
         setInitialTime()
     }
 
+    private fun updateTimeGap(newState : TimeGapViewState) {
+        if (preferencesUtil.showTimeGap) {
+            clockUpdateSubject.onNext(newState)
+        }
+    }
+
     fun subscribeToClock(otherClock : TimerLogic) {
         val ignored = otherClock.msToGoUpdateSubject.subscribe { ms ->
             if (stateHolder.active != this) {
                 // Update the time-gap clock
-                clockUpdateSubject.onNext(TimeGapViewState(msToGo - ms))
+                updateTimeGap(TimeGapViewState(msToGo - ms))
             }
         }
     }
@@ -94,7 +101,7 @@ class TimerLogic(val color: ClockView.Color,
         resume()
 
         // Hide the time-gap clock
-        clockUpdateSubject.onNext(TimeGapViewState( 0))
+        updateTimeGap(TimeGapViewState(show = false))
     }
 
     fun onMoveEnd() {
@@ -123,11 +130,10 @@ class TimerLogic(val color: ClockView.Color,
         setInitialTime()
         spinner.onNext(SpinnerViewState(0))
         clockUpdateSubject.onNext(initialState())
-        clockUpdateSubject.onNext(TimeGapViewState( 0))
+        updateTimeGap(TimeGapViewState(show = false))
     }
 
     fun resume() {
-        Timber.d("Start new subscription to timer state")
         clockSubscription = timeSequence().subscribe()
     }
 
@@ -145,7 +151,6 @@ class TimerLogic(val color: ClockView.Color,
     // Stop the interval updates
     private fun disposeTimeSequenceSubscription() {
         if (clockSubscription != null && !clockSubscription!!.isDisposed()) {
-            Timber.d("Disposing subscription to timer state")
             // This stops the timer interval
             clockSubscription!!.dispose()
         }

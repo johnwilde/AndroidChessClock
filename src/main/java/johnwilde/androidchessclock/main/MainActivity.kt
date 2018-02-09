@@ -29,7 +29,6 @@ import kotlinx.android.synthetic.main.main_activity.*
 import timber.log.Timber
 import javax.inject.Inject
 
-
 var REQUEST_CODE_PREFERENCES : Int = 1
 var REQUEST_CODE_ADJUST_TIME : Int = 2
 val RESET_DIALOG_SHOWING = "RESET_DIALOG_SHOWING"
@@ -37,14 +36,9 @@ val RESET_DIALOG_SHOWING = "RESET_DIALOG_SHOWING"
 class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPauseView,
         HasSupportFragmentInjector {
 
-    override fun supportFragmentInjector(): AndroidInjector<android.support.v4.app.Fragment> {
-        return fragmentInjector
-    }
-
-    @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<android.support.v4.app.Fragment>
-
     @Inject lateinit var clockManager : ClockManager
     @Inject lateinit var preferenceUtil : PreferencesUtil
+    @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<android.support.v4.app.Fragment>
 
     var views : Array<View> = emptyArray()
     var dialog : AlertDialog? = null
@@ -247,5 +241,9 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         override fun onDrawerOpened(drawerView: View) {
             subject.onNext(1)
         }
+    }
+
+    override fun supportFragmentInjector(): AndroidInjector<android.support.v4.app.Fragment> {
+        return fragmentInjector
     }
 }

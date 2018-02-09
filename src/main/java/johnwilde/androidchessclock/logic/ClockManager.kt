@@ -22,22 +22,17 @@ import javax.inject.Singleton
 @Singleton
 class ClockManager @Inject constructor(
         preferencesUtil: PreferencesUtil,
-        var stateHolder : GameStateHolder,
+        private var stateHolder : GameStateHolder,
         @Named("white") val white: TimerLogic,
         @Named("black") val black: TimerLogic) {
     
-    fun active() : TimerLogic { return stateHolder.active!! }
-    fun gameState() : GameState { return stateHolder.gameState }
-
     var playPauseSubject: BehaviorSubject<PlayPauseState> = BehaviorSubject.create()
     var clickObservable : PublishSubject<SoundViewState> = PublishSubject.create()
-    val spinnerObservable: Observable<PlayPauseViewState>
-    val buzzerObservable: Observable<SoundViewState>
+    val spinnerObservable: Observable<PlayPauseViewState> = Observable.merge(white.spinner, black.spinner)
+    val buzzerObservable: Observable<SoundViewState> = Observable.merge(white.buzzer, black.buzzer)
 
     init {
-        spinnerObservable = Observable.merge(white.spinner, black.spinner)
         // Allows the manager to know when a clock has expired (and game is finished)
-        buzzerObservable = Observable.merge(white.buzzer, black.buzzer)
         val ignored = buzzerObservable.subscribe { a ->
             when (a) {
                 is Buzzer -> {
@@ -51,6 +46,7 @@ class ClockManager @Inject constructor(
         // Allow clocks to receive time updates from each other (enables time-gap display)
         white.subscribeToClock(black)
         black.subscribeToClock(white)
+        // White moves first so set as active player
         stateHolder.setActiveClock(white)
     }
 
@@ -68,6 +64,7 @@ class ClockManager @Inject constructor(
                     // Start / resume play
                     clickObservable.onNext(Click())
                     startPlayerClock(forOtherColor(color))
+                    // if NOT_STARTED neither clock is
                     forColor(color).publishInactiveState()
                 }
             }
@@ -131,7 +128,6 @@ class ClockManager @Inject constructor(
     }
 
     private fun startPlayerClock(timer : TimerLogic) {
-        Timber.d("Active player is %s", timer.color)
         stateHolder.setActiveClock(timer)
         if (gameState() == GameState.PAUSED) {
             active().resume()
@@ -152,7 +148,7 @@ class ClockManager @Inject constructor(
         }
     }
 
-    fun forOtherColor(color: ClockView.Color): TimerLogic {
+    private fun forOtherColor(color: ClockView.Color): TimerLogic {
         return when (color) {
             ClockView.Color.WHITE -> black
             ClockView.Color.BLACK -> white
@@ -162,5 +158,9 @@ class ClockManager @Inject constructor(
     fun clockUpdates(color: ClockView.Color) : Observable<ClockViewState> {
         return forColor(color).clockUpdateSubject
     }
+
+    private fun active() : TimerLogic { return stateHolder.active!! }
+    private fun gameState() : GameState { return stateHolder.gameState }
+
 }
 

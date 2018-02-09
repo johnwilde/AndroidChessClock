@@ -219,12 +219,12 @@ public class TimerPreferenceFragment extends PreferenceFragment {
         return (RadioCheckBoxPreference) findPreference(key.toString());
     }
 
-    Preference.OnPreferenceClickListener ignore = new Preference.OnPreferenceClickListener() {
-        @Override
-        public boolean onPreferenceClick(Preference preference) {
-            return true;
-        }
-    };
+//    Preference.OnPreferenceClickListener ignore = new Preference.OnPreferenceClickListener() {
+//        @Override
+//        public boolean onPreferenceClick(Preference preference) {
+//            return true;
+//        }
+//    };
 
     public void simpleTimeChecked() {
         RadioCheckBoxPreference sc= getCheckbox(Key.SIMPLE_TIME_CONTROL_CHECKBOX);

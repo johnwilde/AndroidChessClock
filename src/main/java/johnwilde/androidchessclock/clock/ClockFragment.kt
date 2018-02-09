@@ -76,7 +76,6 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
 
     // Update the button's enabled state and the time text
     override fun render(viewState: ClockViewState) {
-        Timber.d("%s: %s", color, viewState)
         val state = viewState as FullViewState
         renderClock(state.button)
         renderTimeGap(state.timeGap)
@@ -84,7 +83,11 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     private fun renderTimeGap(viewState: TimeGapViewState) {
-        timeGap.visibility = if (preferences.showTimeGap) View.VISIBLE else View.GONE
+        timeGap.visibility = if (viewState.show) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
         timeGap.text = Utils.formatTimeGap(viewState.msGap)
         timeGap.isChecked = viewState.msGap < 0
     }
