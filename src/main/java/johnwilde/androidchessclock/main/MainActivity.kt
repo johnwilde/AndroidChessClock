@@ -228,10 +228,8 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
             // reset clocks using new settings
             if (data.getBooleanExtra(
                     TimerPreferenceActivity.LOAD_ALL, false)) {
-                preferenceUtil.loadAllUserPreferences()
+                preferenceUtil.loadTimeControlPreferences()
                 clockManager.reset()
-            } else {
-                preferenceUtil.loadUiPreferences()
             }
         }
     }

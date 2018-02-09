@@ -26,7 +26,7 @@ class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
     private var mSoundPool: SoundPool? = null
 
     override fun createPresenter(): SoundViewPresenter {
-        return SoundViewPresenter(clockManager)
+        return SoundViewPresenter(clockManager, preferences)
     }
 
     override fun onAttach(context: Context?) {
@@ -63,10 +63,10 @@ class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
         if (!isRestoringViewState) {
             when (viewState) {
                 is Buzzer -> {
-                    if (preferences.playBuzzerAtEnd) playBell()
+                    playBell()
                 }
                 is Click -> {
-                    if (preferences.playSoundOnButtonTap) playClick()
+                    playClick()
                 }
             }
         }

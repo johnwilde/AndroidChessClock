@@ -1,5 +1,8 @@
 package johnwilde.androidchessclock
 
+import android.content.Context
+import android.content.SharedPreferences
+import com.f2prateek.rx.preferences2.RxSharedPreferences
 import dagger.Module
 import dagger.Provides
 import dagger.android.ContributesAndroidInjector
@@ -14,6 +17,12 @@ import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.sound.SoundFragment
 import javax.inject.Named
 import javax.inject.Singleton
+import johnwilde.androidchessclock.R.xml.preferences
+import android.preference.PreferenceManager
+
+
+
+
 
 @Module
 internal abstract class ActivityBindingModule {
@@ -32,6 +41,13 @@ internal abstract class ActivityBindingModule {
 
     @Module
     companion object {
+        @JvmStatic
+        @Provides
+        internal fun providesRxSharedPreferences(context: Context) : RxSharedPreferences {
+            val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+            return RxSharedPreferences.create(preferences)
+        }
+
         @JvmStatic
         @Provides
         internal fun providesTimeSource() : TimeSource { return SystemTime() }

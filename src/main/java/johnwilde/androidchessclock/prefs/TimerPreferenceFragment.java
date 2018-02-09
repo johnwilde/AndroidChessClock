@@ -11,7 +11,6 @@ import android.preference.PreferenceScreen;
 import android.widget.BaseAdapter;
 
 import johnwilde.androidchessclock.R;
-import timber.log.Timber;
 
 /**  Activity that inflates the preferences from XML.
  * 
@@ -198,7 +197,6 @@ public class TimerPreferenceFragment extends PreferenceFragment {
 	 */
     public void doValidationAndInitialization(){
         for (Key k : Key.values()){
-            Timber.d("Key:", k.toString());
             Preference p = findPreference(k.toString());
             if (p instanceof EditTextPreference){
                 EditTextPreference pref = (EditTextPreference)p;
@@ -218,13 +216,6 @@ public class TimerPreferenceFragment extends PreferenceFragment {
     private RadioCheckBoxPreference getCheckbox(Key key) {
         return (RadioCheckBoxPreference) findPreference(key.toString());
     }
-
-//    Preference.OnPreferenceClickListener ignore = new Preference.OnPreferenceClickListener() {
-//        @Override
-//        public boolean onPreferenceClick(Preference preference) {
-//            return true;
-//        }
-//    };
 
     public void simpleTimeChecked() {
         RadioCheckBoxPreference sc= getCheckbox(Key.SIMPLE_TIME_CONTROL_CHECKBOX);

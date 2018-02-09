@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.support.v7.app.AppCompatActivity
 import johnwilde.androidchessclock.prefs.TimerPreferenceFragment.Key
+import timber.log.Timber
 
 class TimerPreferenceActivity : AppCompatActivity(),
         SharedPreferences.OnSharedPreferenceChangeListener {
@@ -46,15 +47,16 @@ class TimerPreferenceActivity : AppCompatActivity(),
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences,
                                            key: String) {
+        Timber.d("%s changed", key)
+        // These keys don't require a clock reset
         val uiKeys = listOf(
                 Key.TIME_GAP,
                 Key.PLAY_BELL,
-                Key.PLAY_CLICK);
+                Key.PLAY_CLICK,
+                Key.NEGATIVE_TIME,
+                Key.ADV_NEGATIVE_TIME)
 
-        if (uiKeys.contains(Key.fromString(key))){
-            setResult(RESULT_OK, intent.putExtra(LOAD_UI, true));
-        }
-        else{
+        if (!uiKeys.contains(Key.fromString(key))){
             setResult(RESULT_OK, intent.putExtra(LOAD_ALL, true));
         }
         updateAll(key);

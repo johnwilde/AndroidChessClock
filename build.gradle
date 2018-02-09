@@ -44,6 +44,8 @@ dependencies {
     implementation 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
     implementation 'com.hannesdorfmann.mosby3:mvi:3.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'com.f2prateek.rx.preferences2:rx-preferences:2.0.0-RC3'
+
     implementation 'com.jakewharton.timber:timber:4.6.0'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'

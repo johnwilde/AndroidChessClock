@@ -1,5 +1,6 @@
 package johnwilde.androidchessclock.logic
 
+import com.jakewharton.rxbinding2.widget.RxCompoundButton
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -62,20 +63,37 @@ class TimerLogic(val color: ClockView.Color,
 
     init {
         setInitialTime()
+        val ignored = preferencesUtil.timeGap.asObservable()
+                .subscribe({ value ->
+                    if (value) {
+                        publishTimeGap(lastMsOtherClock)
+                    } else {
+                        updateTimeGap(TimeGapViewState(show = false), forceUpdate = true)
+                    }})
     }
 
-    private fun updateTimeGap(newState : TimeGapViewState) {
-        if (preferencesUtil.showTimeGap) {
+
+    private fun updateTimeGap(newState : TimeGapViewState, forceUpdate : Boolean = false) {
+        Timber.d("TimeGap update, pref: %s, state:%s",
+                preferencesUtil.showTimeGap, newState)
+        if (preferencesUtil.showTimeGap || forceUpdate) {
             clockUpdateSubject.onNext(newState)
         }
     }
 
+    fun publishTimeGap(otherClockMsToGo : Long) {
+        if (stateHolder.active != this) {
+            // Update the time-gap clock
+            updateTimeGap(TimeGapViewState(msToGo - otherClockMsToGo))
+        }
+    }
+
+
+    var lastMsOtherClock : Long = 0
     fun subscribeToClock(otherClock : TimerLogic) {
         val ignored = otherClock.msToGoUpdateSubject.subscribe { ms ->
-            if (stateHolder.active != this) {
-                // Update the time-gap clock
-                updateTimeGap(TimeGapViewState(msToGo - ms))
-            }
+            lastMsOtherClock = ms
+            publishTimeGap(ms)
         }
     }
 

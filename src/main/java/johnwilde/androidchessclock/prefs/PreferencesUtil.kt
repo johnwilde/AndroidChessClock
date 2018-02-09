@@ -3,14 +3,41 @@ package johnwilde.androidchessclock.prefs
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
+import com.f2prateek.rx.preferences2.Preference
+import com.f2prateek.rx.preferences2.RxSharedPreferences
 import johnwilde.androidchessclock.R
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PreferencesUtil @Inject constructor(context: Context) {
+class PreferencesUtil @Inject constructor(
+        context: Context,
+        rxSharedPreferences: RxSharedPreferences) {
     val sharedPreferences : SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+    // Clock subscribes to this so it can update view state when it changes
+    val timeGap: Preference<Boolean> = rxSharedPreferences
+            .getBoolean(TimerPreferenceFragment.Key.TIME_GAP.toString())
+
+    var showTimeGap: Boolean = true
+        get() = sharedPreferences.getBoolean(TimerPreferenceFragment.Key.TIME_GAP.toString(), true)
+
+    var allowNegativeTime: Boolean = false
+        get() {
+            return if (timeControlType == TimeControlType.BASIC) {
+                sharedPreferences.getBoolean(TimerPreferenceFragment.Key.NEGATIVE_TIME.toString(), false)
+            } else {
+                sharedPreferences.getBoolean(TimerPreferenceFragment.Key.ADV_NEGATIVE_TIME.toString(), false)
+            }
+        }
+
+    var playBuzzerAtEnd: Boolean = false
+        get() = sharedPreferences.getBoolean(TimerPreferenceFragment.Key.PLAY_BELL.toString(), false)
+
+    var playSoundOnButtonTap: Boolean = false
+        get() = sharedPreferences.getBoolean(TimerPreferenceFragment.Key.PLAY_CLICK.toString(), false)
+
     enum class TimeControlType {
         BASIC, TOURNAMENT
     }
@@ -23,41 +50,16 @@ class PreferencesUtil @Inject constructor(context: Context) {
     var phase1NumberOfMoves: Int = 0
     var phase1Minutes: Int = 0
     var initialDurationSeconds: Int = 0
-    private var  mIncrementSeconds: Int = 0
-    var playBuzzerAtEnd: Boolean = false
-    var playSoundOnButtonTap: Boolean = false
-    var allowNegativeTime: Boolean = false
-    var showTimeGap: Boolean = true
+    private var mIncrementSeconds: Int = 0
 
     init {
         // set default values (for first run)
         PreferenceManager.setDefaultValues(context, R.xml.preferences, false)
-        loadAllUserPreferences()
-    }
-
-    // Methods for loading USER PREFERENCES
-    //
-    // These methods are run after the user has changed
-    // a preference and during onCreate(). The onActivityResult()
-    // method is responsible for calling the method that matches
-    // the preference that was changed.
-    //
-    // Note: the default values required by the SharedPreferences getXX
-    // methods are not used. The SharedPreferences will have their default
-    // values set (in onCreate() ) and those defaults are saved in
-    // preferences.xml
-
-    fun loadAllUserPreferences() {
         loadTimeControlPreferences()
-        loadUiPreferences()
     }
 
-    fun loadUiPreferences() {
-        loadAudibleNotificationUserPreference()
-    }
-
-    // determine whether we're using BASIC or TOURNAMENT time control
-    private fun loadTimeControlPreferences() {
+    // Run after the user has changeda preference and during onCreate()
+    fun loadTimeControlPreferences() {
         val simpleTimeControl = sharedPreferences.getBoolean(
                 TimerPreferenceFragment.Key.SIMPLE_TIME_CONTROL_CHECKBOX.toString(),
                 true)
@@ -75,7 +77,6 @@ class PreferencesUtil @Inject constructor(context: Context) {
         loadInitialTimeUserPreferences()
         loadIncrementUserPreference(TimerPreferenceFragment.Key.INCREMENT_SECONDS)
         loadDelayTypeUserPreference(TimerPreferenceFragment.Key.DELAY_TYPE)
-        loadNegativeTimeUserPreference(TimerPreferenceFragment.Key.NEGATIVE_TIME)
     }
 
     private fun loadAdvancedTimeControlUserPreference() {
@@ -89,21 +90,8 @@ class PreferencesUtil @Inject constructor(context: Context) {
 
         loadDelayTypeUserPreference(TimerPreferenceFragment.Key.ADV_DELAY_TYPE)
         loadIncrementUserPreference(TimerPreferenceFragment.Key.ADV_INCREMENT_SECONDS)
-        loadNegativeTimeUserPreference(TimerPreferenceFragment.Key.ADV_NEGATIVE_TIME)
     }
 
-    private fun loadAudibleNotificationUserPreference() {
-        playBuzzerAtEnd = sharedPreferences.getBoolean(
-                TimerPreferenceFragment.Key.PLAY_BELL.toString(), false)
-        playSoundOnButtonTap = sharedPreferences.getBoolean(
-                TimerPreferenceFragment.Key.PLAY_CLICK.toString(), false)
-        showTimeGap = sharedPreferences.getBoolean(
-                TimerPreferenceFragment.Key.TIME_GAP.toString(), true)
-    }
-
-    private fun loadNegativeTimeUserPreference(key: TimerPreferenceFragment.Key) {
-        allowNegativeTime = sharedPreferences.getBoolean(key.toString(), false)
-    }
 
     private fun loadDelayTypeUserPreference(key: TimerPreferenceFragment.Key) {
         val delayTypeString = sharedPreferences.getString(key.toString(),
