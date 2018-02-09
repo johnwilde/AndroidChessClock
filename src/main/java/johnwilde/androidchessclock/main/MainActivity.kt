@@ -42,7 +42,7 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
 
     var views : Array<View> = emptyArray()
     var dialog : AlertDialog? = null
-    lateinit var drawerListener : SimpleDrawerListener
+    private lateinit var drawerListener : SimpleDrawerListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -243,5 +243,13 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
 
     override fun supportFragmentInjector(): AndroidInjector<android.support.v4.app.Fragment> {
         return fragmentInjector
+    }
+
+    override fun onBackPressed() {
+        if (drawerLayout.isDrawerOpen(navigationDrawer)) {
+            drawerLayout.closeDrawer(navigationDrawer)
+        } else {
+            super.onBackPressed()
+        }
     }
 }
