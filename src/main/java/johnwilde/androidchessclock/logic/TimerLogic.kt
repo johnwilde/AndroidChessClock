@@ -9,6 +9,7 @@ import johnwilde.androidchessclock.clock.ButtonViewState
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.clock.TimeGapViewState
+import johnwilde.androidchessclock.logic.GameStateHolder.GameState
 import johnwilde.androidchessclock.main.PlayPauseViewState
 import johnwilde.androidchessclock.main.SpinnerViewState
 import johnwilde.androidchessclock.prefs.PreferencesUtil
@@ -17,10 +18,10 @@ import johnwilde.androidchessclock.sound.SoundViewState
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-class TimerLogic(val manager: ClockManager,
-                 val color: ClockView.Color,
-                 val preferencesUtil: PreferencesUtil,
-                 val timeSource: TimeSource) {
+class TimerLogic(val color: ClockView.Color,
+                 var preferencesUtil: PreferencesUtil,
+                 var stateHolder : GameStateHolder,
+                 var timeSource: TimeSource) {
     var msToGo : Long = 0
     var msDelayToGo: Long = 0
     var msToGoMoveStart : Long = 0
@@ -62,9 +63,9 @@ class TimerLogic(val manager: ClockManager,
         setInitialTime()
     }
 
-    fun subscribeToOtherClock() {
-        val ignored = manager.forOtherColor(color).msToGoUpdateSubject.subscribe { ms ->
-            if (manager.active != this) {
+    fun subscribeToClock(otherClock : TimerLogic) {
+        val ignored = otherClock.msToGoUpdateSubject.subscribe { ms ->
+            if (stateHolder.active != this) {
                 // Update the time-gap clock
                 clockUpdateSubject.onNext(TimeGapViewState(msToGo - ms))
             }
@@ -79,8 +80,7 @@ class TimerLogic(val manager: ClockManager,
     }
 
     fun initialState() : ButtonViewState {
-        val enabled = if (manager.gameState == ClockManager.GameState.NOT_STARTED) true else manager.active == this
-        val state =  ButtonViewState(enabled, msToGo, "")
+        val state =  ButtonViewState(buttonIsEnabled(), msToGo, "")
         Timber.d("%s initialState: %s", color, state)
         return state
     }
@@ -196,8 +196,15 @@ class TimerLogic(val manager: ClockManager,
     }
 
     fun setNewTime(newTime: Long) {
-        val enabled = if (manager.gameState == ClockManager.GameState.NOT_STARTED) true else manager.active == this
         updateAndPublishMsToGo(newTime)
-        clockUpdateSubject.onNext(ButtonViewState(enabled, msToGo, moveCounter.display()))
+        clockUpdateSubject.onNext(ButtonViewState(buttonIsEnabled(), msToGo, moveCounter.display()))
+    }
+
+    private fun buttonIsEnabled(): Boolean {
+        return if (stateHolder.gameState == GameState.NOT_STARTED) {
+            true
+        } else {
+            stateHolder.active == this
+        }
     }
 }

@@ -3,7 +3,11 @@ package johnwilde.androidchessclock.logic
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
-import johnwilde.androidchessclock.clock.*
+import johnwilde.androidchessclock.clock.ButtonViewState
+import johnwilde.androidchessclock.clock.ClockView
+import johnwilde.androidchessclock.clock.ClockViewState
+import johnwilde.androidchessclock.clock.PromptToMove
+import johnwilde.androidchessclock.logic.GameStateHolder.GameState
 import johnwilde.androidchessclock.main.PlayPauseState
 import johnwilde.androidchessclock.main.PlayPauseViewState
 import johnwilde.androidchessclock.prefs.PreferencesUtil
@@ -12,46 +16,51 @@ import johnwilde.androidchessclock.sound.Click
 import johnwilde.androidchessclock.sound.SoundViewState
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class ClockManager @Inject constructor(val preferencesUtil: PreferencesUtil, timeSource: TimeSource) {
-    val white = TimerLogic(this, ClockView.Color.WHITE, preferencesUtil, timeSource)
-    val black = TimerLogic(this, ClockView.Color.BLACK, preferencesUtil, timeSource)
-    var active = white
-
-    enum class GameState {NOT_STARTED, PAUSED, PLAYING, FINISHED}
-    var gameState : GameState = GameState.NOT_STARTED
+class ClockManager @Inject constructor(
+        preferencesUtil: PreferencesUtil,
+        var stateHolder : GameStateHolder,
+        @Named("white") val white: TimerLogic,
+        @Named("black") val black: TimerLogic) {
+    
+    fun active() : TimerLogic { return stateHolder.active!! }
+    fun gameState() : GameState { return stateHolder.gameState }
 
     var playPauseSubject: BehaviorSubject<PlayPauseState> = BehaviorSubject.create()
     var clickObservable : PublishSubject<SoundViewState> = PublishSubject.create()
-    var buzzerObservable = Observable.merge(white.buzzer, black.buzzer)
-    var spinnerObservable = Observable.merge(white.spinner, black.spinner)
+    val spinnerObservable: Observable<PlayPauseViewState>
+    val buzzerObservable: Observable<SoundViewState>
 
     init {
+        spinnerObservable = Observable.merge(white.spinner, black.spinner)
         // Allows the manager to know when a clock has expired (and game is finished)
+        buzzerObservable = Observable.merge(white.buzzer, black.buzzer)
         val ignored = buzzerObservable.subscribe { a ->
             when (a) {
                 is Buzzer -> {
                     if (!preferencesUtil.allowNegativeTime) {
                         setGameStateAndPublish(GameState.FINISHED)
-                        active.onTimeExpired()
+                        active().onTimeExpired()
                     }
                 }
             }
         }
         // Allow clocks to receive time updates from each other (enables time-gap display)
-        white.subscribeToOtherClock()
-        black.subscribeToOtherClock()
+        white.subscribeToClock(black)
+        black.subscribeToClock(white)
+        stateHolder.setActiveClock(white)
     }
 
     // Player button was hit
     fun moveEnd(color: ClockView.Color) : Observable<ClockViewState> {
         var result = Observable.empty<ClockViewState>()
-        when (gameState) {
+        when (gameState()) {
             GameState.PAUSED,
             GameState.NOT_STARTED -> {
-                if (color == active.color) {
+                if (color == active().color) {
                     // Must tap non-active color to resume/start game
                     val otherColor = forOtherColor(color).color
                     result = Observable.just<ClockViewState>(PromptToMove(otherColor))
@@ -64,7 +73,7 @@ class ClockManager @Inject constructor(val preferencesUtil: PreferencesUtil, tim
             }
             GameState.PLAYING -> {
                 // Switch turns
-                if (color == active.color) {
+                if (color == active().color) {
                     clickObservable.onNext(Click())
                     startPlayerClock(forOtherColor(color))
                     forColor(color).onMoveEnd()
@@ -77,17 +86,17 @@ class ClockManager @Inject constructor(val preferencesUtil: PreferencesUtil, tim
 
     // Play/Pause button was hit
     fun playPause() : Observable<PlayPauseViewState> {
-        when(gameState) {
+        when(gameState()) {
             GameState.PLAYING -> {
                 // Pause game
                 setGameStateAndPublish(GameState.PAUSED)
-                active.pause()
+                active().pause()
             }
             GameState.PAUSED,
             GameState.NOT_STARTED -> {
                 // Start / resume game
-                startPlayerClock(active)
-                forOtherColor(active.color).publishInactiveState() // dim other clock
+                startPlayerClock(active())
+                forOtherColor(active().color).publishInactiveState() // dim other clock
             }
             // button is disabled when in finished state, so this shouldn't be possible
             GameState.FINISHED -> {}
@@ -97,7 +106,7 @@ class ClockManager @Inject constructor(val preferencesUtil: PreferencesUtil, tim
 
     // Drawer was opened
     fun pause() : Observable<PlayPauseViewState> {
-        return when(gameState) {
+        return when(gameState()) {
             GameState.PLAYING -> playPause()
             GameState.PAUSED, GameState.NOT_STARTED, GameState.FINISHED -> Observable.empty()
         }
@@ -105,13 +114,13 @@ class ClockManager @Inject constructor(val preferencesUtil: PreferencesUtil, tim
 
     fun reset() {
         setGameStateAndPublish(GameState.NOT_STARTED)
-        active = white
+        stateHolder.setActiveClock(white)
         white.reset()
         black.reset()
     }
 
     private fun setGameStateAndPublish(state : GameState) {
-        gameState = state
+        stateHolder.setGameStateValue(state)
         val update = when (state) {
             GameState.NOT_STARTED -> PlayPauseState(true, false)
             GameState.PLAYING -> PlayPauseState(false, false)
@@ -123,11 +132,11 @@ class ClockManager @Inject constructor(val preferencesUtil: PreferencesUtil, tim
 
     private fun startPlayerClock(timer : TimerLogic) {
         Timber.d("Active player is %s", timer.color)
-        active = timer
-        if (gameState == GameState.PAUSED) {
-            active.resume()
+        stateHolder.setActiveClock(timer)
+        if (gameState() == GameState.PAUSED) {
+            active().resume()
         } else {
-            active.onMoveStart()
+            active().onMoveStart()
         }
         setGameStateAndPublish(GameState.PLAYING)
     }
