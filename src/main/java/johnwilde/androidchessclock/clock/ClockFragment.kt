@@ -78,11 +78,10 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         return RxView.touches(button)
     }
 
-    // Update the button's enabled state and the time text
+    // Update the button's visible state and the time text
     override fun render(state: ClockViewState) {
         renderClock(state.button)
         renderTimeGap(state.timeGap)
-        if (state.prompt != null) renderPromptToMove(state.prompt)
     }
 
     private fun renderTimeGap(viewState: TimeGapViewState) {
@@ -95,19 +94,6 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         timeGap.isChecked = viewState.msGap < 0
     }
 
-    var snackBar : Snackbar? = null
-    private fun renderPromptToMove(viewState: PromptToMove) {
-        Timber.d("prompt: %s", viewState)
-        if (viewState.show) {
-            val v = activity!!.findViewById<View>(R.id.coordinatorLayout)
-            if (snackBar == null || snackBar?.isShownOrQueued == false) {
-                snackBar = Snackbar.make(v, R.string.tap_other_button, Snackbar.LENGTH_INDEFINITE)
-                snackBar?.show()
-            }
-        } else if (viewState.dismiss) {
-            snackBar?.dismiss()
-        }
-    }
 
     private fun renderClock(buttonViewState: ButtonViewState) {
         clock.text = Utils.formatClockTime(buttonViewState.msToGo)

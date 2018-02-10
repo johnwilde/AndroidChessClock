@@ -10,8 +10,8 @@ import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.PartialState
 import johnwilde.androidchessclock.clock.TimeGapViewState
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
-import johnwilde.androidchessclock.main.PlayPauseViewState
-import johnwilde.androidchessclock.main.SpinnerViewState
+import johnwilde.androidchessclock.main.MainStateUpdate
+import johnwilde.androidchessclock.main.SpinnerStateUpdate
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.sound.Buzzer
 import johnwilde.androidchessclock.sound.SoundViewState
@@ -32,7 +32,7 @@ class TimerLogic(val color: ClockView.Color,
     // Player buttons, time and time-gap
     var clockUpdateSubject: PublishSubject<PartialState> = PublishSubject.create()
     // Updates for view that draws Bronstein-delay circle
-    var spinner: BehaviorSubject<PlayPauseViewState> = BehaviorSubject.create()
+    var spinner: BehaviorSubject<MainStateUpdate> = BehaviorSubject.create()
     // When time runs out send an update
     var buzzer: BehaviorSubject<SoundViewState> = BehaviorSubject.create()
 
@@ -132,7 +132,7 @@ class TimerLogic(val color: ClockView.Color,
 
     fun publishInactiveState() {
         // At end of turn, dim the button and remove the spinner
-        spinner.onNext(SpinnerViewState(0))
+        spinner.onNext(SpinnerStateUpdate(0))
         clockUpdateSubject.onNext(ButtonViewState(false, msToGo, ""))
     }
 
@@ -143,7 +143,7 @@ class TimerLogic(val color: ClockView.Color,
     fun reset() {
         disposeTimeSequenceSubscription()
         setInitialTime()
-        spinner.onNext(SpinnerViewState(0))
+        spinner.onNext(SpinnerStateUpdate(0))
         clockUpdateSubject.onNext(initialState())
         updateTimeGap(TimeGapViewState(show = false))
     }
@@ -196,7 +196,7 @@ class TimerLogic(val color: ClockView.Color,
                 // While in Bronstein period, we just decrement delay time
                 msDelayToGo -= dt
                 clockUpdateSubject.onNext(ButtonViewState(true, msToGo, moveCounter.display()))
-                spinner.onNext(SpinnerViewState(msDelayToGo))
+                spinner.onNext(SpinnerStateUpdate(msDelayToGo))
                 true
             } else {
                 updateAndPublishMsToGo(msToGo - dt)

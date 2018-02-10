@@ -7,7 +7,7 @@ import johnwilde.androidchessclock.logic.ClockManager
 import timber.log.Timber
 
 class PlayPausePresenter(val clockManager: ClockManager)
-    : MviBasePresenter<PlayPauseView, PlayPauseViewState> () {
+    : MviBasePresenter<PlayPauseView, MainViewState> () {
 
     // Only invoked the first time view is attached to presenter
     override fun bindIntents() {
@@ -20,16 +20,32 @@ class PlayPausePresenter(val clockManager: ClockManager)
         val drawerOpened = intent(PlayPauseView::drawerOpened)
                 .flatMap { clockManager.pause() }
 
-        var updates = Observable.merge(
+        // Drawer opened
+        val snackBarDismissed = intent(PlayPauseView::snackBarDismissed)
+                .flatMap { _ ->
+                    val dismiss = SnackbarPromptUpdate("", false, true) as MainStateUpdate
+                    Observable.just(dismiss)
+                }
+
+        val intents = mutableListOf(
                 playPauseIntent,
                 drawerOpened,
+                snackBarDismissed,
                 // Allows this view to update the Spinner
                 clockManager.spinnerObservable,
                 // Allows play/pause button to react to game state change triggered by a player button tap
                 clockManager.playPauseSubject)
-                .observeOn(AndroidSchedulers.mainThread())
 
-        subscribeViewState(updates, PlayPauseView::render)
+        var updates = Observable.merge(intents)
+
+        subscribeViewState(
+                updates.scan(MainViewState.initialState, ::reducer)
+                        .observeOn(AndroidSchedulers.mainThread()),
+                PlayPauseView::render)
+    }
+
+    private fun reducer(previous : MainViewState, updates: MainStateUpdate) : MainViewState {
+        return updates.reduce(previous)
     }
 
     override fun unbindIntents() {

@@ -6,5 +6,6 @@ import io.reactivex.Observable
 interface PlayPauseView : MvpView {
     fun drawerOpened() : Observable<Any>
     fun playPauseIntent() : Observable<Any>
-    fun render(viewState: PlayPauseViewState)
+    fun snackBarDismissed() : Observable<Any>
+    fun render(viewState: MainViewState)
 }

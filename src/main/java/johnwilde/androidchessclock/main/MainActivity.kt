@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.transition.TransitionManager
 import android.support.v4.widget.DrawerLayout
 import android.view.MenuItem
@@ -22,6 +23,7 @@ import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.clock.ClockFragment
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.logic.ClockManager
+import johnwilde.androidchessclock.main.MainButtonStateUpdate.*
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.prefs.TimerPreferenceActivity
 import johnwilde.androidchessclock.sound.SoundFragment
@@ -133,25 +135,24 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
                 .show()
     }
 
-    override fun render(viewState: PlayPauseViewState) {
-//        Timber.d("%s", viewState)
-        when (viewState) {
-            is PlayPauseState -> {
-                // Show "PLAY" when checked, "PAUSE" when not checked
-                play_pause_button.isChecked = viewState.showPlay
-                if (viewState.showDialog) {
-                    Toast.makeText(applicationContext, R.string.pause_dialog, Toast.LENGTH_SHORT).show()
-                }
-                // When game is finished hide the button
-                play_pause_button.visibility = if (viewState.enabled) View.VISIBLE else View.INVISIBLE
-            }
-            is SpinnerViewState -> {
-                renderSpinner(viewState)
-            }
+    override fun render(viewState: MainViewState) {
+        renderButton(viewState.button)
+        renderSpinner(viewState.spinner)
+        renderPromptToMove(viewState.prompt)
+    }
+
+    private fun renderButton(button: MainButtonStateUpdate) {
+        // Show "PLAY" when checked, "PAUSE" when not checked
+        play_pause_button.isChecked = button.buttonState == State.PLAY
+        // When game is finished hide the button
+        play_pause_button.visibility = if (button.visible) {
+            View.VISIBLE
+        } else {
+            View.INVISIBLE
         }
     }
 
-    private fun renderSpinner(spinnerViewState: SpinnerViewState) {
+    private fun renderSpinner(spinnerViewState: SpinnerStateUpdate) {
         spinner.msTotal =  preferenceUtil.getBronsteinDelayMs()
         spinner.msSoFar = spinnerViewState.msDelayToGo
         if (spinnerViewState.msDelayToGo > 0) {
@@ -160,6 +161,31 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         } else {
             spinner.visibility = View.INVISIBLE
         }
+    }
+
+    var snackBar : Snackbar? = null
+    var snackBarDismissed : PublishSubject<Any> = PublishSubject.create()
+    private fun renderPromptToMove(viewState: SnackbarPromptUpdate) {
+        Timber.d("prompt: %s", viewState)
+        if (viewState.show) {
+            val v = coordinatorLayout
+            if (snackBar == null || snackBar?.isShownOrQueued == false) {
+                snackBar = Snackbar.make(v, viewState.message, Snackbar.LENGTH_INDEFINITE)
+                snackBar?.addCallback(object : Snackbar.Callback() {
+                    override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                        super.onDismissed(transientBottomBar, event)
+                        snackBarDismissed.onNext(1)
+                    }
+                })
+                snackBar?.show()
+            }
+        } else if (viewState.dismiss) {
+            snackBar?.dismiss()
+        }
+    }
+
+    override fun snackBarDismissed(): Observable<Any> {
+        return snackBarDismissed
     }
 
     private fun swapSides() {

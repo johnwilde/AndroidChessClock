@@ -97,6 +97,10 @@
     <string name="black_button">Black Button</string>
 
     <string name="tap_other_button">Tap other button to resume.</string>
+    <string name="tap_white">Tap WHITE to resume.</string>
+    <string name="tap_black">Tap BLACK to resume.</string>
+    <string name="white_lost">WHITE time expired</string>
+    <string name="black_lost">BLACK time expired</string>
     <string name="new_game">New game</string>
     <string name="show_time_gap">Show time gap</string>
 </resources>

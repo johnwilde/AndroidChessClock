@@ -8,14 +8,13 @@ interface PartialState {
 // and a toast (prompt)
 data class ClockViewState(
         val button : ButtonViewState,
-        val timeGap : TimeGapViewState,
-        val prompt : PromptToMove?) : PartialState {
+        val timeGap : TimeGapViewState) : PartialState {
     override fun reduce(previousState: ClockViewState): ClockViewState {
         return this
     }
 }
 
-// Player's time remaining, whether button is enabled (currently
+// Player's time remaining, whether button is visible (currently
 // playing or non-started state) and move-count
 data class ButtonViewState(
         val enabled: Boolean,
@@ -25,21 +24,7 @@ data class ButtonViewState(
         // Don't change timegap state
         return ClockViewState(
                 button = this,
-                timeGap = previousState.timeGap,
-                prompt = previousState.prompt)
-    }
-}
-
-// Publish a toast
-data class PromptToMove(
-        val show: Boolean = false,
-        val dismiss: Boolean = false) : PartialState {
-    override fun reduce(previousState: ClockViewState): ClockViewState {
-        // Don't change button or timegap states
-        return ClockViewState(
-                button = previousState.button,
-                timeGap = previousState.timeGap,
-                prompt = this)
+                timeGap = previousState.timeGap)
     }
 }
 
@@ -52,8 +37,7 @@ data class TimeGapViewState(
         // Don't change button state
         return ClockViewState(
                 button = previousState.button,
-                timeGap = this,
-                prompt = previousState.prompt)
+                timeGap = this)
     }
 }
 
