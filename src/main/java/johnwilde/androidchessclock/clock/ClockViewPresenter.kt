@@ -17,7 +17,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                     clockManager.moveEnd(color)
                 }
 
-        val updates : Observable<PartialState> =
+        val updates : Observable<ClockStateUpdate> =
                 Observable.merge(stateUpdates, clockManager.clockUpdates(color))
 
         val initialState = clockManager.initialState(color)
@@ -29,7 +29,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                 ClockView::render)
     }
 
-    private fun reducer(previous : ClockViewState, updates: PartialState) : ClockViewState {
+    private fun reducer(previous : ClockViewState, updates: ClockStateUpdate) : ClockViewState {
        return updates.reduce(previous)
     }
 

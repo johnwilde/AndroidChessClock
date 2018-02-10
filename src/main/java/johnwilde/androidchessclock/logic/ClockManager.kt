@@ -5,16 +5,12 @@ import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import johnwilde.androidchessclock.R
+import johnwilde.androidchessclock.clock.ClockStateUpdate
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
-import johnwilde.androidchessclock.clock.PartialState
-import johnwilde.androidchessclock.clock.TimeGapViewState
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
-import johnwilde.androidchessclock.main.MainButtonStateUpdate
 import johnwilde.androidchessclock.main.MainStateUpdate
-import johnwilde.androidchessclock.main.MainButtonStateUpdate.State
 import johnwilde.androidchessclock.main.MainViewState
-import johnwilde.androidchessclock.main.SnackbarPromptUpdate
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.sound.Buzzer
 import johnwilde.androidchessclock.sound.Click
@@ -50,7 +46,7 @@ class ClockManager @Inject constructor(
                             resources.getString(R.string.black_lost)
                         }
 
-                        playPauseSubject.onNext(SnackbarPromptUpdate(
+                        playPauseSubject.onNext(MainViewState.Snackbar(
                                 show = true,
                                 message = message
                         ))
@@ -67,8 +63,8 @@ class ClockManager @Inject constructor(
     }
 
     // Player button was hit
-    fun moveEnd(color: ClockView.Color) : Observable<PartialState> {
-        var result = Observable.empty<PartialState>()
+    fun moveEnd(color: ClockView.Color) : Observable<ClockStateUpdate> {
+        var result = Observable.empty<ClockStateUpdate>()
         when (gameState()) {
             GameState.PAUSED,
             GameState.NOT_STARTED -> {
@@ -81,8 +77,8 @@ class ClockManager @Inject constructor(
                         resources.getString(R.string.tap_black)
                     }
                     val ignore = Observable.timer(5, TimeUnit.SECONDS)
-                            .map { _ -> SnackbarPromptUpdate(dismiss = true) as MainStateUpdate }
-                            .startWith(SnackbarPromptUpdate(
+                            .map { _ -> MainViewState.Snackbar(dismiss = true) as MainStateUpdate }
+                            .startWith(MainViewState.Snackbar(
                                     show = true,
                                     message = message))
                             .subscribe({state -> playPauseSubject.onNext(state)})
@@ -93,7 +89,7 @@ class ClockManager @Inject constructor(
                     startPlayerClock(forOtherColor(color))
                     // if NOT_STARTED neither clock is
                     forColor(color).publishInactiveState()
-                    playPauseSubject.onNext(SnackbarPromptUpdate(dismiss = true))
+                    playPauseSubject.onNext(MainViewState.Snackbar(dismiss = true))
                 }
             }
             GameState.PLAYING -> {
@@ -122,7 +118,7 @@ class ClockManager @Inject constructor(
                 // Start / resume game
                 startPlayerClock(active())
                 forOtherColor(active().color).publishInactiveState() // dim other clock
-                playPauseSubject.onNext(SnackbarPromptUpdate(dismiss = true))
+                playPauseSubject.onNext(MainViewState.Snackbar(dismiss = true))
             }
             // button is disabled when in finished state, so this shouldn't be possible
             GameState.FINISHED -> {}
@@ -149,9 +145,9 @@ class ClockManager @Inject constructor(
         stateHolder.setGameStateValue(state)
         val update = when (state) {
             GameState.NOT_STARTED -> MainViewState.initialState
-            GameState.PLAYING -> MainButtonStateUpdate(State.PAUSE, true)
-            GameState.PAUSED -> MainButtonStateUpdate(State.PLAY, true)
-            GameState.FINISHED -> MainButtonStateUpdate(State.PLAY, false)
+            GameState.PLAYING -> MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PAUSE, true)
+            GameState.PAUSED -> MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PLAY, true)
+            GameState.FINISHED -> MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PLAY, false)
         }
         playPauseSubject.onNext(update)
     }
@@ -169,7 +165,7 @@ class ClockManager @Inject constructor(
     fun initialState(color: ClockView.Color) : ClockViewState {
         return ClockViewState(
                 button = forColor(color).initialState(),
-                timeGap = TimeGapViewState(show = false))
+                timeGap = ClockViewState.TimeGap(show = false))
     }
 
     fun forColor(color: ClockView.Color): TimerLogic {
@@ -186,7 +182,7 @@ class ClockManager @Inject constructor(
         }
     }
 
-    fun clockUpdates(color: ClockView.Color) : Observable<PartialState> {
+    fun clockUpdates(color: ClockView.Color) : Observable<ClockStateUpdate> {
         return forColor(color).clockUpdateSubject
     }
 

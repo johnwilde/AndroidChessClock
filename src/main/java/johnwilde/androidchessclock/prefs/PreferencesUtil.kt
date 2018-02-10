@@ -7,6 +7,7 @@ import com.f2prateek.rx.preferences2.Preference
 import com.f2prateek.rx.preferences2.RxSharedPreferences
 import johnwilde.androidchessclock.R
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,8 +18,9 @@ class PreferencesUtil @Inject constructor(
     val sharedPreferences : SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     // Clock subscribes to this so it can update view state when it changes
-    val timeGap: Preference<Boolean> = rxSharedPreferences
+    val timeGap = rxSharedPreferences
             .getBoolean(TimerPreferenceFragment.Key.TIME_GAP.toString())
+            .asObservable()
 
     var showTimeGap: Boolean = true
         get() = sharedPreferences.getBoolean(TimerPreferenceFragment.Key.TIME_GAP.toString(), true)

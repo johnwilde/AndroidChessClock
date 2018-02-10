@@ -3,12 +3,10 @@ package johnwilde.androidchessclock.clock
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import com.hannesdorfmann.mosby3.mvi.MviFragment
 import com.jakewharton.rxbinding2.view.RxView
 import dagger.android.support.AndroidSupportInjection
@@ -22,8 +20,6 @@ import johnwilde.androidchessclock.prefs.PreferencesUtil
 import kotlinx.android.synthetic.main.clock_button.*
 import timber.log.Timber
 import javax.inject.Inject
-import android.R.attr.duration
-import kotlinx.android.synthetic.main.main_activity.*
 
 
 // This "View" represents one button and the TextView that shows the time remaining
@@ -84,7 +80,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         renderTimeGap(state.timeGap)
     }
 
-    private fun renderTimeGap(viewState: TimeGapViewState) {
+    private fun renderTimeGap(viewState: ClockViewState.TimeGap) {
         timeGap.visibility = if (viewState.show) {
             View.VISIBLE
         } else {
@@ -95,7 +91,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
 
-    private fun renderClock(buttonViewState: ButtonViewState) {
+    private fun renderClock(buttonViewState: ClockViewState.Button) {
         clock.text = Utils.formatClockTime(buttonViewState.msToGo)
         clock.alpha = if (buttonViewState.enabled) 1.0f else .1f
         clock.isChecked = buttonViewState.msToGo < 10_000

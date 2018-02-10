@@ -23,7 +23,7 @@ import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.clock.ClockFragment
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.logic.ClockManager
-import johnwilde.androidchessclock.main.MainButtonStateUpdate.*
+import johnwilde.androidchessclock.main.MainViewState.PlayPauseButton.State
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.prefs.TimerPreferenceActivity
 import johnwilde.androidchessclock.sound.SoundFragment
@@ -141,7 +141,7 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         renderPromptToMove(viewState.prompt)
     }
 
-    private fun renderButton(button: MainButtonStateUpdate) {
+    private fun renderButton(button: MainViewState.PlayPauseButton) {
         // Show "PLAY" when checked, "PAUSE" when not checked
         play_pause_button.isChecked = button.buttonState == State.PLAY
         // When game is finished hide the button
@@ -152,7 +152,7 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         }
     }
 
-    private fun renderSpinner(spinnerViewState: SpinnerStateUpdate) {
+    private fun renderSpinner(spinnerViewState: MainViewState.Spinner) {
         spinner.msTotal =  preferenceUtil.getBronsteinDelayMs()
         spinner.msSoFar = spinnerViewState.msDelayToGo
         if (spinnerViewState.msDelayToGo > 0) {
@@ -165,7 +165,7 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
 
     var snackBar : Snackbar? = null
     var snackBarDismissed : PublishSubject<Any> = PublishSubject.create()
-    private fun renderPromptToMove(viewState: SnackbarPromptUpdate) {
+    private fun renderPromptToMove(viewState: MainViewState.Snackbar) {
         Timber.d("prompt: %s", viewState)
         if (viewState.show) {
             val v = coordinatorLayout

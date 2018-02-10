@@ -5,13 +5,10 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
-import johnwilde.androidchessclock.clock.ButtonViewState
-import johnwilde.androidchessclock.clock.ClockView
-import johnwilde.androidchessclock.clock.PartialState
-import johnwilde.androidchessclock.clock.TimeGapViewState
+import johnwilde.androidchessclock.clock.*
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
 import johnwilde.androidchessclock.main.MainStateUpdate
-import johnwilde.androidchessclock.main.SpinnerStateUpdate
+import johnwilde.androidchessclock.main.MainViewState
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.sound.Buzzer
 import johnwilde.androidchessclock.sound.SoundViewState
@@ -30,7 +27,7 @@ class TimerLogic(val color: ClockView.Color,
 
     private var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     // Player buttons, time and time-gap
-    var clockUpdateSubject: PublishSubject<PartialState> = PublishSubject.create()
+    var clockUpdateSubject: PublishSubject<ClockStateUpdate> = PublishSubject.create()
     // Updates for view that draws Bronstein-delay circle
     var spinner: BehaviorSubject<MainStateUpdate> = BehaviorSubject.create()
     // When time runs out send an update
@@ -62,17 +59,17 @@ class TimerLogic(val color: ClockView.Color,
 
     init {
         setInitialTime()
-        val ignored = preferencesUtil.timeGap.asObservable()
+        val ignored = preferencesUtil.timeGap
                 .subscribe({ value ->
                     if (value) {
                         publishTimeGap(lastMsOtherClock)
                     } else {
-                        updateTimeGap(TimeGapViewState(show = false), forceUpdate = true)
+                        updateTimeGap(ClockViewState.TimeGap(show = false), forceUpdate = true)
                     }})
     }
 
 
-    private fun updateTimeGap(newState : TimeGapViewState, forceUpdate : Boolean = false) {
+    private fun updateTimeGap(newState : ClockViewState.TimeGap, forceUpdate : Boolean = false) {
         if (preferencesUtil.showTimeGap || forceUpdate) {
             clockUpdateSubject.onNext(newState)
         }
@@ -81,7 +78,7 @@ class TimerLogic(val color: ClockView.Color,
     fun publishTimeGap(otherClockMsToGo : Long) {
         if (stateHolder.active != this) {
             // Update the time-gap clock
-            updateTimeGap(TimeGapViewState(msToGo - otherClockMsToGo))
+            updateTimeGap(ClockViewState.TimeGap(msToGo - otherClockMsToGo))
         }
     }
 
@@ -101,8 +98,8 @@ class TimerLogic(val color: ClockView.Color,
         moveCounter = MoveCounter()
     }
 
-    fun initialState() : ButtonViewState {
-        val state =  ButtonViewState(buttonIsEnabled(), msToGo, "")
+    fun initialState() : ClockViewState.Button {
+        val state = ClockViewState.Button(buttonIsEnabled(), msToGo, "")
         Timber.d("%s initialState: %s", color, state)
         return state
     }
@@ -116,7 +113,7 @@ class TimerLogic(val color: ClockView.Color,
         resume()
 
         // Hide the time-gap clock
-        updateTimeGap(TimeGapViewState(show = false))
+        updateTimeGap(ClockViewState.TimeGap(show = false))
     }
 
     fun onMoveEnd() {
@@ -132,8 +129,8 @@ class TimerLogic(val color: ClockView.Color,
 
     fun publishInactiveState() {
         // At end of turn, dim the button and remove the spinner
-        spinner.onNext(SpinnerStateUpdate(0))
-        clockUpdateSubject.onNext(ButtonViewState(false, msToGo, ""))
+        spinner.onNext(MainViewState.Spinner(0))
+        clockUpdateSubject.onNext(ClockViewState.Button(false, msToGo, ""))
     }
 
     fun onTimeExpired() {
@@ -143,9 +140,9 @@ class TimerLogic(val color: ClockView.Color,
     fun reset() {
         disposeTimeSequenceSubscription()
         setInitialTime()
-        spinner.onNext(SpinnerStateUpdate(0))
+        spinner.onNext(MainViewState.Spinner(0))
         clockUpdateSubject.onNext(initialState())
-        updateTimeGap(TimeGapViewState(show = false))
+        updateTimeGap(ClockViewState.TimeGap(show = false))
     }
 
     fun resume() {
@@ -195,13 +192,13 @@ class TimerLogic(val color: ClockView.Color,
             return if (msDelayToGo > 0) {
                 // While in Bronstein period, we just decrement delay time
                 msDelayToGo -= dt
-                clockUpdateSubject.onNext(ButtonViewState(true, msToGo, moveCounter.display()))
-                spinner.onNext(SpinnerStateUpdate(msDelayToGo))
+                clockUpdateSubject.onNext(ClockViewState.Button(true, msToGo, moveCounter.display()))
+                spinner.onNext(MainViewState.Spinner(msDelayToGo))
                 true
             } else {
                 updateAndPublishMsToGo(msToGo - dt)
                 // After decrementing clock, publish new time
-                clockUpdateSubject.onNext(ButtonViewState(true, msToGo, moveCounter.display()))
+                clockUpdateSubject.onNext(ClockViewState.Button(true, msToGo, moveCounter.display()))
                 if (msToGo > 0) {
                     true
                 } else {
@@ -217,7 +214,7 @@ class TimerLogic(val color: ClockView.Color,
 
     fun setNewTime(newTime: Long) {
         updateAndPublishMsToGo(newTime)
-        clockUpdateSubject.onNext(ButtonViewState(buttonIsEnabled(), msToGo, moveCounter.display()))
+        clockUpdateSubject.onNext(ClockViewState.Button(buttonIsEnabled(), msToGo, moveCounter.display()))
     }
 
     private fun buttonIsEnabled(): Boolean {
