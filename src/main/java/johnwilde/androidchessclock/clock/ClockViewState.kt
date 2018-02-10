@@ -26,13 +26,14 @@ data class ButtonViewState(
         return ClockViewState(
                 button = this,
                 timeGap = previousState.timeGap,
-                prompt = null)
+                prompt = previousState.prompt)
     }
 }
 
 // Publish a toast
 data class PromptToMove(
-        val color: ClockView.Color) : PartialState {
+        val show: Boolean = false,
+        val dismiss: Boolean = false) : PartialState {
     override fun reduce(previousState: ClockViewState): ClockViewState {
         // Don't change button or timegap states
         return ClockViewState(
@@ -52,7 +53,7 @@ data class TimeGapViewState(
         return ClockViewState(
                 button = previousState.button,
                 timeGap = this,
-                prompt = null)
+                prompt = previousState.prompt)
     }
 }
 

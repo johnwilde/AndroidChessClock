@@ -3,6 +3,7 @@ package johnwilde.androidchessclock.clock
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -21,6 +22,9 @@ import johnwilde.androidchessclock.prefs.PreferencesUtil
 import kotlinx.android.synthetic.main.clock_button.*
 import timber.log.Timber
 import javax.inject.Inject
+import android.R.attr.duration
+import kotlinx.android.synthetic.main.main_activity.*
+
 
 // This "View" represents one button and the TextView that shows the time remaining
 const val BUTTON_FADED : Int = 25
@@ -91,9 +95,18 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         timeGap.isChecked = viewState.msGap < 0
     }
 
+    var snackBar : Snackbar? = null
     private fun renderPromptToMove(viewState: PromptToMove) {
-        Toast.makeText(activity!!.applicationContext, R.string.tap_other_button, Toast.LENGTH_SHORT)
-                .show()
+        Timber.d("prompt: %s", viewState)
+        if (viewState.show) {
+            val v = activity!!.findViewById<View>(R.id.coordinatorLayout)
+            if (snackBar == null || snackBar?.isShownOrQueued == false) {
+                snackBar = Snackbar.make(v, R.string.tap_other_button, Snackbar.LENGTH_INDEFINITE)
+                snackBar?.show()
+            }
+        } else if (viewState.dismiss) {
+            snackBar?.dismiss()
+        }
     }
 
     private fun renderClock(buttonViewState: ButtonViewState) {

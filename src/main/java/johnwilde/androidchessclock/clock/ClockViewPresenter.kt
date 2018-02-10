@@ -21,7 +21,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                 Observable.merge(stateUpdates, clockManager.clockUpdates(color))
 
         val initialState = clockManager.initialState(color)
-        
+
         // Subscribe the view to updates from the business logic
         subscribeViewState(
                 updates.scan(initialState, ::reducer)

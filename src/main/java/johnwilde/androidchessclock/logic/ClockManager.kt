@@ -11,7 +11,7 @@ import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.sound.Buzzer
 import johnwilde.androidchessclock.sound.Click
 import johnwilde.androidchessclock.sound.SoundViewState
-import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -55,14 +55,17 @@ class ClockManager @Inject constructor(
             GameState.NOT_STARTED -> {
                 if (color == active().color) {
                     // Must tap non-active color to resume/start game
-                    val otherColor = forOtherColor(color).color
-                    result = Observable.just<PartialState>(PromptToMove(otherColor))
+                    // Let's show Snackbar for 2 seconds and then dismiss it
+                    return Observable.timer(5, TimeUnit.SECONDS)
+                            .map { _ -> PromptToMove(dismiss = true) as PartialState }
+                            .startWith(PromptToMove(show = true))
                 } else {
                     // Start / resume play
                     clickObservable.onNext(Click())
                     startPlayerClock(forOtherColor(color))
                     // if NOT_STARTED neither clock is
                     forColor(color).publishInactiveState()
+                    return Observable.just(PromptToMove(dismiss = true))
                 }
             }
             GameState.PLAYING -> {
@@ -91,6 +94,7 @@ class ClockManager @Inject constructor(
                 // Start / resume game
                 startPlayerClock(active())
                 forOtherColor(active().color).publishInactiveState() // dim other clock
+                PromptToMove(dismiss = true)
             }
             // button is disabled when in finished state, so this shouldn't be possible
             GameState.FINISHED -> {}
