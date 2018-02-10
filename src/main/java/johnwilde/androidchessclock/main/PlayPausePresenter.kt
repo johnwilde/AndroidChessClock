@@ -23,7 +23,7 @@ class PlayPausePresenter(val clockManager: ClockManager)
         // Drawer opened
         val snackBarDismissed = intent(PlayPauseView::snackBarDismissed)
                 .flatMap { _ ->
-                    val dismiss = MainViewState.Snackbar("", false, true) as MainStateUpdate
+                    val dismiss = MainViewState.Snackbar("", false, true)
                     Observable.just(dismiss)
                 }
 
@@ -44,7 +44,7 @@ class PlayPausePresenter(val clockManager: ClockManager)
                 PlayPauseView::render)
     }
 
-    private fun reducer(previous : MainViewState, updates: MainStateUpdate) : MainViewState {
+    private fun reducer(previous : MainViewState, updates: Partial<MainViewState>) : MainViewState {
         return updates.reduce(previous)
     }
 

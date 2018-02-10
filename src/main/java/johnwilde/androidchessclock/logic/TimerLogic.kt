@@ -5,10 +5,11 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
-import johnwilde.androidchessclock.clock.*
+import johnwilde.androidchessclock.clock.ClockView
+import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
-import johnwilde.androidchessclock.main.MainStateUpdate
 import johnwilde.androidchessclock.main.MainViewState
+import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.sound.Buzzer
 import johnwilde.androidchessclock.sound.SoundViewState
@@ -24,12 +25,11 @@ class TimerLogic(val color: ClockView.Color,
     var msToGoMoveStart : Long = 0
     var playedBuzzer : Boolean = false
 
-
     private var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     // Player buttons, time and time-gap
-    var clockUpdateSubject: PublishSubject<ClockStateUpdate> = PublishSubject.create()
+    var clockUpdateSubject: PublishSubject<Partial<ClockViewState>> = PublishSubject.create()
     // Updates for view that draws Bronstein-delay circle
-    var spinner: BehaviorSubject<MainStateUpdate> = BehaviorSubject.create()
+    var spinner: BehaviorSubject<Partial<MainViewState>> = BehaviorSubject.create()
     // When time runs out send an update
     var buzzer: BehaviorSubject<SoundViewState> = BehaviorSubject.create()
 
@@ -77,7 +77,7 @@ class TimerLogic(val color: ClockView.Color,
 
     fun publishTimeGap(otherClockMsToGo : Long) {
         if (stateHolder.active != this) {
-            // Update the time-gap clock
+            // Partial the time-gap clock
             updateTimeGap(ClockViewState.TimeGap(msToGo - otherClockMsToGo))
         }
     }

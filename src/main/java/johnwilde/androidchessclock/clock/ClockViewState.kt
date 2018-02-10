@@ -1,14 +1,12 @@
 package johnwilde.androidchessclock.clock
 
-interface ClockStateUpdate {
-    fun reduce(previousState : ClockViewState) : ClockViewState
-}
+import johnwilde.androidchessclock.main.Partial
 
 // Used to render a player button, clock, time-gap and move-count
 // and a toast (prompt)
 data class ClockViewState(
         val button : Button,
-        val timeGap : TimeGap) : ClockStateUpdate {
+        val timeGap : TimeGap) : Partial<ClockViewState> {
     override fun reduce(previousState: ClockViewState): ClockViewState {
         return this
     }
@@ -18,7 +16,7 @@ data class ClockViewState(
     data class Button(
             val enabled: Boolean,
             val msToGo: Long,
-            val moveCount: String) : ClockStateUpdate {
+            val moveCount: String) : Partial<ClockViewState> {
         override fun reduce(previousState: ClockViewState): ClockViewState {
             // Don't change timegap state
             return ClockViewState(
@@ -31,7 +29,7 @@ data class ClockViewState(
     // it is not player's turn
     data class TimeGap(
             val msGap: Long = 0,
-            val show: Boolean = true) : ClockStateUpdate {
+            val show: Boolean = true) : Partial<ClockViewState> {
         override fun reduce(previousState: ClockViewState): ClockViewState {
             // Don't change button state
             return ClockViewState(

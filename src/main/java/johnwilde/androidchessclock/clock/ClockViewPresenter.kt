@@ -4,6 +4,7 @@ import com.hannesdorfmann.mosby3.mvi.MviBasePresenter
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import johnwilde.androidchessclock.logic.ClockManager
+import johnwilde.androidchessclock.main.Partial
 import timber.log.Timber
 
 class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockManager)
@@ -17,7 +18,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                     clockManager.moveEnd(color)
                 }
 
-        val updates : Observable<ClockStateUpdate> =
+        val updates : Observable<Partial<ClockViewState>> =
                 Observable.merge(stateUpdates, clockManager.clockUpdates(color))
 
         val initialState = clockManager.initialState(color)
@@ -29,7 +30,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                 ClockView::render)
     }
 
-    private fun reducer(previous : ClockViewState, updates: ClockStateUpdate) : ClockViewState {
+    private fun reducer(previous : ClockViewState, updates: Partial<ClockViewState>) : ClockViewState {
        return updates.reduce(previous)
     }
 

@@ -90,7 +90,6 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         timeGap.isChecked = viewState.msGap < 0
     }
 
-
     private fun renderClock(buttonViewState: ClockViewState.Button) {
         clock.text = Utils.formatClockTime(buttonViewState.msToGo)
         clock.alpha = if (buttonViewState.enabled) 1.0f else .1f

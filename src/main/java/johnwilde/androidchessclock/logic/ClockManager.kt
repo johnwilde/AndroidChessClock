@@ -5,12 +5,11 @@ import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import johnwilde.androidchessclock.R
-import johnwilde.androidchessclock.clock.ClockStateUpdate
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
-import johnwilde.androidchessclock.main.MainStateUpdate
 import johnwilde.androidchessclock.main.MainViewState
+import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.sound.Buzzer
 import johnwilde.androidchessclock.sound.Click
@@ -28,9 +27,9 @@ class ClockManager @Inject constructor(
         @Named("white") val white: TimerLogic,
         @Named("black") val black: TimerLogic) {
     
-    var playPauseSubject: BehaviorSubject<MainStateUpdate> = BehaviorSubject.create()
+    var playPauseSubject: BehaviorSubject<Partial<MainViewState>> = BehaviorSubject.create()
     var clickObservable : PublishSubject<SoundViewState> = PublishSubject.create()
-    val spinnerObservable: Observable<MainStateUpdate> = Observable.merge(white.spinner, black.spinner)
+    val spinnerObservable: Observable<Partial<MainViewState>> = Observable.merge(white.spinner, black.spinner)
     val buzzerObservable: Observable<SoundViewState> = Observable.merge(white.buzzer, black.buzzer)
 
     init {
@@ -63,8 +62,8 @@ class ClockManager @Inject constructor(
     }
 
     // Player button was hit
-    fun moveEnd(color: ClockView.Color) : Observable<ClockStateUpdate> {
-        var result = Observable.empty<ClockStateUpdate>()
+    fun moveEnd(color: ClockView.Color) : Observable<Partial<ClockViewState>> {
+        var result = Observable.empty<Partial<ClockViewState>>()
         when (gameState()) {
             GameState.PAUSED,
             GameState.NOT_STARTED -> {
@@ -77,7 +76,7 @@ class ClockManager @Inject constructor(
                         resources.getString(R.string.tap_black)
                     }
                     val ignore = Observable.timer(5, TimeUnit.SECONDS)
-                            .map { _ -> MainViewState.Snackbar(dismiss = true) as MainStateUpdate }
+                            .map { _ -> MainViewState.Snackbar(dismiss = true) }
                             .startWith(MainViewState.Snackbar(
                                     show = true,
                                     message = message))
@@ -106,7 +105,7 @@ class ClockManager @Inject constructor(
     }
 
     // Play/Pause button was hit
-    fun playPause() : Observable<MainStateUpdate> {
+    fun playPause() : Observable<Partial<MainViewState>> {
         when(gameState()) {
             GameState.PLAYING -> {
                 // Pause game
@@ -127,7 +126,7 @@ class ClockManager @Inject constructor(
     }
 
     // Drawer was opened
-    fun pause() : Observable<MainStateUpdate> {
+    fun pause() : Observable<Partial<MainViewState>> {
         return when(gameState()) {
             GameState.PLAYING -> playPause()
             GameState.PAUSED, GameState.NOT_STARTED, GameState.FINISHED -> Observable.empty()
@@ -182,7 +181,7 @@ class ClockManager @Inject constructor(
         }
     }
 
-    fun clockUpdates(color: ClockView.Color) : Observable<ClockStateUpdate> {
+    fun clockUpdates(color: ClockView.Color) : Observable<Partial<ClockViewState>> {
         return forColor(color).clockUpdateSubject
     }
 
