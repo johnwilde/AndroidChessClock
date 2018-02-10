@@ -75,8 +75,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     // Update the button's enabled state and the time text
-    override fun render(viewState: ClockViewState) {
-        val state = viewState as FullViewState
+    override fun render(state: ClockViewState) {
         renderClock(state.button)
         renderTimeGap(state.timeGap)
         if (state.prompt != null) renderPromptToMove(state.prompt)

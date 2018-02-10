@@ -3,10 +3,7 @@ package johnwilde.androidchessclock.logic
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
-import johnwilde.androidchessclock.clock.ButtonViewState
-import johnwilde.androidchessclock.clock.ClockView
-import johnwilde.androidchessclock.clock.ClockViewState
-import johnwilde.androidchessclock.clock.PromptToMove
+import johnwilde.androidchessclock.clock.*
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
 import johnwilde.androidchessclock.main.PlayPauseState
 import johnwilde.androidchessclock.main.PlayPauseViewState
@@ -51,15 +48,15 @@ class ClockManager @Inject constructor(
     }
 
     // Player button was hit
-    fun moveEnd(color: ClockView.Color) : Observable<ClockViewState> {
-        var result = Observable.empty<ClockViewState>()
+    fun moveEnd(color: ClockView.Color) : Observable<PartialState> {
+        var result = Observable.empty<PartialState>()
         when (gameState()) {
             GameState.PAUSED,
             GameState.NOT_STARTED -> {
                 if (color == active().color) {
                     // Must tap non-active color to resume/start game
                     val otherColor = forOtherColor(color).color
-                    result = Observable.just<ClockViewState>(PromptToMove(otherColor))
+                    result = Observable.just<PartialState>(PromptToMove(otherColor))
                 } else {
                     // Start / resume play
                     clickObservable.onNext(Click())
@@ -137,8 +134,11 @@ class ClockManager @Inject constructor(
         setGameStateAndPublish(GameState.PLAYING)
     }
 
-    fun initialState(color: ClockView.Color) : ButtonViewState {
-        return forColor(color).initialState()
+    fun initialState(color: ClockView.Color) : ClockViewState {
+        return ClockViewState(
+                button = forColor(color).initialState(),
+                timeGap = TimeGapViewState(show = false),
+                prompt = null)
     }
 
     fun forColor(color: ClockView.Color): TimerLogic {
@@ -155,7 +155,7 @@ class ClockManager @Inject constructor(
         }
     }
 
-    fun clockUpdates(color: ClockView.Color) : Observable<ClockViewState> {
+    fun clockUpdates(color: ClockView.Color) : Observable<PartialState> {
         return forColor(color).clockUpdateSubject
     }
 

@@ -6,10 +6,7 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
-import johnwilde.androidchessclock.clock.ButtonViewState
-import johnwilde.androidchessclock.clock.ClockView
-import johnwilde.androidchessclock.clock.ClockViewState
-import johnwilde.androidchessclock.clock.TimeGapViewState
+import johnwilde.androidchessclock.clock.*
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
 import johnwilde.androidchessclock.main.PlayPauseViewState
 import johnwilde.androidchessclock.main.SpinnerViewState
@@ -31,7 +28,7 @@ class TimerLogic(val color: ClockView.Color,
 
     private var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     // Player buttons, time and time-gap
-    var clockUpdateSubject: PublishSubject<ClockViewState> = PublishSubject.create()
+    var clockUpdateSubject: PublishSubject<PartialState> = PublishSubject.create()
     // Updates for view that draws Bronstein-delay circle
     var spinner: BehaviorSubject<PlayPauseViewState> = BehaviorSubject.create()
     // When time runs out send an update

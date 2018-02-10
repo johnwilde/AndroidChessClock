@@ -3,7 +3,6 @@ package johnwilde.androidchessclock.clock
 import com.hannesdorfmann.mosby3.mvi.MviBasePresenter
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import johnwilde.androidchessclock.logic.ClockManager
 import timber.log.Timber
 
@@ -18,26 +17,20 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                     clockManager.moveEnd(color)
                 }
 
-        val updates : Observable<ClockViewState> =
+        val updates : Observable<PartialState> =
                 Observable.merge(stateUpdates, clockManager.clockUpdates(color))
 
-        val initialState = FullViewState(clockManager.initialState(color))
+        val initialState = clockManager.initialState(color)
+        
         // Subscribe the view to updates from the business logic
         subscribeViewState(
-                updates.scan(initialState, ::viewStateReducer)
+                updates.scan(initialState, ::reducer)
                         .observeOn(AndroidSchedulers.mainThread()),
                 ClockView::render)
     }
 
-    private fun viewStateReducer(previousState : ClockViewState, stateChanges : ClockViewState)
-            : ClockViewState {
-        val previous = previousState as FullViewState
-        return when (stateChanges) {
-            is ButtonViewState -> FullViewState(stateChanges, previous.timeGap)
-            is TimeGapViewState -> FullViewState(previous.button, stateChanges)
-            is PromptToMove -> FullViewState(previous.button, previous.timeGap, stateChanges)
-            is FullViewState -> stateChanges
-        }
+    private fun reducer(previous : ClockViewState, updates: PartialState) : ClockViewState {
+       return updates.reduce(previous)
     }
 
     override fun unbindIntents() {
