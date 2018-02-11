@@ -23,7 +23,7 @@ import javax.inject.Singleton
 class ClockManager @Inject constructor(
         preferencesUtil: PreferencesUtil,
         val resources: Resources,
-        private var stateHolder : GameStateHolder,
+        var stateHolder : GameStateHolder,
         @Named("white") val white: TimerLogic,
         @Named("black") val black: TimerLogic) {
     
@@ -68,25 +68,12 @@ class ClockManager @Inject constructor(
             GameState.PAUSED,
             GameState.NOT_STARTED -> {
                 if (color == active().color) {
-                    // Must tap non-active color to resume/start game
-                    // Let's show Snackbar for 2 seconds and then dismiss it
-                    val message = if (color == ClockView.Color.BLACK) {
-                        resources.getString(R.string.tap_white)
-                    } else {
-                        resources.getString(R.string.tap_black)
-                    }
-                    val ignore = Observable.timer(5, TimeUnit.SECONDS)
-                            .map { _ -> MainViewState.Snackbar(dismiss = true) }
-                            .startWith(MainViewState.Snackbar(
-                                    show = true,
-                                    message = message))
-                            .subscribe({state -> playPauseSubject.onNext(state)})
-
+                    // Handled in presenter
                 } else {
                     // Start / resume play
                     clickObservable.onNext(Click())
                     startPlayerClock(forOtherColor(color))
-                    // if NOT_STARTED neither clock is
+                    // if NOT_STARTED neither clock is dimmed
                     forColor(color).publishInactiveState()
                     playPauseSubject.onNext(MainViewState.Snackbar(dismiss = true))
                 }
@@ -164,7 +151,8 @@ class ClockManager @Inject constructor(
     fun initialState(color: ClockView.Color) : ClockViewState {
         return ClockViewState(
                 button = forColor(color).initialState(),
-                timeGap = ClockViewState.TimeGap(show = false))
+                timeGap = ClockViewState.TimeGap(show = false),
+                prompt = ClockViewState.Snackbar(dismiss = true))
     }
 
     fun forColor(color: ClockView.Color): TimerLogic {

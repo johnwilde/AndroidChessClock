@@ -4,6 +4,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import io.reactivex.Observable
 import johnwilde.androidchessclock.clock.*
+import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -44,7 +45,7 @@ class TimerLogicTest {
         val blackClock = TimerLogic(ClockView.Color.BLACK, preferencesUtil, stateHolder, timeSource)
         blackClock.subscribeToClock(whiteClock)
         val blackObserver = blackClock.clockUpdateSubject.test()
-        val expectedBlackValues = mutableListOf<ClockStateUpdate>()
+        val expectedBlackValues = mutableListOf<Partial<ClockViewState>>()
 
         // simulate move start
         whiteClock.onMoveStart()  // send time gap on move start
@@ -74,7 +75,7 @@ class TimerLogicTest {
     @Test
     fun moveStartPauseAndFinish() {
         val clockTestObserver = whiteClock.clockUpdateSubject.test()
-        val expectedValues = mutableListOf<ClockStateUpdate>()
+        val expectedValues = mutableListOf<Partial<ClockViewState>>()
 
         // simulate move start
         whiteClock.onMoveStart()

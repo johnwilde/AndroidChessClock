@@ -43,7 +43,6 @@ data class MainViewState(
         override fun reduce(previousState: MainViewState): MainViewState {
             return previousState.copy(prompt = this)
         }
-
     }
 }
 

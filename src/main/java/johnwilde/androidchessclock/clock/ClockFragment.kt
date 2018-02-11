@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import com.hannesdorfmann.mosby3.mvi.MviFragment
@@ -15,6 +14,7 @@ import johnwilde.androidchessclock.AdjustClock
 import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.Utils
 import johnwilde.androidchessclock.logic.ClockManager
+import johnwilde.androidchessclock.main.HasSnackbar
 import johnwilde.androidchessclock.main.REQUEST_CODE_ADJUST_TIME
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import kotlinx.android.synthetic.main.clock_button.*
@@ -70,14 +70,15 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     // Player tapped the button to end their turn
-    override fun clickIntent(): Observable<MotionEvent> {
-        return RxView.touches(button)
+    override fun clickIntent(): Observable<Any> {
+        return RxView.touches(button).map { 1 }
     }
 
     // Update the button's visible state and the time text
     override fun render(state: ClockViewState) {
         renderClock(state.button)
         renderTimeGap(state.timeGap)
+        state.prompt?.let { renderSnackbar(it) }
     }
 
     private fun renderTimeGap(viewState: ClockViewState.TimeGap) {
@@ -97,6 +98,20 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         button.drawable.alpha = if (buttonViewState.enabled) BUTTON_VISIBLE else BUTTON_FADED
         moveCount.text = buttonViewState.moveCount
         moveCount.visibility = if (moveCount.text.isBlank()) View.INVISIBLE else View.VISIBLE
+    }
+
+    private fun renderSnackbar(viewState: ClockViewState.Snackbar) {
+        val a = activity as HasSnackbar // hosting activity will show the snackbar
+        if (viewState.show) {
+            val message = when (viewState.message) {
+                ClockViewState.Snackbar.Message.START -> resources.getString(R.string.tap_other_button_start)
+                ClockViewState.Snackbar.Message.RESUME -> resources.getString(R.string.tap_other_button_resume)
+                null -> ""
+            }
+            a.showSnackbar(message)
+        } else if (viewState.dismiss) {
+            a.hideSnackbar()
+        }
     }
 
     private fun launchAdjustPlayerClockActivity() {

@@ -35,8 +35,14 @@ var REQUEST_CODE_PREFERENCES : Int = 1
 var REQUEST_CODE_ADJUST_TIME : Int = 2
 val RESET_DIALOG_SHOWING = "RESET_DIALOG_SHOWING"
 
+interface HasSnackbar {
+    var snackBar : Snackbar?
+    fun showSnackbar(message : String)
+    fun hideSnackbar()
+}
+
 class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPauseView,
-        HasSupportFragmentInjector {
+        HasSupportFragmentInjector, HasSnackbar {
 
     @Inject lateinit var clockManager : ClockManager
     @Inject lateinit var preferenceUtil : PreferencesUtil
@@ -163,25 +169,32 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         }
     }
 
-    var snackBar : Snackbar? = null
+    override var snackBar : Snackbar? = null
     var snackBarDismissed : PublishSubject<Any> = PublishSubject.create()
     private fun renderPromptToMove(viewState: MainViewState.Snackbar) {
-        Timber.d("prompt: %s", viewState)
         if (viewState.show) {
-            val v = coordinatorLayout
-            if (snackBar == null || snackBar?.isShownOrQueued == false) {
-                snackBar = Snackbar.make(v, viewState.message, Snackbar.LENGTH_INDEFINITE)
-                snackBar?.addCallback(object : Snackbar.Callback() {
-                    override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
-                        super.onDismissed(transientBottomBar, event)
-                        snackBarDismissed.onNext(1)
-                    }
-                })
-                snackBar?.show()
-            }
+            showSnackbar(viewState.message)
         } else if (viewState.dismiss) {
-            snackBar?.dismiss()
+            hideSnackbar()
         }
+    }
+
+    override fun showSnackbar(message : String) {
+        if (snackBar == null || snackBar?.isShownOrQueued == false) {
+            val v = coordinatorLayout
+            snackBar = Snackbar.make(v, message, Snackbar.LENGTH_INDEFINITE)
+            snackBar?.addCallback(object : Snackbar.Callback() {
+                override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                    super.onDismissed(transientBottomBar, event)
+                    snackBarDismissed.onNext(1)
+                }
+            })
+            snackBar?.show()
+        }
+    }
+
+    override fun hideSnackbar() {
+        snackBar?.dismiss()
     }
 
     override fun snackBarDismissed(): Observable<Any> {
@@ -278,4 +291,5 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
             super.onBackPressed()
         }
     }
+
 }

@@ -6,6 +6,7 @@ import johnwilde.androidchessclock.main.Partial
 // and a toast (prompt)
 data class ClockViewState(
         val button : Button,
+        val prompt : Snackbar?,
         val timeGap : TimeGap) : Partial<ClockViewState> {
     override fun reduce(previousState: ClockViewState): ClockViewState {
         return this
@@ -18,10 +19,9 @@ data class ClockViewState(
             val msToGo: Long,
             val moveCount: String) : Partial<ClockViewState> {
         override fun reduce(previousState: ClockViewState): ClockViewState {
-            // Don't change timegap state
-            return ClockViewState(
+            return previousState.copy(
                     button = this,
-                    timeGap = previousState.timeGap)
+                    prompt = null)
         }
     }
 
@@ -31,10 +31,18 @@ data class ClockViewState(
             val msGap: Long = 0,
             val show: Boolean = true) : Partial<ClockViewState> {
         override fun reduce(previousState: ClockViewState): ClockViewState {
-            // Don't change button state
-            return ClockViewState(
-                    button = previousState.button,
-                    timeGap = this)
+            return previousState.copy(timeGap = this, prompt = null)
+        }
+    }
+
+    // Publish a toast
+    data class Snackbar(
+            val message: Message? = null,
+            val show: Boolean = false,
+            val dismiss: Boolean = false) : Partial<ClockViewState> {
+        enum class Message { RESUME, START }
+        override fun reduce(previousState: ClockViewState): ClockViewState {
+            return previousState.copy(prompt = this)
         }
     }
 }
