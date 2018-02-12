@@ -12,21 +12,11 @@ import java.util.concurrent.TimeUnit
 class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockManager)
     : MviBasePresenter<ClockView, ClockViewState> () {
 
-    private fun handleBadClick(message: ClockViewState.Snackbar.Message)
-            : Observable<Partial<ClockViewState>> {
-        // Must tap non-active color to resume/start game
-        // Let's show Snackbar for 2 seconds and then dismiss it
-        return Observable.timer(2, TimeUnit.SECONDS)
-                .map { _ -> ClockViewState.Snackbar(dismiss = true) as Partial<ClockViewState> }
-                .startWith(ClockViewState.Snackbar(
-                        show = true,
-                        message = message) as Partial<ClockViewState>)
-    }
-
     // Only invoked the first time view is attached to presenter
     // "forwards" intents from ClockView to ClockManager (from view to business logic)
     override fun bindIntents() {
-        val stateUpdates = intent(ClockView::clickIntent)
+        val clockTapped = intent(ClockView::clickIntent)
+                .throttleFirst(100, TimeUnit.MILLISECONDS)
                 .flatMap {
                     when (clockManager.stateHolder.gameState) {
                         NOT_STARTED -> {
@@ -49,7 +39,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                 }
 
         val updates : Observable<Partial<ClockViewState>> =
-                Observable.merge(stateUpdates, clockManager.clockUpdates(color))
+                Observable.merge(clockTapped, clockManager.clockUpdates(color))
 
         val initialState = clockManager.initialState(color)
 
@@ -63,6 +53,18 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
     private fun reducer(previous : ClockViewState, updates: Partial<ClockViewState>) : ClockViewState {
        return updates.reduce(previous)
     }
+
+    private fun handleBadClick(message: ClockViewState.Snackbar.Message)
+            : Observable<Partial<ClockViewState>> {
+        // Must tap non-active color to resume/start game
+        // Let's show Snackbar for 2 seconds and then dismiss it
+        return Observable.timer(2, TimeUnit.SECONDS)
+                .map { _ -> ClockViewState.Snackbar(dismiss = true) as Partial<ClockViewState> }
+                .startWith(ClockViewState.Snackbar(
+                        show = true,
+                        message = message) as Partial<ClockViewState>)
+    }
+
 
     override fun unbindIntents() {
         super.unbindIntents()

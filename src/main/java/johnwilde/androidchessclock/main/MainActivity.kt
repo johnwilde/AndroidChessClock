@@ -37,11 +37,11 @@ val RESET_DIALOG_SHOWING = "RESET_DIALOG_SHOWING"
 
 interface HasSnackbar {
     var snackBar : Snackbar?
-    fun showSnackbar(message : String)
+    fun showSnackbar(message : String) : Snackbar?
     fun hideSnackbar()
 }
 
-class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPauseView,
+class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         HasSupportFragmentInjector, HasSnackbar {
 
     @Inject lateinit var clockManager : ClockManager
@@ -107,10 +107,10 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         drawerLayout.removeDrawerListener(drawerListener)
     }
 
-    override fun createPresenter(): PlayPausePresenter {
+    override fun createPresenter(): MainViewPresenter {
         // This component controls the state of the play / pause button and renders the
         // spinner view (during Bronstein delay)
-        return PlayPausePresenter(clockManager)
+        return MainViewPresenter(clockManager)
     }
 
     override fun playPauseIntent(): Observable<Any> {
@@ -169,27 +169,44 @@ class MainActivity : MviActivity<PlayPauseView, PlayPausePresenter>(), PlayPause
         }
     }
 
-    override var snackBar : Snackbar? = null
-    var snackBarDismissed : PublishSubject<Any> = PublishSubject.create()
     private fun renderPromptToMove(viewState: MainViewState.Snackbar) {
         if (viewState.show) {
-            showSnackbar(viewState.message)
+            val id = if (viewState.message == MainViewState.Snackbar.Message.WHITE_LOST) {
+                R.string.white_lost
+            } else {
+                R.string.black_lost
+            }
+            val s = showSnackbar(resources.getString(id))
+            s?.let {
+                it.setAction(
+                        R.string.stats,
+                        { _ -> startActivity(BarChartActivity.createIntent(this)) }
+                )
+            }
         } else if (viewState.dismiss) {
             hideSnackbar()
         }
     }
 
-    override fun showSnackbar(message : String) {
-        if (snackBar == null || snackBar?.isShownOrQueued == false) {
+    override var snackBar : Snackbar? = null
+    var snackBarDismissed : PublishSubject<Any> = PublishSubject.create()
+    override fun showSnackbar(message : String) : Snackbar? {
+        return if (snackBar == null || snackBar?.isShownOrQueued == false) {
             val v = coordinatorLayout
             snackBar = Snackbar.make(v, message, Snackbar.LENGTH_INDEFINITE)
+
             snackBar?.addCallback(object : Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                     super.onDismissed(transientBottomBar, event)
-                    snackBarDismissed.onNext(1)
+                    if (Snackbar.Callback.DISMISS_EVENT_SWIPE == event) {
+                        snackBarDismissed.onNext(1)
+                    }
                 }
             })
             snackBar?.show()
+            snackBar
+        } else {
+            null
         }
     }
 

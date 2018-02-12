@@ -2,4 +2,5 @@
 <resources>
     <dimen name="spinnerWidth">50dp</dimen>
     <dimen name="clockHeightLandscape">120dp</dimen>
+    <dimen name="left_slop">50dp</dimen>
 </resources>

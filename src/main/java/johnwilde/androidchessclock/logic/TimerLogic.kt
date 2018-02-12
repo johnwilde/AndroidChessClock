@@ -64,24 +64,25 @@ class TimerLogic(val color: ClockView.Color,
                     if (value) {
                         publishTimeGap(lastMsOtherClock)
                     } else {
-                        updateTimeGap(ClockViewState.TimeGap(show = false), forceUpdate = true)
+                        // timeGap preference was turned off
+                        hideTimeGap()
                     }})
     }
 
 
-    private fun updateTimeGap(newState : ClockViewState.TimeGap, forceUpdate : Boolean = false) {
-        if (preferencesUtil.showTimeGap || forceUpdate) {
-            clockUpdateSubject.onNext(newState)
-        }
+    private fun hideTimeGap() {
+        clockUpdateSubject.onNext(ClockViewState.TimeGap(show = false))
     }
 
-    fun publishTimeGap(otherClockMsToGo : Long) {
-        if (stateHolder.active != this) {
-            // Partial the time-gap clock
-            updateTimeGap(ClockViewState.TimeGap(msToGo - otherClockMsToGo))
+    private fun publishTimeGap(otherClockMsToGo : Long) {
+        // Publish time updates only when the this clock is not running
+        if (stateHolder.active != this
+                && preferencesUtil.showTimeGap
+                && stateHolder.gameState.isUnderway()) {
+            clockUpdateSubject.onNext(
+                    ClockViewState.TimeGap(msToGo - otherClockMsToGo))
         }
     }
-
 
     var lastMsOtherClock : Long = 0
     fun subscribeToClock(otherClock : TimerLogic) {
@@ -113,7 +114,7 @@ class TimerLogic(val color: ClockView.Color,
         resume()
 
         // Hide the time-gap clock
-        updateTimeGap(ClockViewState.TimeGap(show = false))
+        hideTimeGap()
     }
 
     fun onMoveEnd() {
@@ -142,7 +143,7 @@ class TimerLogic(val color: ClockView.Color,
         setInitialTime()
         spinner.onNext(MainViewState.Spinner(0))
         clockUpdateSubject.onNext(initialState())
-        updateTimeGap(ClockViewState.TimeGap(show = false))
+        hideTimeGap()
     }
 
     fun resume() {
@@ -214,7 +215,13 @@ class TimerLogic(val color: ClockView.Color,
 
     fun setNewTime(newTime: Long) {
         updateAndPublishMsToGo(newTime)
-        clockUpdateSubject.onNext(ClockViewState.Button(buttonIsEnabled(), msToGo, moveCounter.display()))
+        clockUpdateSubject.onNext(
+                ClockViewState.Button(
+                        enabled = buttonIsEnabled(),
+                        msToGo = msToGo,
+                        moveCount = moveCounter.display()
+                )
+        )
     }
 
     private fun buttonIsEnabled(): Boolean {

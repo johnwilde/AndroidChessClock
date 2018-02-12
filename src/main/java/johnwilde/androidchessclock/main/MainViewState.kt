@@ -37,9 +37,10 @@ data class MainViewState(
 
     // Publish a toast
     data class Snackbar(
-            val message: String = "",
+            val message: Message? = null,
             val show: Boolean = false,
             val dismiss: Boolean = false) : Partial<MainViewState> {
+        enum class Message { WHITE_LOST, BLACK_LOST }
         override fun reduce(previousState: MainViewState): MainViewState {
             return previousState.copy(prompt = this)
         }

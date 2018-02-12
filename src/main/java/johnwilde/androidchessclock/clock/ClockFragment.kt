@@ -3,6 +3,7 @@ package johnwilde.androidchessclock.clock
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.v4.widget.DrawerLayout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,7 @@ import johnwilde.androidchessclock.AdjustClock
 import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.Utils
 import johnwilde.androidchessclock.logic.ClockManager
+import johnwilde.androidchessclock.logic.GameStateHolder
 import johnwilde.androidchessclock.main.HasSnackbar
 import johnwilde.androidchessclock.main.REQUEST_CODE_ADJUST_TIME
 import johnwilde.androidchessclock.prefs.PreferencesUtil
@@ -27,6 +29,8 @@ const val BUTTON_FADED : Int = 25
 const val BUTTON_VISIBLE : Int = 255
 class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     lateinit var color : ClockView.Color
+    private lateinit var drawerListener : SimpleDrawerListener
+    var leftSlopPx : Int = 0
     @Inject lateinit var clockManager : ClockManager
     @Inject lateinit var preferences : PreferencesUtil
 
@@ -65,20 +69,37 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        leftSlopPx = view.resources.getDimensionPixelSize(R.dimen.left_slop) // left margin so button isn't triggered while swiping drawer
+        drawerListener = SimpleDrawerListener()
+        activity?.findViewById<DrawerLayout>(R.id.drawerLayout)
+                ?.addDrawerListener(drawerListener)
         button.setImageResource(if (color == ClockView.Color.WHITE) R.drawable.white else R.drawable.black)
         clock.setOnClickListener({ launchAdjustPlayerClockActivity() })
     }
 
     // Player tapped the button to end their turn
     override fun clickIntent(): Observable<Any> {
-        return RxView.touches(button).map { 1 }
+        return RxView.touches(button)
+                // Filter points on left of screen so they don't interfere with drawer
+                .filter {
+                    val p = clockButton.parent.parent as View
+                    val outArray = IntArray(2)
+                    button.getLocationOnScreen(outArray)
+                    val x = if (p.scaleX < 1) { // in portrait, the view is reversed
+                        outArray[0] - it.x
+                    } else {
+                        it.x + outArray[0]
+                    }
+                    x > leftSlopPx && !drawerListener.drawerIsDragging
+                }
+                .map { 1 }
     }
 
-    // Update the button's visible state and the time text
-    override fun render(state: ClockViewState) {
-        renderClock(state.button)
-        renderTimeGap(state.timeGap)
-        state.prompt?.let { renderSnackbar(it) }
+    // Update the button's visible viewState and the time text
+    override fun render(viewState: ClockViewState) {
+        renderClock(viewState.button)
+        renderTimeGap(viewState.timeGap)
+        viewState.prompt?.let { renderSnackbar(it) }
     }
 
     private fun renderTimeGap(viewState: ClockViewState.TimeGap) {
@@ -116,11 +137,13 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
 
     private fun launchAdjustPlayerClockActivity() {
         // launch an activity through this intent
-        val launchAdjustPlayerClockIntent = Intent().setClass(activity, AdjustClock::class.java)
-        launchAdjustPlayerClockIntent.putExtra(AdjustClock.EXTRA_COLOR, color.toString())
-        launchAdjustPlayerClockIntent.putExtra(AdjustClock.EXTRA_TIME, clockManager.forColor(color).msToGo)
-        clockManager.pause()
-        startActivityForResult(launchAdjustPlayerClockIntent, REQUEST_CODE_ADJUST_TIME)
+        if (clockManager.stateHolder.gameState != GameStateHolder.GameState.FINISHED) {
+            val launchAdjustPlayerClockIntent = Intent().setClass(activity, AdjustClock::class.java)
+            launchAdjustPlayerClockIntent.putExtra(AdjustClock.EXTRA_COLOR, color.toString())
+            launchAdjustPlayerClockIntent.putExtra(AdjustClock.EXTRA_TIME, clockManager.forColor(color).msToGo)
+            clockManager.pause()
+            startActivityForResult(launchAdjustPlayerClockIntent, REQUEST_CODE_ADJUST_TIME)
+        }
     }
 
     // This method is called when the adjust clock activity returns
@@ -139,4 +162,13 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         }
     }
 
+    class SimpleDrawerListener : DrawerLayout.SimpleDrawerListener() {
+        var drawerIsDragging = false
+        override fun onDrawerStateChanged(newState: Int) {
+            super.onDrawerStateChanged(newState)
+            // While swiping drawer, a touch event with x > leftSlopPx is passed
+            // to button.  This is to catch that case.
+            drawerIsDragging = (newState == 1)
+        }
+    }
 }
