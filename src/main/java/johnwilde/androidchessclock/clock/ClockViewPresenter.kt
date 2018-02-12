@@ -18,6 +18,11 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
     // Only invoked the first time view is attached to presenter
     // "forwards" intents from ClockView to ClockManager (from view to business logic)
     override fun bindIntents() {
+        // Not sure how to cleanly handle the case where in some situations
+        // we want to return a Partial<ClockViewState>, but in others we
+        // simply want to call the manager and let the updats come through
+        // the clockUpdateSubject.
+        val empty = Observable.empty<Partial<ClockViewState>>()
         val clockTapped = intent(ClockView::clickIntent)
                 .throttleFirst(100, TimeUnit.MILLISECONDS)
                 .flatMap {
@@ -27,6 +32,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                                 handleBadClick(ClockViewState.Snackbar.Message.START)
                             } else {
                                 clockManager.clockButtonTap(color)
+                                empty
                             }
                         }
                         PAUSED -> {
@@ -34,10 +40,14 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                                 handleBadClick(ClockViewState.Snackbar.Message.RESUME)
                             } else {
                                 clockManager.clockButtonTap(color)
+                                empty
                             }
                         }
-                        PLAYING, NEGATIVE -> clockManager.clockButtonTap(color)
-                        FINISHED -> Observable.empty<Partial<ClockViewState>>()
+                        PLAYING, NEGATIVE -> {
+                            clockManager.clockButtonTap(color)
+                            empty
+                        }
+                        FINISHED -> empty
                     }
                 }
 

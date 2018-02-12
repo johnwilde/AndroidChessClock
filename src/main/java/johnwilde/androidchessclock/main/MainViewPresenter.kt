@@ -21,11 +21,13 @@ class MainViewPresenter(val clockManager: ClockManager)
         Timber.d("bindIntents for playPausePresenter")
         // Tapped play/pause
         val playPauseIntent = intent(MainView::playPauseIntent)
-                .flatMap { clockManager.playPause() }
+                .map { clockManager.playPause() }
+                .flatMap { Observable.empty<Partial<MainViewState>>() }
 
         // Drawer opened
         val drawerOpened = intent(MainView::drawerOpened)
-                .flatMap { clockManager.pause() }
+                .map { clockManager.pause() }
+                .flatMap { Observable.empty<Partial<MainViewState>>() }
 
         // User swiped away snackbar
         val snackBarDismissed = intent(MainView::snackBarDismissed)

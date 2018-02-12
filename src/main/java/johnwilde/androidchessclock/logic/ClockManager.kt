@@ -2,16 +2,11 @@ package johnwilde.androidchessclock.logic
 
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
-import io.reactivex.subjects.PublishSubject
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
-import johnwilde.androidchessclock.main.MainViewState
 import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
-import johnwilde.androidchessclock.sound.Buzzer
-import johnwilde.androidchessclock.sound.Click
-import johnwilde.androidchessclock.sound.SoundViewState
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -55,8 +50,7 @@ class ClockManager @Inject constructor(
     }
 
     // Player button was hit
-    fun clockButtonTap(color: ClockView.Color) : Observable<Partial<ClockViewState>> {
-        val result = Observable.empty<Partial<ClockViewState>>()
+    fun clockButtonTap(color: ClockView.Color) {
         when (gameState()) {
             GameState.NOT_STARTED -> {
                 // Only black should start game
@@ -82,12 +76,10 @@ class ClockManager @Inject constructor(
             }
             GameState.FINISHED -> { } // nothing
         }
-        return result
     }
 
-
     // Play/Pause button was hit
-    fun playPause() : Observable<Partial<MainViewState>> {
+    fun playPause() {
         when(gameState()) {
             GameState.PLAYING, GameState.NEGATIVE -> {
                 // Pause game
@@ -104,15 +96,12 @@ class ClockManager @Inject constructor(
             // button is disabled when in finished state, so this shouldn't be possible
             GameState.FINISHED -> {}
         }
-        return Observable.empty()
     }
 
     // Drawer was opened
-    fun pause() : Observable<Partial<MainViewState>> {
-        return if (gameState().clockMoving()) {
+    fun pause() {
+        if (gameState().clockMoving()) {
             playPause()
-        } else {
-            Observable.empty<Partial<MainViewState>>()
         }
     }
 
