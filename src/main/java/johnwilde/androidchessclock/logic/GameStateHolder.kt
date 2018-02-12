@@ -1,6 +1,7 @@
 package johnwilde.androidchessclock.logic
 
 import io.reactivex.subjects.PublishSubject
+import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState.*
 import timber.log.Timber
 import javax.inject.Singleton
@@ -8,11 +9,11 @@ import javax.inject.Singleton
 @Singleton
 class GameStateHolder {
     enum class GameState {
-        NOT_STARTED, PAUSED, PLAYING, FINISHED;
+        NOT_STARTED, PAUSED, PLAYING, NEGATIVE, FINISHED;
 
         fun isUnderway(): Boolean {
             return when (this) {
-                PAUSED, PLAYING -> true
+                PAUSED, PLAYING, NEGATIVE -> true
                 else -> false
             }
         }

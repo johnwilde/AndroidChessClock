@@ -33,7 +33,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                                 clockManager.moveEnd(color)
                             }
                         }
-                        PLAYING -> clockManager.moveEnd(color)
+                        PLAYING, NEGATIVE -> clockManager.moveEnd(color)
                         FINISHED -> Observable.empty<Partial<ClockViewState>>()
                     }
                 }

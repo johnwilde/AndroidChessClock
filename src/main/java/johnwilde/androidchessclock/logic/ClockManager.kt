@@ -1,6 +1,7 @@
 package johnwilde.androidchessclock.logic
 
 import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
@@ -17,32 +18,35 @@ import javax.inject.Singleton
 
 @Singleton
 class ClockManager @Inject constructor(
-        preferencesUtil: PreferencesUtil,
+        val preferencesUtil: PreferencesUtil,
         var stateHolder : GameStateHolder,
         @Named("white") val white: TimerLogic,
         @Named("black") val black: TimerLogic) {
-    
-    var clickObservable : PublishSubject<SoundViewState> = PublishSubject.create()
+
+    lateinit var gameOver : Disposable
     val spinnerObservable: Observable<Partial<MainViewState>> = Observable.merge(white.spinner, black.spinner)
-    val buzzerObservable = Observable.merge<SoundViewState>(white.buzzer, black.buzzer)
 
     init {
-        // Allows the manager to know when a clock has expired (and game is finished)
-        val ignored = buzzerObservable.subscribe { a ->
-            when (a) {
-                is Buzzer -> {
-                    if (!preferencesUtil.allowNegativeTime) {
-                        setGameState(GameState.FINISHED)
-                        active().onTimeExpired()
-                    }
-                }
-            }
-        }
+        gameOver = gameOverSubscription()
         // Allow clocks to receive time updates from each other (enables time-gap display)
         white.subscribeToClock(black)
         black.subscribeToClock(white)
         // White moves first so set as active player
         stateHolder.setActiveClock(white)
+    }
+
+    private fun gameOverSubscription() : Disposable {
+        return Observable.merge<Long>(white.msToGoUpdateSubject, black.msToGoUpdateSubject)
+                .filter{ it <= 0 }
+                .take(1)
+                .subscribe { _ ->
+                    if (preferencesUtil.allowNegativeTime) {
+                        setGameState(GameState.NEGATIVE)
+                    } else {
+                        setGameState(GameState.FINISHED)
+                        active().onTimeExpired()
+                    }
+                }
     }
 
     // Player button was hit
@@ -55,7 +59,6 @@ class ClockManager @Inject constructor(
                     // Handled in presenter
                 } else {
                     // Start / resume play
-                    clickObservable.onNext(Click())
                     startPlayerClock(forOtherColor(color))
                     // if NOT_STARTED neither clock is dimmed
                     forColor(color).publishInactiveState()
@@ -64,7 +67,6 @@ class ClockManager @Inject constructor(
             GameState.PLAYING -> {
                 // Switch turns
                 if (color == active().color) {
-                    clickObservable.onNext(Click())
                     startPlayerClock(forOtherColor(color))
                     forColor(color).onMoveEnd()
                 }
@@ -96,17 +98,20 @@ class ClockManager @Inject constructor(
 
     // Drawer was opened
     fun pause() : Observable<Partial<MainViewState>> {
-        return when(gameState()) {
-            GameState.PLAYING -> playPause()
-            GameState.PAUSED, GameState.NOT_STARTED, GameState.FINISHED -> Observable.empty()
+        return if (gameState().isUnderway()) {
+            playPause()
+        } else {
+            Observable.empty<Partial<MainViewState>>()
         }
     }
 
     fun reset() {
         setGameState(GameState.NOT_STARTED)
-        stateHolder.setActiveClock(white)
+        gameOver.dispose()
         white.reset()
         black.reset()
+        gameOver = gameOverSubscription()
+        stateHolder.setActiveClock(white)
     }
 
     private fun setGameState(state : GameState) {

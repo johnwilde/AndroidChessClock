@@ -11,8 +11,6 @@ import johnwilde.androidchessclock.logic.GameStateHolder.GameState
 import johnwilde.androidchessclock.main.MainViewState
 import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
-import johnwilde.androidchessclock.sound.Buzzer
-import johnwilde.androidchessclock.sound.SoundViewState
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -23,17 +21,17 @@ class TimerLogic(val color: ClockView.Color,
     var msToGo : Long = 0
     var msDelayToGo: Long = 0
     var msToGoMoveStart : Long = 0
-    var playedBuzzer : Boolean = false
 
-    private var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
+    var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     // Player buttons, time and time-gap
     var clockUpdateSubject: PublishSubject<Partial<ClockViewState>> = PublishSubject.create()
     // Updates for view that draws Bronstein-delay circle
     var spinner: BehaviorSubject<Partial<MainViewState>> = BehaviorSubject.create()
-    // When time runs out send an update
-    var buzzer: BehaviorSubject<SoundViewState> = BehaviorSubject.create()
 
+    var lastMsOtherClock : Long = 0
     private var clockSubscription: Disposable? = null
+    private var moveCounter = MoveCounter()
+    val moveTimes get() = moveCounter.moveTimes.toLongArray()
 
     private inner class MoveCounter {
         var count : Int = 0 // number of moves for this player
@@ -54,8 +52,6 @@ class TimerLogic(val color: ClockView.Color,
             return count.toString()
         }
     }
-    private var moveCounter = MoveCounter()
-    val moveTimes get() = moveCounter.moveTimes.toLongArray()
 
     init {
         setInitialTime()
@@ -68,7 +64,6 @@ class TimerLogic(val color: ClockView.Color,
                         hideTimeGap()
                     }})
     }
-
 
     private fun hideTimeGap() {
         clockUpdateSubject.onNext(ClockViewState.TimeGap(show = false))
@@ -84,7 +79,6 @@ class TimerLogic(val color: ClockView.Color,
         }
     }
 
-    var lastMsOtherClock : Long = 0
     fun subscribeToClock(otherClock : TimerLogic) {
         val ignored = otherClock.msToGoUpdateSubject.subscribe { ms ->
             lastMsOtherClock = ms
@@ -93,9 +87,8 @@ class TimerLogic(val color: ClockView.Color,
     }
 
     private fun setInitialTime() {
-        msToGo  = (preferencesUtil.initialDurationSeconds * 1000).toLong()
+        updateAndPublishMsToGo(preferencesUtil.initialDurationSeconds * 1000.toLong())
         msDelayToGo = 0
-        playedBuzzer = false
         moveCounter = MoveCounter()
     }
 
@@ -203,10 +196,6 @@ class TimerLogic(val color: ClockView.Color,
                 if (msToGo > 0) {
                     true
                 } else {
-                    if (!playedBuzzer) {
-                        playedBuzzer = true
-                        buzzer.onNext(Buzzer())
-                    }
                     preferencesUtil.allowNegativeTime // continues update if true
                 }
             }

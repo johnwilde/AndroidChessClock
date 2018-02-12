@@ -33,11 +33,10 @@ class MainViewPresenter(val clockManager: ClockManager)
         // Generate a new view state when the game state changes
         val stateChange = clockManager.stateHolder.gameStateSubject
                 .flatMap { state ->
-                    val change :  Any = when (state) {
-                        GameState.NOT_STARTED -> MainViewState.initialState
-                        GameState.PLAYING -> MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PAUSE, true)
-                        GameState.PAUSED -> MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PLAY, true)
-                        GameState.FINISHED -> onGameOver()
+                    val change :  Any = when {
+                        state == GameState.NOT_STARTED -> MainViewState.initialState
+                        state.isUnderway() -> MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PAUSE, true)
+                        else -> onGameOver()
                     }
                     val result = if (change is Observable<*>) {
                         change
