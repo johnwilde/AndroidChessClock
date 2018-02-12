@@ -85,7 +85,10 @@
     <string name="stats">Статистика</string>
     <string name="adjust_basic_time_preference_description">" Настройка параметров"</string>
     <string name="move_times">" Время перемещения"</string>
-    <string name="tap_other_button">" Нажмите другую кнопку для возобновления."</string>
     <string name="new_game">"Новая игра "</string>
     <string name="show_time_gap">Показывать промежуток времени</string>
+    <string name="tap_other_button_resume">Нажмите другую кнопку, чтобы возобновить</string>
+    <string name="tap_other_button_start">" Нажмите другую кнопку, чтобы начать"</string>
+    <string name="white_lost">"Белый утерянный "</string>
+    <string name="black_lost">"Черный Потерянный "</string>
 </resources>

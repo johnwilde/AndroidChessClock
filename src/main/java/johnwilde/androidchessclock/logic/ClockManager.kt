@@ -57,7 +57,7 @@ class ClockManager @Inject constructor(
                 if (color == ClockView.Color.BLACK) {
                     startPlayerClock(white)
                     // if NOT_STARTED neither clock is dimmed
-                    forColor(color).publishInactiveState()
+                    black.publishInactiveState()
                 }
             }
             GameState.PAUSED -> {

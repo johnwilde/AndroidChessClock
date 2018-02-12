@@ -25,16 +25,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <ImageButton
-            android:id="@+id/button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:contentDescription="@string/white_button"
-            android:scaleType="fitCenter"
-            tools:src="@drawable/white" >
-        </ImageButton>
-
         <CheckedTextView
             android:id="@+id/timeGap"
             style="@style/clockStyle"
@@ -58,7 +48,15 @@
             android:textSize="30sp"
             android:textStyle="bold"
             android:textColor="@color/accent"
-            android:visibility="visible" >
-        </TextView>
+            android:visibility="visible" />
+
+        <ImageButton
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:contentDescription="@string/white_button"
+            android:scaleType="fitCenter"
+            tools:src="@drawable/white" />
     </FrameLayout>
 </LinearLayout>

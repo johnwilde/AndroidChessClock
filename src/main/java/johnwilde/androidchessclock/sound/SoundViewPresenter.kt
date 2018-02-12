@@ -4,8 +4,6 @@ import com.hannesdorfmann.mosby3.mvi.MviBasePresenter
 import io.reactivex.Observable
 import johnwilde.androidchessclock.logic.ClockManager
 import johnwilde.androidchessclock.logic.GameStateHolder
-import johnwilde.androidchessclock.main.MainViewState
-import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import timber.log.Timber
 
