@@ -9,6 +9,9 @@ import johnwilde.androidchessclock.main.Partial
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
+// Responsible for reacting to user interactions with an individual clock.
+// Presents a snackbar when wrong clock was tapped. Also responsible for
+// passing along updates to the two timers (above the clock and the time-gap)
 class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockManager)
     : MviBasePresenter<ClockView, ClockViewState> () {
 
@@ -23,25 +26,25 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                             if (color == ClockView.Color.WHITE) {
                                 handleBadClick(ClockViewState.Snackbar.Message.START)
                             } else {
-                                clockManager.moveEnd(color)
+                                clockManager.clockButtonTap(color)
                             }
                         }
                         PAUSED -> {
                             if (clockManager.stateHolder.active?.color == color) {
                                 handleBadClick(ClockViewState.Snackbar.Message.RESUME)
                             } else {
-                                clockManager.moveEnd(color)
+                                clockManager.clockButtonTap(color)
                             }
                         }
-                        PLAYING, NEGATIVE -> clockManager.moveEnd(color)
+                        PLAYING, NEGATIVE -> clockManager.clockButtonTap(color)
                         FINISHED -> Observable.empty<Partial<ClockViewState>>()
                     }
                 }
 
         val updates : Observable<Partial<ClockViewState>> =
-                Observable.merge(clockTapped, clockManager.clockUpdates(color))
+                Observable.merge(clockTapped, clockManager.forColor(color).clockUpdateSubject)
 
-        val initialState = clockManager.initialState(color)
+        val initialState = clockManager.forColor(color).initialState()
 
         // Subscribe the view to updates from the business logic
         subscribeViewState(
@@ -64,7 +67,6 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                         show = true,
                         message = message) as Partial<ClockViewState>)
     }
-
 
     override fun unbindIntents() {
         super.unbindIntents()

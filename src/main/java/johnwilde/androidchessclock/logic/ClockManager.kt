@@ -16,6 +16,10 @@ import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
+// Manages the overall state of the game (started, finished, paused, etc).
+// Contains an instance of each player's clock and is responsible for calling
+// methods to synchronize the start/pause of each clock as players alternate
+// turns.
 @Singleton
 class ClockManager @Inject constructor(
         val preferencesUtil: PreferencesUtil,
@@ -23,24 +27,25 @@ class ClockManager @Inject constructor(
         @Named("white") val white: TimerLogic,
         @Named("black") val black: TimerLogic) {
 
-    lateinit var gameOver : Disposable
-    val spinnerObservable: Observable<Partial<MainViewState>> = Observable.merge(white.spinner, black.spinner)
+    var gameOver : Disposable
+    var timeIsNegative: Boolean = false // At least one clock has gone negative
 
     init {
         gameOver = gameOverSubscription()
         // Allow clocks to receive time updates from each other (enables time-gap display)
         white.subscribeToClock(black)
         black.subscribeToClock(white)
-        // White moves first so set as active player
-        stateHolder.setActiveClock(white)
     }
 
+    // Logic for "ending" the game
     private fun gameOverSubscription() : Disposable {
+        timeIsNegative = false
         return Observable.merge<Long>(white.msToGoUpdateSubject, black.msToGoUpdateSubject)
                 .filter{ it <= 0 }
                 .take(1)
                 .subscribe { _ ->
                     if (preferencesUtil.allowNegativeTime) {
+                        timeIsNegative = true
                         setGameState(GameState.NEGATIVE)
                     } else {
                         setGameState(GameState.FINISHED)
@@ -50,22 +55,26 @@ class ClockManager @Inject constructor(
     }
 
     // Player button was hit
-    fun moveEnd(color: ClockView.Color) : Observable<Partial<ClockViewState>> {
+    fun clockButtonTap(color: ClockView.Color) : Observable<Partial<ClockViewState>> {
         val result = Observable.empty<Partial<ClockViewState>>()
         when (gameState()) {
-            GameState.PAUSED,
             GameState.NOT_STARTED -> {
-                if (color == active().color) {
-                    // Handled in presenter
-                } else {
-                    // Start / resume play
-                    startPlayerClock(forOtherColor(color))
+                // Only black should start game
+                if (color == ClockView.Color.BLACK) {
+                    startPlayerClock(white)
                     // if NOT_STARTED neither clock is dimmed
                     forColor(color).publishInactiveState()
                 }
             }
-            GameState.PLAYING -> {
-                // Switch turns
+            GameState.PAUSED -> {
+                // Can un-pause when non-active player hits their button
+                if (color != active().color) {
+                    // Resume play
+                    startPlayerClock(forOtherColor(color))
+                }
+            }
+            GameState.PLAYING, GameState.NEGATIVE -> {
+                // Switch turns (ignore taps on non-active button)
                 if (color == active().color) {
                     startPlayerClock(forOtherColor(color))
                     forColor(color).onMoveEnd()
@@ -76,18 +85,20 @@ class ClockManager @Inject constructor(
         return result
     }
 
+
     // Play/Pause button was hit
     fun playPause() : Observable<Partial<MainViewState>> {
         when(gameState()) {
-            GameState.PLAYING -> {
+            GameState.PLAYING, GameState.NEGATIVE -> {
                 // Pause game
                 setGameState(GameState.PAUSED)
                 active().pause()
             }
-            GameState.PAUSED,
+            GameState.PAUSED ->
+                startPlayerClock(active())
             GameState.NOT_STARTED -> {
                 // Start / resume game
-                startPlayerClock(active())
+                startPlayerClock(white)
                 forOtherColor(active().color).publishInactiveState() // dim other clock
             }
             // button is disabled when in finished state, so this shouldn't be possible
@@ -98,7 +109,7 @@ class ClockManager @Inject constructor(
 
     // Drawer was opened
     fun pause() : Observable<Partial<MainViewState>> {
-        return if (gameState().isUnderway()) {
+        return if (gameState().clockMoving()) {
             playPause()
         } else {
             Observable.empty<Partial<MainViewState>>()
@@ -111,7 +122,6 @@ class ClockManager @Inject constructor(
         white.reset()
         black.reset()
         gameOver = gameOverSubscription()
-        stateHolder.setActiveClock(white)
     }
 
     private fun setGameState(state : GameState) {
@@ -125,14 +135,11 @@ class ClockManager @Inject constructor(
         } else {
             active().onMoveStart()
         }
-        setGameState(GameState.PLAYING)
-    }
-
-    fun initialState(color: ClockView.Color) : ClockViewState {
-        return ClockViewState(
-                button = forColor(color).initialState(),
-                timeGap = ClockViewState.TimeGap(show = false),
-                prompt = ClockViewState.Snackbar(dismiss = true))
+        if (timeIsNegative) {
+            setGameState(GameState.NEGATIVE)
+        } else {
+            setGameState(GameState.PLAYING)
+        }
     }
 
     fun forColor(color: ClockView.Color): TimerLogic {
@@ -147,10 +154,6 @@ class ClockManager @Inject constructor(
             ClockView.Color.WHITE -> black
             ClockView.Color.BLACK -> white
         }
-    }
-
-    fun clockUpdates(color: ClockView.Color) : Observable<Partial<ClockViewState>> {
-        return forColor(color).clockUpdateSubject
     }
 
     fun active() : TimerLogic { return stateHolder.active!! }

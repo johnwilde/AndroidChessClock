@@ -14,6 +14,8 @@ import johnwilde.androidchessclock.prefs.PreferencesUtil
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
+// Responsible for updating an individual clock and publishing new view states
+// on each update.
 class TimerLogic(val color: ClockView.Color,
                  var preferencesUtil: PreferencesUtil,
                  private var stateHolder : GameStateHolder,
@@ -22,6 +24,7 @@ class TimerLogic(val color: ClockView.Color,
     var msDelayToGo: Long = 0
     var msToGoMoveStart : Long = 0
 
+    // Time remaining on this clock, which other clock can subscribe to
     var msToGoUpdateSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     // Player buttons, time and time-gap
     var clockUpdateSubject: PublishSubject<Partial<ClockViewState>> = PublishSubject.create()
@@ -71,6 +74,7 @@ class TimerLogic(val color: ClockView.Color,
 
     private fun publishTimeGap(otherClockMsToGo : Long) {
         // Publish time updates only when the this clock is not running
+        // and the game is underway
         if (stateHolder.active != this
                 && preferencesUtil.showTimeGap
                 && stateHolder.gameState.isUnderway()) {
@@ -90,12 +94,6 @@ class TimerLogic(val color: ClockView.Color,
         updateAndPublishMsToGo(preferencesUtil.initialDurationSeconds * 1000.toLong())
         msDelayToGo = 0
         moveCounter = MoveCounter()
-    }
-
-    fun initialState() : ClockViewState.Button {
-        val state = ClockViewState.Button(buttonIsEnabled(), msToGo, "")
-        Timber.d("%s initialState: %s", color, state)
-        return state
     }
 
     fun onMoveStart() {
@@ -152,7 +150,6 @@ class TimerLogic(val color: ClockView.Color,
         msToGo = newValue
         msToGoUpdateSubject.onNext(newValue)
     }
-
 
     // Stop the interval updates
     private fun disposeTimeSequenceSubscription() {
@@ -220,4 +217,15 @@ class TimerLogic(val color: ClockView.Color,
             stateHolder.active == this
         }
     }
+
+    fun initialState() : ClockViewState {
+        return ClockViewState(
+                button = ClockViewState.Button(
+                        enabled = buttonIsEnabled(),
+                        msToGo = msToGo,
+                        moveCount = ""),
+                timeGap = ClockViewState.TimeGap(show = false),
+                prompt = ClockViewState.Snackbar(dismiss = true))
+    }
+
 }

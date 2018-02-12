@@ -17,37 +17,17 @@ class SoundViewPresenter(val clockManager: ClockManager, val preferencesUtil: Pr
         Timber.d("bindIntents for SoundViewPresenter")
         // Generate a new view state when the game state changes
         val buzzer = clockManager.stateHolder.gameStateSubject
-                .doOnNext{ s -> Timber.d("%s", s) }
                 .filter{ it == GameStateHolder.GameState.FINISHED }
                 .filter{ preferencesUtil.playBuzzerAtEnd }
-                .map{ Observable.just<SoundViewState>(Buzzer()) }
+                .map{ Buzzer() }
 
-//        val stateChange = clockManager.stateHolder.gameStateSubject
-//                .takeLast(2)
-//                .scan { t1: GameStateHolder.GameState, t2: GameStateHolder.GameState ->
-//                   if (t1 == GameStateHolder.GameState.NOT_STARTED
-//                           && t2 == GameStateHolder.GameState.PLAYING) {
-//                       Click()
-//                   } else {
-//                       null
-//                   }
-//                }
-//                .flatMap { state ->
-//                    val change :  Any = when {
-//                        state == GameStateHolder.GameState.NOT_STARTED -> MainViewState.initialState
-//                        state.isUnderway() -> MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PAUSE, true)
-//                        else -> onGameOver()
-//                    }
-//                    val result = if (change is Observable<*>) {
-//                        change
-//                    } else {
-//                        Observable.just(change)
-//                    }
-//                    result as Observable<Partial<MainViewState>>
-//                }
+        // The active player has changed
+        val click = clockManager.stateHolder.activePlayerSubject
+                .filter{ preferencesUtil.playSoundOnButtonTap }
+                .map { Click() }
 
         var updates = Observable.merge(
-                buzzer
+                buzzer, click
         )
 
         subscribeViewState(updates, SoundView::render)

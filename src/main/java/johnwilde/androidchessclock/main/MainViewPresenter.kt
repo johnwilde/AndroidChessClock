@@ -9,6 +9,10 @@ import johnwilde.androidchessclock.logic.GameStateHolder.GameState
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
+// Responsible for user interactions with the play/pause button and
+// the drawer opening.  The view keeps the play/pause button in the correct
+// state and presents a snackbar telling which player ran out of time. It also
+// draws the spinner (used in Bronstein time mode).
 class MainViewPresenter(val clockManager: ClockManager)
     : MviBasePresenter<MainView, MainViewState> () {
 
@@ -33,9 +37,12 @@ class MainViewPresenter(val clockManager: ClockManager)
         // Generate a new view state when the game state changes
         val stateChange = clockManager.stateHolder.gameStateSubject
                 .flatMap { state ->
-                    val change :  Any = when {
-                        state == GameState.NOT_STARTED -> MainViewState.initialState
-                        state.isUnderway() -> MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PAUSE, true)
+                    val change :  Any = when (state) {
+                        GameState.NOT_STARTED -> MainViewState.initialState
+                        GameState.PAUSED ->
+                            MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PLAY, true)
+                        GameState.PLAYING, GameState.NEGATIVE ->
+                            MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PAUSE, true)
                         else -> onGameOver()
                     }
                     val result = if (change is Observable<*>) {
@@ -52,7 +59,7 @@ class MainViewPresenter(val clockManager: ClockManager)
                 snackBarDismissed,
                 stateChange,
                 // Allows this view to update the Spinner
-                clockManager.spinnerObservable)
+                Observable.merge(clockManager.white.spinner, clockManager.black.spinner))
 
         var updates = Observable.merge(intents)
 
