@@ -8,7 +8,7 @@ object Utils {
         return when {
             millisIn < -500 -> "-" + time
             millisIn >= 500 -> "+" + time
-            else -> ""
+            else -> time
         }
     }
 

@@ -58,6 +58,7 @@ class TimerLogic(val color: ClockView.Color,
 
     init {
         setInitialTime()
+        // Immediately turn on or off the time gap when preference changes
         val ignored = preferencesUtil.timeGap
                 .subscribe({ value ->
                     if (value) {
@@ -79,7 +80,9 @@ class TimerLogic(val color: ClockView.Color,
                 && preferencesUtil.showTimeGap
                 && stateHolder.gameState.isUnderway()) {
             clockUpdateSubject.onNext(
-                    ClockViewState.TimeGap(msToGo - otherClockMsToGo))
+                    ClockViewState.TimeGap(
+                            msGap = msToGo - otherClockMsToGo,
+                            show = true))
         }
     }
 
@@ -183,13 +186,24 @@ class TimerLogic(val color: ClockView.Color,
             return if (msDelayToGo > 0) {
                 // While in Bronstein period, we just decrement delay time
                 msDelayToGo -= dt
-                clockUpdateSubject.onNext(ClockViewState.Button(true, msToGo, moveCounter.display()))
+                updateAndPublishMsToGo(msToGo)
+                clockUpdateSubject.onNext(
+                        ClockViewState.Button(
+                                enabled = true,
+                                msToGo = msToGo,
+                                moveCount = moveCounter.display())
+                )
                 spinner.onNext(MainViewState.Spinner(msDelayToGo))
                 true
             } else {
                 updateAndPublishMsToGo(msToGo - dt)
                 // After decrementing clock, publish new time
-                clockUpdateSubject.onNext(ClockViewState.Button(true, msToGo, moveCounter.display()))
+                clockUpdateSubject.onNext(
+                        ClockViewState.Button(
+                                enabled = true,
+                                msToGo = msToGo,
+                                moveCount = moveCounter.display())
+                )
                 if (msToGo > 0) {
                     true
                 } else {
