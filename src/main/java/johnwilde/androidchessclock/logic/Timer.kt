@@ -26,7 +26,7 @@ abstract class Timer(val color: ClockView.Color,
     // Time remaining on this clock, which other clock can subscribe to
     var timeSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     // Player buttons, time and time-gap
-    var clockSubject: PublishSubject<Partial<ClockViewState>> = PublishSubject.create()
+    var clockSubject: BehaviorSubject<Partial<ClockViewState>> = BehaviorSubject.create()
     // Updates for view that draws Bronstein-delay circle
     var mainSubject: BehaviorSubject<Partial<MainViewState>> = BehaviorSubject.create()
 

@@ -1,13 +1,16 @@
 package johnwilde.androidchessclock.logic
 
 import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.Subject
 import johnwilde.androidchessclock.ActivityBindingModule
-import johnwilde.androidchessclock.DaggerAppComponent
 import johnwilde.androidchessclock.clock.ClockView
+import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
 import johnwilde.androidchessclock.main.MainViewState
+import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import javax.inject.Inject
 import javax.inject.Named
@@ -21,19 +24,50 @@ import javax.inject.Singleton
 class ClockManager @Inject constructor(
         val preferencesUtil: PreferencesUtil,
         var stateHolder : GameStateHolder,
-        @Named("white") var white: Timer,
-        @Named("black") var black: Timer) {
+        private @Named("white") var white: Timer,
+        private @Named("black") var black: Timer) {
 
-    var gameOver : Disposable
+    private lateinit var gameOver : Disposable
     var timeIsNegative: Boolean = false // At least one clock has gone negative
+    lateinit var whiteDelegate: TimerDelegate
+    lateinit var blackDelgate: TimerDelegate
+
+    inner class TimerDelegate(val color : ClockView.Color) {
+        var clock = BehaviorSubject.create<Partial<ClockViewState>>()
+        var main = BehaviorSubject.create<Partial<MainViewState>>()
+        var disposables = CompositeDisposable()
+        init {
+            subscribe()
+        }
+        fun subscribe() {
+            val realClock = timerForColor(color)
+            disposables.add(realClock.clockSubject.subscribe(
+                    clock::onNext, clock::onError))
+            disposables.add(realClock.mainSubject.subscribe(
+                    main::onNext, main::onError))
+        }
+        fun unsubscribe() {
+            disposables.clear()
+        }
+    }
 
     init {
-        gameOver = gameOverSubscription()
         // Allow clocks to receive time updates from each other (enables time-gap display)
+        initializeTimers()
+    }
+
+    fun initializeTimers() {
+        gameOver = gameOverSubscription()
         white.initialize(black)
         black.initialize(white)
-//        var whiteClock = BehaviorSubject.create<MainViewState>()
-//        whiteClock.subscribe(white.mainSubject)
+        if (!::whiteDelegate.isInitialized) {
+            whiteDelegate = TimerDelegate(ClockView.Color.WHITE)
+            blackDelgate = TimerDelegate(ClockView.Color.BLACK)
+        }
+        whiteDelegate.unsubscribe()
+        whiteDelegate.subscribe()
+        blackDelgate.unsubscribe()
+        blackDelgate.subscribe()
     }
 
     // Logic for "ending" the game
@@ -77,7 +111,7 @@ class ClockManager @Inject constructor(
                 // Switch turns (ignore taps on non-active button)
                 if (color == active().color) {
                     startPlayerClock(forOtherColor(color))
-                    forColor(color).moveEnd()
+                    timerForColor(color).moveEnd()
                 }
             }
             GameState.FINISHED -> { } // nothing
@@ -120,12 +154,9 @@ class ClockManager @Inject constructor(
         val timeSource = ActivityBindingModule.providesTimeSource()
         white = ActivityBindingModule.providesWhite(preferencesUtil, stateHolder, timeSource)
         black = ActivityBindingModule.providesBlack(preferencesUtil, stateHolder, timeSource)
-        white.initialize(black)
-        black.initialize(white)
-
 
         // listen for end of game
-        gameOver = gameOverSubscription()
+        initializeTimers()
     }
 
     private fun setGameState(state : GameState) {
@@ -146,10 +177,17 @@ class ClockManager @Inject constructor(
         }
     }
 
-    fun forColor(color: ClockView.Color): Timer {
+    fun timerForColor(color: ClockView.Color): Timer {
         return when (color) {
             ClockView.Color.WHITE -> white
             ClockView.Color.BLACK -> black
+        }
+    }
+
+    fun forColor(color: ClockView.Color): TimerDelegate {
+        return when (color) {
+            ClockView.Color.WHITE -> whiteDelegate
+            ClockView.Color.BLACK -> blackDelgate
         }
     }
 

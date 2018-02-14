@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import dagger.android.AndroidInjection
+import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.logic.ClockManager
 import kotlinx.android.synthetic.main.bar_and_time.view.*
 import kotlinx.android.synthetic.main.bar_chart_container.*
@@ -36,8 +37,8 @@ class BarChartActivity : Activity() {
     override fun onResume() {
         super.onResume()
         bar_chart_container.removeAllViews()
-        whiteMs = clockManager.white.moveTimes
-        blackMs = clockManager.black.moveTimes
+        whiteMs = clockManager.timerForColor(ClockView.Color.WHITE).moveTimes
+        blackMs = clockManager.timerForColor(ClockView.Color.BLACK).moveTimes
         addViews(whiteMs, blackMs)
     }
 

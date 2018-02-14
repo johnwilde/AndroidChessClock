@@ -61,7 +61,9 @@ class MainViewPresenter(val clockManager: ClockManager)
                 snackBarDismissed,
                 stateChange,
                 // Allows this view to update the Spinner
-                Observable.merge(clockManager.white.mainSubject, clockManager.black.mainSubject))
+                Observable.merge(
+                        clockManager.forColor(ClockView.Color.WHITE).main,
+                        clockManager.forColor(ClockView.Color.BLACK).main))
 
         var updates = Observable.merge(intents)
 

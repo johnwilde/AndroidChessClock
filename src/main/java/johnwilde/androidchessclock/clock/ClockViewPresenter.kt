@@ -52,9 +52,9 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                 }
 
         val updates : Observable<Partial<ClockViewState>> =
-                Observable.merge(clockTapped, clockManager.forColor(color).clockSubject)
+                Observable.merge(clockTapped, clockManager.forColor(color).clock)
 
-        val initialState = clockManager.forColor(color).initialState()
+        val initialState = clockManager.timerForColor(color).initialState()
 
         // Subscribe the view to updates from the business logic
         subscribeViewState(

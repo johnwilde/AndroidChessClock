@@ -121,15 +121,17 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     private fun renderMoveCount(buttonViewState: ClockViewState.Button) {
-        var mc = buttonViewState.moveCount
-        if (mc != null) {
-           moveCount.text = if (mc.message == ClockViewState.MoveCount.Message.REMAINING) {
-               resources.getString(R.string.moves_remaining) + " " + mc.count.toString()
-           } else {
-               resources.getString(R.string.move) + " " + mc.count.toString()
-           }
+        val mc = buttonViewState.moveCount
+        moveCount.text = when(mc.message) {
+            ClockViewState.MoveCount.Message.REMAINING ->
+                resources.getString(R.string.moves_remaining) + " " + mc.count.toString()
+            ClockViewState.MoveCount.Message.NONE -> ""
+            ClockViewState.MoveCount.Message.TOTAL ->
+                resources.getString(R.string.move) + " " + mc.count.toString()
         }
-        moveCount.visibility = if (buttonViewState.enabled) View.VISIBLE else View.INVISIBLE
+        moveCount.visibility = if (buttonViewState.enabled && mc.message != ClockViewState.MoveCount.Message.NONE) {
+            View.VISIBLE
+        } else View.INVISIBLE
     }
 
     private fun renderSnackbar(viewState: ClockViewState.Snackbar) {
@@ -151,7 +153,8 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         if (clockManager.stateHolder.gameState != GameStateHolder.GameState.FINISHED) {
             val launchAdjustPlayerClockIntent = Intent().setClass(activity, AdjustClock::class.java)
             launchAdjustPlayerClockIntent.putExtra(AdjustClock.EXTRA_COLOR, color.toString())
-            launchAdjustPlayerClockIntent.putExtra(AdjustClock.EXTRA_TIME, clockManager.forColor(color).msToGo)
+            launchAdjustPlayerClockIntent.putExtra(
+                    AdjustClock.EXTRA_TIME, clockManager.timerForColor(color).msToGo)
             clockManager.pause()
             startActivityForResult(launchAdjustPlayerClockIntent, REQUEST_CODE_ADJUST_TIME)
         }
@@ -167,7 +170,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
             val playerColor = data.getStringExtra(AdjustClock.COLOR)
             if (color.toString().equals(playerColor)) {
                 val newTime = data.getLongExtra(AdjustClock.NEW_TIME, 0)
-                val timer = clockManager.forColor(color)
+                val timer = clockManager.timerForColor(color)
                 timer.setNewTime(newTime)
             }
         }
