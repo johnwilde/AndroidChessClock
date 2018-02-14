@@ -43,7 +43,7 @@ class TimerLogicTest {
     @Test
     fun timeGap() {
         val blackClock = TimerLogic(ClockView.Color.BLACK, preferencesUtil, stateHolder, timeSource)
-        blackClock.subscribeToClock(whiteClock)
+        blackClock.initialize(whiteClock)
         val blackObserver = blackClock.clockUpdateSubject.test()
         val expectedBlackValues = mutableListOf<Partial<ClockViewState>>()
 

@@ -102,4 +102,6 @@
     <string name="black_lost">Black Lost</string>
     <string name="new_game">New game</string>
     <string name="show_time_gap">Show time gap</string>
+    <string name="moves_remaining">Moves Remaining:</string>
+    <string name="move">Move:</string>
 </resources>

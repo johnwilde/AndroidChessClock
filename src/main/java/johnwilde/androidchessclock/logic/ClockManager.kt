@@ -3,9 +3,7 @@ package johnwilde.androidchessclock.logic
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import johnwilde.androidchessclock.clock.ClockView
-import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
-import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import javax.inject.Inject
 import javax.inject.Named
@@ -28,8 +26,8 @@ class ClockManager @Inject constructor(
     init {
         gameOver = gameOverSubscription()
         // Allow clocks to receive time updates from each other (enables time-gap display)
-        white.subscribeToClock(black)
-        black.subscribeToClock(white)
+        white.initialize(black)
+        black.initialize(white)
     }
 
     // Logic for "ending" the game
@@ -43,8 +41,10 @@ class ClockManager @Inject constructor(
                         timeIsNegative = true
                         setGameState(GameState.NEGATIVE)
                     } else {
+                        if (gameState() == GameState.PLAYING) {
+                            active().pause()
+                        }
                         setGameState(GameState.FINISHED)
-                        active().onTimeExpired()
                     }
                 }
     }
@@ -108,8 +108,8 @@ class ClockManager @Inject constructor(
     fun reset() {
         setGameState(GameState.NOT_STARTED)
         gameOver.dispose()
-        white.reset()
-        black.reset()
+        white.initialize(black)
+        black.initialize(white)
         gameOver = gameOverSubscription()
     }
 

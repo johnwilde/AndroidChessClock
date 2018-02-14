@@ -17,10 +17,21 @@ data class ClockViewState(
     data class Button(
             val enabled: Boolean,
             val msToGo: Long,
-            val moveCount: String) : Partial<ClockViewState> {
+            val moveCount: MoveCount? = null) : Partial<ClockViewState> {
         override fun reduce(previousState: ClockViewState): ClockViewState {
             return previousState.copy(
                     button = this,
+                    prompt = null)
+        }
+    }
+
+    data class MoveCount(
+            val message: Message,
+            val count: Int) : Partial<ClockViewState> {
+        enum class Message { TOTAL, REMAINING }
+        override fun reduce(previousState: ClockViewState): ClockViewState {
+            return previousState.copy(
+                    button = previousState.button.copy(moveCount = this),
                     prompt = null)
         }
     }

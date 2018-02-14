@@ -117,8 +117,19 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         clock.alpha = if (buttonViewState.enabled) 1.0f else .1f
         clock.isChecked = buttonViewState.msToGo < 10_000
         button.drawable.alpha = if (buttonViewState.enabled) BUTTON_VISIBLE else BUTTON_FADED
-        moveCount.text = buttonViewState.moveCount
-        moveCount.visibility = if (moveCount.text.isBlank()) View.INVISIBLE else View.VISIBLE
+        renderMoveCount(buttonViewState)
+    }
+
+    private fun renderMoveCount(buttonViewState: ClockViewState.Button) {
+        var mc = buttonViewState.moveCount
+        if (mc != null) {
+           moveCount.text = if (mc.message == ClockViewState.MoveCount.Message.REMAINING) {
+               resources.getString(R.string.moves_remaining) + " " + mc.count.toString()
+           } else {
+               resources.getString(R.string.move) + " " + mc.count.toString()
+           }
+        }
+        moveCount.visibility = if (buttonViewState.enabled) View.VISIBLE else View.INVISIBLE
     }
 
     private fun renderSnackbar(viewState: ClockViewState.Snackbar) {
