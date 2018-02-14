@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.transition.TransitionManager
 import android.support.v4.widget.DrawerLayout
+import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
@@ -85,6 +86,9 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         }
         swap_sides.setOnClickListener {
             swapSides()
+        }
+        menu_button.setOnClickListener{
+            drawerLayout.openDrawer(Gravity.START)
         }
     }
 

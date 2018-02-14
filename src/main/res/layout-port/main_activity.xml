@@ -68,6 +68,18 @@
                         android:layout_weight="1"/>
 
                     <ImageView
+                        android:id="@+id/menu_button"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_gravity="top"
+                        android:background="@drawable/ic_tune_black_24dp"
+                        android:backgroundTint="@color/primary"/>
+                    <Space
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"/>
+
+                    <ImageView
                         android:id="@+id/reset_button"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
