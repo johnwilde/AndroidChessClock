@@ -1,84 +1,45 @@
 package johnwilde.androidchessclock.logic
 
-import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.BehaviorSubject
-import io.reactivex.subjects.PublishSubject
+import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
-import johnwilde.androidchessclock.main.MainViewState
-import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
-class Fischer(
-        var preferencesUtil : PreferencesUtil,
-        var stateHolder : GameStateHolder,
-        var timeSource : TimeSource,
-        val timeSubject: BehaviorSubject<Long>,
-        val clockSubject: PublishSubject<Partial<ClockViewState>>,
-        val mainSubject: BehaviorSubject<Partial<MainViewState>>)
-    : BaseTimer {
+class Fischer(color: ClockView.Color,
+              preferencesUtil: PreferencesUtil,
+              stateHolder : GameStateHolder,
+              timeSource: TimeSource)
+    : Timer(color, preferencesUtil, stateHolder, timeSource) {
 
-    override var msToGo : Long = 0
-    var delay: Long = 0
-    private var clockSubscription: Disposable? = null
 
     init {
         updateAndPublishMsToGo(preferencesUtil.initialDurationSeconds * 1000.toLong())
-        delay = 0
     }
 
     override fun moveStart() {
+        super.moveStart()
         updateAndPublishMsToGo(msToGo + preferencesUtil.getFischerDelayMs())
         resume()
     }
 
     override fun moveEnd() {
+        super.moveEnd()
         pause()
         publishInactiveState()
     }
 
-    override fun pause() {
-        disposeTimeSequenceSubscription()
-    }
-
-    override fun resume() {
-        clockSubscription = timeSequence().subscribe()
-    }
-
-    private fun publishInactiveState() {
+    override fun publishInactiveState() {
         // At end of turn, dim the button
         clockSubject.onNext(ClockViewState.Button(false, msToGo))
     }
 
-    private fun updateAndPublishMsToGo(newValue: Long) {
-        msToGo = newValue
-        timeSubject.onNext(newValue)
+    override fun timerTask(): PublishesClockState {
+        return UpdateTime()
     }
 
-    // Stop the interval updates
-    private fun disposeTimeSequenceSubscription() {
-        if (clockSubscription != null && !clockSubscription!!.isDisposed()) {
-            // This stops the timer interval
-            clockSubscription!!.dispose()
-        }
-    }
-
-    // Return observable that on subscription will cause various subjects to start emitting
-    // state updates.  When subscription is disposed the state updates will stop.
-    private fun timeSequence() : Observable<Any> {
-        val clockTask = UpdateTime()
-        return Observable.interval(0, 100, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.computation())
-                .map { clockTask.publishUpdates() }
-    }
-
-    private inner class UpdateTime {
+    inner class UpdateTime : PublishesClockState {
         private var lastUpdateMs: Long = timeSource.currentTimeMillis()
 
-        fun publishUpdates() {
+        override fun publishUpdates() {
             val now = timeSource.currentTimeMillis()
             val dt = now - lastUpdateMs
             lastUpdateMs = now
@@ -100,13 +61,5 @@ class Fischer(
                         enabled = buttonIsEnabled(),
                         msToGo = msToGo)
                 )
-    }
-
-    private fun buttonIsEnabled(): Boolean {
-        return if (stateHolder.gameState == GameStateHolder.GameState.NOT_STARTED) {
-            true
-        } else {
-            stateHolder.active?.timerType == this
-        }
     }
 }

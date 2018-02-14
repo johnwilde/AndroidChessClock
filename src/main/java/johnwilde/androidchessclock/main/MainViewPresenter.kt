@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 // Responsible for user interactions with the play/pause button and
 // the drawer opening.  The view keeps the play/pause button in the correct
 // state and presents a snackbar telling which player ran out of time. It also
-// draws the spinner (used in Bronstein time mode).
+// draws the mainSubject (used in Bronstein time mode).
 class MainViewPresenter(val clockManager: ClockManager)
     : MviBasePresenter<MainView, MainViewState> () {
 
@@ -61,7 +61,7 @@ class MainViewPresenter(val clockManager: ClockManager)
                 snackBarDismissed,
                 stateChange,
                 // Allows this view to update the Spinner
-                Observable.merge(clockManager.white.spinner, clockManager.black.spinner))
+                Observable.merge(clockManager.white.mainSubject, clockManager.black.mainSubject))
 
         var updates = Observable.merge(intents)
 

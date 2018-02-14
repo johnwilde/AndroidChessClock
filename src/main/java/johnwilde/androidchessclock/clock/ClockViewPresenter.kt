@@ -21,7 +21,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
         // Not sure how to cleanly handle the case where in some situations
         // we want to return a Partial<ClockViewState>, but in others we
         // simply want to call the manager and let the updats come through
-        // the clockUpdateSubject.
+        // the clockSubject.
         val empty = Observable.empty<Partial<ClockViewState>>()
         val clockTapped = intent(ClockView::clickIntent)
                 .throttleFirst(100, TimeUnit.MILLISECONDS)
@@ -52,7 +52,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                 }
 
         val updates : Observable<Partial<ClockViewState>> =
-                Observable.merge(clockTapped, clockManager.forColor(color).clockUpdateSubject)
+                Observable.merge(clockTapped, clockManager.forColor(color).clockSubject)
 
         val initialState = clockManager.forColor(color).initialState()
 

@@ -17,7 +17,7 @@ class TimerLogicTest {
     var preferencesUtil: PreferencesUtil = mock()
     var timeSource = MockSystemTime(0)
 
-    lateinit var whiteClock: TimerLogic
+    lateinit var whiteClock: Timer
 
     companion object {
         @ClassRule
@@ -36,19 +36,19 @@ class TimerLogicTest {
         whenever(preferencesUtil.getBronsteinDelayMs()).thenReturn(0)
         whenever(preferencesUtil.getFischerDelayMs()).thenReturn(0)
         whenever(preferencesUtil.timeControlType).thenReturn(PreferencesUtil.TimeControlType.BASIC)
-        whiteClock = TimerLogic(ClockView.Color.WHITE, preferencesUtil, stateHolder, timeSource)
+        whiteClock = Timer(ClockView.Color.WHITE, preferencesUtil, stateHolder, timeSource)
         stateHolder.setActiveClock(whiteClock)
     }
 
     @Test
     fun timeGap() {
-        val blackClock = TimerLogic(ClockView.Color.BLACK, preferencesUtil, stateHolder, timeSource)
+        val blackClock = Timer(ClockView.Color.BLACK, preferencesUtil, stateHolder, timeSource)
         blackClock.initialize(whiteClock)
-        val blackObserver = blackClock.clockUpdateSubject.test()
+        val blackObserver = blackClock.clockSubject.test()
         val expectedBlackValues = mutableListOf<Partial<ClockViewState>>()
 
         // simulate move start
-        whiteClock.onMoveStart()  // send time gap on move start
+        whiteClock.moveStart()  // send time gap on move start
         expectedBlackValues.add(ClockViewState.TimeGap(10_000 - 10_000))
         blackObserver.assertValueSequence(expectedBlackValues)
 
@@ -74,11 +74,11 @@ class TimerLogicTest {
 
     @Test
     fun moveStartPauseAndFinish() {
-        val clockTestObserver = whiteClock.clockUpdateSubject.test()
+        val clockTestObserver = whiteClock.clockSubject.test()
         val expectedValues = mutableListOf<Partial<ClockViewState>>()
 
         // simulate move start
-        whiteClock.onMoveStart()
+        whiteClock.moveStart()
 
         expectedValues.add(ClockViewState.TimeGap(show = false)) // hides time gap
         expectedValues.add(ClockViewState.Button(true, 10000, "1"))
@@ -113,7 +113,7 @@ class TimerLogicTest {
         clockTestObserver.assertValueSequence(expectedValues)
 
         // end move
-        whiteClock.onMoveEnd()
+        whiteClock.moveEnd()
         expectedValues.add(ClockViewState.Button(false, 9800, ""))
         clockTestObserver.assertValueSequence(expectedValues)
 
@@ -122,7 +122,7 @@ class TimerLogicTest {
         clockTestObserver.assertValueCount(expectedValues.size) // no new updates after move end
 
         // next move
-        whiteClock.onMoveStart()
+        whiteClock.moveStart()
         testSchedulerRule.testScheduler.triggerActions() // trigger the first time update
 
         expectedValues.add(ClockViewState.TimeGap(show = false)) // hides time gap

@@ -2,8 +2,12 @@ package johnwilde.androidchessclock.logic
 
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
+import io.reactivex.subjects.BehaviorSubject
+import johnwilde.androidchessclock.ActivityBindingModule
+import johnwilde.androidchessclock.DaggerAppComponent
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState
+import johnwilde.androidchessclock.main.MainViewState
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import javax.inject.Inject
 import javax.inject.Named
@@ -17,8 +21,8 @@ import javax.inject.Singleton
 class ClockManager @Inject constructor(
         val preferencesUtil: PreferencesUtil,
         var stateHolder : GameStateHolder,
-        @Named("white") val white: TimerLogic,
-        @Named("black") val black: TimerLogic) {
+        @Named("white") var white: Timer,
+        @Named("black") var black: Timer) {
 
     var gameOver : Disposable
     var timeIsNegative: Boolean = false // At least one clock has gone negative
@@ -28,12 +32,14 @@ class ClockManager @Inject constructor(
         // Allow clocks to receive time updates from each other (enables time-gap display)
         white.initialize(black)
         black.initialize(white)
+//        var whiteClock = BehaviorSubject.create<MainViewState>()
+//        whiteClock.subscribe(white.mainSubject)
     }
 
     // Logic for "ending" the game
     private fun gameOverSubscription() : Disposable {
         timeIsNegative = false
-        return Observable.merge<Long>(white.msToGoUpdateSubject, black.msToGoUpdateSubject)
+        return Observable.merge<Long>(white.timeSubject, black.timeSubject)
                 .filter{ it <= 0 }
                 .take(1)
                 .subscribe { _ ->
@@ -71,7 +77,7 @@ class ClockManager @Inject constructor(
                 // Switch turns (ignore taps on non-active button)
                 if (color == active().color) {
                     startPlayerClock(forOtherColor(color))
-                    forColor(color).onMoveEnd()
+                    forColor(color).moveEnd()
                 }
             }
             GameState.FINISHED -> { } // nothing
@@ -107,9 +113,18 @@ class ClockManager @Inject constructor(
 
     fun reset() {
         setGameState(GameState.NOT_STARTED)
+        stateHolder.removeActiveClock()
         gameOver.dispose()
+
+        // Create new timers
+        val timeSource = ActivityBindingModule.providesTimeSource()
+        white = ActivityBindingModule.providesWhite(preferencesUtil, stateHolder, timeSource)
+        black = ActivityBindingModule.providesBlack(preferencesUtil, stateHolder, timeSource)
         white.initialize(black)
         black.initialize(white)
+
+
+        // listen for end of game
         gameOver = gameOverSubscription()
     }
 
@@ -117,12 +132,12 @@ class ClockManager @Inject constructor(
         stateHolder.setGameStateValue(state)
     }
 
-    private fun startPlayerClock(timer : TimerLogic) {
+    private fun startPlayerClock(timer : Timer) {
         stateHolder.setActiveClock(timer)
         if (gameState() == GameState.PAUSED) {
             active().resume()
         } else {
-            active().onMoveStart()
+            active().moveStart()
         }
         if (timeIsNegative) {
             setGameState(GameState.NEGATIVE)
@@ -131,21 +146,21 @@ class ClockManager @Inject constructor(
         }
     }
 
-    fun forColor(color: ClockView.Color): TimerLogic {
+    fun forColor(color: ClockView.Color): Timer {
         return when (color) {
             ClockView.Color.WHITE -> white
             ClockView.Color.BLACK -> black
         }
     }
 
-    private fun forOtherColor(color: ClockView.Color): TimerLogic {
+    private fun forOtherColor(color: ClockView.Color): Timer {
         return when (color) {
             ClockView.Color.WHITE -> black
             ClockView.Color.BLACK -> white
         }
     }
 
-    fun active() : TimerLogic { return stateHolder.active!! }
+    fun active() : Timer { return stateHolder.active!! }
     private fun gameState() : GameState { return stateHolder.gameState }
 }
 

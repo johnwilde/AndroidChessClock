@@ -10,7 +10,7 @@ Rewritten to use [Mosby](http://hannesdorfmann.com/android/mosby3-mvi-1) library
 In this Chess Timer app there are two players (White and Black) and each player has a button they can tap.  A player taps his button to end his turn and start the other player's turn.  During a player's turn, their remaining time counts down, and the other player sees the time-gap on their view go up.  This diagram shows the important parts of the UI which includes two `ClockView` and one `MainView` component. 
 
 There are 3 presenters:
-* `MainViewPresenter` which renders the play/pause button and the spinner
+* `MainViewPresenter` which renders the play/pause button and the mainSubject
 * `ClockViewPresenter` for responding to button taps and updating time
 * `SoundViewPresenter` for playing button click and end-of-game buzzer
 

@@ -9,10 +9,7 @@ import dagger.Provides
 import dagger.android.ContributesAndroidInjector
 import johnwilde.androidchessclock.clock.ClockFragment
 import johnwilde.androidchessclock.clock.ClockView
-import johnwilde.androidchessclock.logic.GameStateHolder
-import johnwilde.androidchessclock.logic.SystemTime
-import johnwilde.androidchessclock.logic.TimeSource
-import johnwilde.androidchessclock.logic.TimerLogic
+import johnwilde.androidchessclock.logic.*
 import johnwilde.androidchessclock.main.MainActivity
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import johnwilde.androidchessclock.sound.SoundFragment
@@ -61,16 +58,40 @@ internal abstract class ActivityBindingModule {
         @JvmStatic
         @Provides
         @Singleton
+        internal fun providesTimer(
+                color: ClockView.Color,
+                preferencesUtil: PreferencesUtil,
+                stateHolder: GameStateHolder,
+                timeSource: TimeSource): Timer {
+
+            return when (preferencesUtil.timeControlType) {
+                PreferencesUtil.TimeControlType.BASIC -> {
+                    when {
+                        preferencesUtil.getFischerDelayMs() > 0 -> {
+                            Fischer(color,preferencesUtil, stateHolder, timeSource)
+                        }
+                        preferencesUtil.getBronsteinDelayMs() > 0 -> {
+                            Bronstein(color,preferencesUtil, stateHolder, timeSource)
+                        }
+                        else -> {
+                            Fischer(color,preferencesUtil, stateHolder, timeSource)
+                        }
+                    }
+                }
+                PreferencesUtil.TimeControlType.TOURNAMENT -> {
+                    Fischer(color,preferencesUtil, stateHolder, timeSource)
+                }
+            }
+        }
+        @JvmStatic
+        @Provides
+        @Singleton
         @Named("black")
         internal fun providesBlack(
                 preferencesUtil: PreferencesUtil,
                 stateHolder: GameStateHolder,
-                timeSource: TimeSource): TimerLogic {
-            return TimerLogic(
-                    ClockView.Color.BLACK,
-                    preferencesUtil,
-                    stateHolder,
-                    timeSource)
+                timeSource: TimeSource): Timer {
+            return providesTimer(ClockView.Color.BLACK, preferencesUtil, stateHolder, timeSource )
         }
 
         @JvmStatic
@@ -80,12 +101,8 @@ internal abstract class ActivityBindingModule {
         internal fun providesWhite(
                 preferencesUtil: PreferencesUtil,
                 stateHolder: GameStateHolder,
-                timeSource: TimeSource): TimerLogic {
-            return TimerLogic(
-                    ClockView.Color.WHITE,
-                    preferencesUtil,
-                    stateHolder,
-                    timeSource)
+                timeSource: TimeSource): Timer {
+            return providesTimer(ClockView.Color.WHITE, preferencesUtil, stateHolder, timeSource )
         }
     }
 }
