@@ -7,7 +7,8 @@ import johnwilde.androidchessclock.main.Partial
 data class ClockViewState(
         val button : Button,
         val prompt : Snackbar?,
-        val timeGap : TimeGap) : Partial<ClockViewState> {
+        val timeGap : TimeGap,
+        val moveCount: MoveCount) : Partial<ClockViewState> {
     override fun reduce(previousState: ClockViewState): ClockViewState {
         return this
     }
@@ -16,11 +17,7 @@ data class ClockViewState(
     // playing or non-started state) and move-count
     data class Button(
             val enabled: Boolean,
-            val msToGo: Long,
-            val moveCount: MoveCount = MoveCount(
-                    message = MoveCount.Message.NONE,
-                    count = 0))
-        : Partial<ClockViewState> {
+            val msToGo: Long) : Partial<ClockViewState> {
         override fun reduce(previousState: ClockViewState): ClockViewState {
             return previousState.copy(
                     button = this,
@@ -34,7 +31,7 @@ data class ClockViewState(
         enum class Message { TOTAL, REMAINING, NONE}
         override fun reduce(previousState: ClockViewState): ClockViewState {
             return previousState.copy(
-                    button = previousState.button.copy(moveCount = this),
+                    moveCount = this,
                     prompt = null)
         }
     }

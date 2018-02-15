@@ -4,7 +4,6 @@ import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.BehaviorSubject
-import io.reactivex.subjects.Subject
 import johnwilde.androidchessclock.ActivityBindingModule
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
@@ -32,9 +31,13 @@ class ClockManager @Inject constructor(
     lateinit var whiteDelegate: TimerDelegate
     lateinit var blackDelgate: TimerDelegate
 
+    // Wrapper around the timer instances, which go away if time control
+    // type is changed.  Clients should use the subjects exposed by this
+    // class to receive correct state updates across time control changes.
     inner class TimerDelegate(val color : ClockView.Color) {
         var clock = BehaviorSubject.create<Partial<ClockViewState>>()
         var main = BehaviorSubject.create<Partial<MainViewState>>()
+
         var disposables = CompositeDisposable()
         init {
             subscribe()
@@ -149,6 +152,8 @@ class ClockManager @Inject constructor(
         setGameState(GameState.NOT_STARTED)
         stateHolder.removeActiveClock()
         gameOver.dispose()
+        white.dispose()
+        black.dispose()
 
         // Create new timers
         val timeSource = ActivityBindingModule.providesTimeSource()
@@ -177,6 +182,9 @@ class ClockManager @Inject constructor(
         }
     }
 
+    // This returns an actual timer instance, which may change if user
+    // changes time control.  For that reason, this reference should
+    // not be saved.
     fun timerForColor(color: ClockView.Color): Timer {
         return when (color) {
             ClockView.Color.WHITE -> white

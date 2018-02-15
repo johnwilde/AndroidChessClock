@@ -1,15 +1,18 @@
 package johnwilde.androidchessclock.logic
 
 import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
-import io.reactivex.subjects.PublishSubject
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.main.MainViewState
 import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
+import timber.log.Timber
+import java.lang.ref.ReferenceQueue
+import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
 
 // Responsible for updating an individual clock and publishing new view states
@@ -21,7 +24,6 @@ abstract class Timer(val color: ClockView.Color,
             var timeSource: TimeSource) {
 
     private var clockSubscription: Disposable? = null
-    var msToGoMoveStart : Long = 0
 
     // Time remaining on this clock, which other clock can subscribe to
     var timeSubject: BehaviorSubject<Long> = BehaviorSubject.create()
@@ -33,71 +35,38 @@ abstract class Timer(val color: ClockView.Color,
     // last update from other clock
     var lastMsOtherClock : Long = 0
 
-    private var moveCounter = MoveCounter()
+    private var moveCounter = MoveCounter(preferencesUtil)
 
     val moveTimes get() = moveCounter.moveTimes.toLongArray()
     var msToGo : Long = 0
 
-    private inner class MoveCounter {
-        var count : Int = 0 // number of moves for this player
-        val moveTimes = mutableListOf<Long>() // array of time for each move (ms)
-
-        fun newMove(ms : Long) {
-            msToGoMoveStart = ms
-            moveTimes.add(0)
-
-            if (preferencesUtil.timeControlType == PreferencesUtil.TimeControlType.TOURNAMENT) {
-                when {
-                    count < preferencesUtil.phase1NumberOfMoves -> {
-                        val remaining = preferencesUtil.phase1NumberOfMoves - count
-                        publishRemainingMoves(remaining)
-                    }
-                    count == preferencesUtil.phase1NumberOfMoves -> {
-                        setNewTime(msToGo + preferencesUtil.phase1Minutes * 60 * 1000)
-                        publishCurrentMoveCount(count + 1)
-                    }
-                    count > preferencesUtil.phase1NumberOfMoves -> {
-                        publishCurrentMoveCount(count + 1)
-                    }
-                }
-            } else {
-                publishCurrentMoveCount(count + 1)
-            }
-
-            count += 1  // the start of the Move
-        }
-        fun publishCurrentMoveCount(count: Int) {
-            clockSubject.onNext(ClockViewState.MoveCount(
-                    message = ClockViewState.MoveCount.Message.TOTAL,
-                    count = count)
-            )
-        }
-        fun publishRemainingMoves(remaining : Int) {
-            clockSubject.onNext(ClockViewState.MoveCount(
-                    message = ClockViewState.MoveCount.Message.REMAINING,
-                    count = remaining)
-            )
-        }
-
-        fun updateMoveTime(ms : Long) {
-            moveTimes[moveTimes.lastIndex] = ms - msToGoMoveStart
-        }
-
-        fun display() : String {
-            return count.toString()
-        }
-    }
+    val disposables = CompositeDisposable()
 
     init {
         // Immediately turn on or off the time gap when preference changes
-        val ignored = preferencesUtil.timeGap
+        disposables.add(preferencesUtil.timeGap
                 .subscribe({ value ->
                     if (value) {
                         publishTimeGap(lastMsOtherClock)
                     } else {
                         // timeGap preference was turned off
                         hideTimeGap()
-                    }})
+                    }}))
+    }
+
+    fun dispose() {
+        disposeTimeSequenceSubscription()
+        disposables.clear()
+    }
+
+    fun initialize(otherClock : Timer) {
+        moveCounter = MoveCounter(preferencesUtil)
+        disposables.add(otherClock.timeSubject.subscribe { ms ->
+            lastMsOtherClock = ms
+            publishTimeGap(ms)
+        })
+
+        clockSubject.onNext(initialState())
     }
 
     private fun hideTimeGap() {
@@ -117,18 +86,8 @@ abstract class Timer(val color: ClockView.Color,
         }
     }
 
-    fun initialize(otherClock : Timer) {
-        moveCounter = MoveCounter()
-        val ignored = otherClock.timeSubject.subscribe { ms ->
-            lastMsOtherClock = ms
-            publishTimeGap(ms)
-        }
-
-        clockSubject.onNext(initialState())
-    }
-
     open fun moveStart() {
-        moveCounter.newMove(msToGo)
+        moveCounter.newMove(msToGo, this)
         // Hide the time-gap clock
         hideTimeGap()
     }
@@ -159,7 +118,11 @@ abstract class Timer(val color: ClockView.Color,
                         enabled = true,
                         msToGo = msToGo),
                 timeGap = ClockViewState.TimeGap(show = false),
-                prompt = ClockViewState.Snackbar(dismiss = true))
+                prompt = ClockViewState.Snackbar(dismiss = true),
+                moveCount = ClockViewState.MoveCount(
+                        message = ClockViewState.MoveCount.Message.NONE,
+                        count = 0)
+        )
     }
 
     open fun publishInactiveState() {
@@ -167,6 +130,11 @@ abstract class Timer(val color: ClockView.Color,
                 ClockViewState.Button(
                         enabled = false,
                         msToGo = msToGo)
+        )
+        clockSubject.onNext(
+                ClockViewState.MoveCount(
+                        message = ClockViewState.MoveCount.Message.NONE,
+                        count = 0)
         )
     }
 
@@ -200,5 +168,4 @@ abstract class Timer(val color: ClockView.Color,
                 .subscribeOn(Schedulers.computation())
                 .map { clockTask.publishUpdates() }
     }
-
 }

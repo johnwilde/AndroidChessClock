@@ -32,8 +32,7 @@ class Bronstein(color: ClockView.Color,
     }
 
     override fun publishInactiveState() {
-        // At end of turn, dim the button
-        clockSubject.onNext(ClockViewState.Button(false, msToGo))
+        super.publishInactiveState()
         mainSubject.onNext(MainViewState.Spinner(0))
     }
 

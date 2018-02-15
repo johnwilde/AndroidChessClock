@@ -100,6 +100,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         renderClock(viewState.button)
         renderTimeGap(viewState.timeGap)
         viewState.prompt?.let { renderSnackbar(it) }
+        renderMoveCount(viewState.moveCount)
     }
 
     private fun renderTimeGap(viewState: ClockViewState.TimeGap) {
@@ -117,11 +118,9 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         clock.alpha = if (buttonViewState.enabled) 1.0f else .1f
         clock.isChecked = buttonViewState.msToGo < 10_000
         button.drawable.alpha = if (buttonViewState.enabled) BUTTON_VISIBLE else BUTTON_FADED
-        renderMoveCount(buttonViewState)
     }
 
-    private fun renderMoveCount(buttonViewState: ClockViewState.Button) {
-        val mc = buttonViewState.moveCount
+    private fun renderMoveCount(mc: ClockViewState.MoveCount) {
         moveCount.text = when(mc.message) {
             ClockViewState.MoveCount.Message.REMAINING ->
                 resources.getString(R.string.moves_remaining) + " " + mc.count.toString()
@@ -129,7 +128,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
             ClockViewState.MoveCount.Message.TOTAL ->
                 resources.getString(R.string.move) + " " + mc.count.toString()
         }
-        moveCount.visibility = if (buttonViewState.enabled && mc.message != ClockViewState.MoveCount.Message.NONE) {
+        moveCount.visibility = if (mc.message != ClockViewState.MoveCount.Message.NONE) {
             View.VISIBLE
         } else View.INVISIBLE
     }

@@ -57,7 +57,6 @@ class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
     }
 
     override fun render(viewState: SoundViewState) {
-        Timber.d("%s", viewState)
         // Don't replay sounds when fragment is being recreated (the BehaviorSubject sends the
         // viewstate, but this doesn't apply to sounds that have already been played)
         if (!isRestoringViewState) {

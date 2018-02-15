@@ -27,11 +27,6 @@ class Fischer(color: ClockView.Color,
         publishInactiveState()
     }
 
-    override fun publishInactiveState() {
-        // At end of turn, dim the button
-        clockSubject.onNext(ClockViewState.Button(false, msToGo))
-    }
-
     override fun timerTask(): PublishesClockState {
         return UpdateTime()
     }

@@ -111,12 +111,10 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         drawerLayout.removeDrawerListener(drawerListener)
     }
 
-    lateinit var presenter : MainViewPresenter
     override fun createPresenter(): MainViewPresenter {
         // This component controls the state of the play / pause button and renders the
         // mainSubject view (during Bronstein delay)
-        presenter = MainViewPresenter(clockManager)
-        return presenter
+        return MainViewPresenter(clockManager)
     }
 
     override fun playPauseIntent(): Observable<Any> {
@@ -229,10 +227,10 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         mainContainer.removeAllViews()
         views.reverse()
         if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            views.get(0).scaleY = -1f
-            views.get(0).scaleX = -1f
-            views.get(2).scaleY = 1f
-            views.get(2).scaleX = 1f
+            views[0].scaleY = -1f
+            views[0].scaleX = -1f
+            views[2].scaleY = 1f
+            views[2].scaleX = 1f
         }
         for (view in views) {
             mainContainer.addView(view)
@@ -292,7 +290,6 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
                     TimerPreferenceActivity.LOAD_ALL, false)) {
                 preferenceUtil.loadTimeControlPreferences()
                 clockManager.reset()
-                presenter
             }
         }
     }
