@@ -81,6 +81,9 @@ internal abstract class ActivityBindingModule {
                 PreferencesUtil.TimeControlType.TOURNAMENT -> {
                     Fischer(color,preferencesUtil, stateHolder, timeSource)
                 }
+                PreferencesUtil.TimeControlType.HOURGLASS -> {
+                    Hourglass(color,preferencesUtil, stateHolder, timeSource)
+                }
             }
         }
         @JvmStatic

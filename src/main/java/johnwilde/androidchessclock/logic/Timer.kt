@@ -10,10 +10,11 @@ import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.main.MainViewState
 import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 interface PublishesClockState {
-    fun publishUpdates()
+    fun publish()
 }
 // Responsible for updating an individual clock and publishing new view states
 // on each update.
@@ -39,6 +40,12 @@ abstract class Timer(val color: ClockView.Color,
     abstract fun timerTask() : PublishesClockState
     abstract fun setNewTime(newTime: Long)
 
+    fun initialize() {
+        moveCounter = MoveCounter(preferencesUtil)
+        timeGap = TimeGap(preferencesUtil, color, stateHolder, clockSubject)
+        clockSubject.onNext(initialState())
+    }
+
     open fun moveStart() {
         moveCounter.newMove(msToGo, this)
     }
@@ -47,35 +54,31 @@ abstract class Timer(val color: ClockView.Color,
         moveCounter.updateMoveTime(msToGo)
     }
 
-    open fun pause() {
+    open fun stop() {
+        moveCounter.updateMoveTime(msToGo)
         disposeTimeSequenceSubscription()
     }
 
-    open fun resume() {
-        moveCounter.updateMoveTime(msToGo)
+    open fun start() {
         // Return observable that on subscription will cause various subjects to start emitting
         // state updates.  When subscription is disposed the state updates will stop.
         val clockTask = timerTask()
-        clockSubscription = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+        clockSubscription = Observable.interval(0,100, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.computation())
-                .map { clockTask.publishUpdates() }
+                .map { clockTask.publish() } // each interval
+                .doOnDispose { clockTask.publish() } // the final update
                 .subscribe()
+    }
+
+    // Timer is being destroyed, make sure to dispose all subscriptions to avoid memory leak
+    open fun destroy() {
+        disposeTimeSequenceSubscription()
+        timeGap.destroy()
     }
 
     fun updateAndPublishMsToGo(newValue: Long) {
         msToGo = newValue
         stateHolder.timeSubject.onNext(GameStateHolder.TimeUpdate(color, newValue))
-    }
-
-    fun dispose() {
-        disposeTimeSequenceSubscription()
-        timeGap.dispose()
-    }
-
-    fun initialize() {
-        moveCounter = MoveCounter(preferencesUtil)
-        timeGap = TimeGap(preferencesUtil, color, stateHolder, clockSubject)
-        clockSubject.onNext(initialState())
     }
 
     fun initialState() : ClockViewState {

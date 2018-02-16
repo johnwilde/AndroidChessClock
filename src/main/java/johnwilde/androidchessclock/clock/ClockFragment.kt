@@ -104,7 +104,6 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     private fun renderTimeGap(viewState: ClockViewState.TimeGap) {
-        Timber.d("TimeGap %s", viewState)
         timeGap.visibility = if (viewState.show) {
             View.VISIBLE
         } else {

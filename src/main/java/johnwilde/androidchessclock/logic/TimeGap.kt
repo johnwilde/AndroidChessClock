@@ -6,7 +6,6 @@ import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
-import timber.log.Timber
 
 class TimeGap(val preferencesUtil : PreferencesUtil,
               val color: ClockView.Color,
@@ -20,13 +19,11 @@ class TimeGap(val preferencesUtil : PreferencesUtil,
     private var lastMsOtherClock : Long = 0
 
     init {
-        { Timber.d("hi")}
         // Immediately turn on or off the time gap when preference changes
         disposables.add(preferencesUtil.timeGap
                 .subscribe { _ -> updateTimeGap() })
         disposables.add(stateHolder.timeSubject
                 .map { u ->
-                    Timber.d("mapper %s", u)
                     if (u.color == color) {
                         lastMs = u.ms
                     } else {
@@ -57,7 +54,7 @@ class TimeGap(val preferencesUtil : PreferencesUtil,
         }
     }
 
-    fun dispose() {
+    fun destroy() {
         disposables.clear()
     }
 }

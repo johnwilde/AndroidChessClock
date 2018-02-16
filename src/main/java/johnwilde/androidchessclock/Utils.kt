@@ -16,7 +16,7 @@ object Utils {
         var time = formatTime(millisIn, true, 10_000)
         // clock is <= -1 second, prepend a minus sign
         return when {
-            millisIn <= -1000 -> "-" + time
+            millisIn <= -500 -> "-" + time
             else -> time
         }
     }

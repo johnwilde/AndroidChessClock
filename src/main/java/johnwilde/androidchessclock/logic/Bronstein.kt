@@ -22,12 +22,12 @@ class Bronstein(color: ClockView.Color,
         super.moveStart()
         delay = preferencesUtil.getBronsteinDelayMs()
         updateAndPublishMsToGo(msToGo)
-        resume()
+        start()
     }
 
     override fun moveEnd() {
         super.moveEnd()
-        pause()
+        stop()
         publishInactiveState()
     }
 
@@ -40,7 +40,7 @@ class Bronstein(color: ClockView.Color,
         return object : PublishesClockState {
             private var lastUpdateMs: Long = timeSource.currentTimeMillis()
 
-            override fun publishUpdates() {
+            override fun publish() {
                 val now = timeSource.currentTimeMillis()
                 val dt = now - lastUpdateMs
                 lastUpdateMs = now

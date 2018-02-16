@@ -18,7 +18,6 @@
     <string name="start_button">Старт</string>
     
     <string name="time_preference_description">Установки времени</string>
-    <string name="basic_time_preference_description">Основные установки времени</string>
     <string name="basic_screen_enabled_summary">Установить основные настройки времени.</string>
     <string name="advanced_screen_enabled_summary">Установить расширенные настройки времени.</string>
     <string name="initial_minutes_preference">Начальное количество минут</string>
@@ -52,7 +51,6 @@
     <string name="audible_notification_preference_click">Воспроизведение звука при нажатии кнопок.</string>
     
     
-    <string name="advanced_time_preference_description">Настройки времени турнира</string>
     <string name="summary_advanced_time_preference_description">Установить турнирные настройки контроля времени.</string>
     <string name="select_time_control_type_preference">Выбрать тип</string>
 

@@ -9,8 +9,8 @@ import johnwilde.androidchessclock.logic.GameStateHolder.GameState
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-// Responsible for user interactions with the play/pause button and
-// the drawer opening.  The view keeps the play/pause button in the correct
+// Responsible for user interactions with the play/stop button and
+// the drawer opening.  The view keeps the play/stop button in the correct
 // state and presents a snackbar telling which player ran out of time. It also
 // draws the mainSubject (used in Bronstein time mode).
 class MainViewPresenter(val clockManager: ClockManager)
@@ -19,7 +19,7 @@ class MainViewPresenter(val clockManager: ClockManager)
     // Only invoked the first time view is attached to presenter
     override fun bindIntents() {
         Timber.d("bindIntents for playPausePresenter")
-        // Tapped play/pause
+        // Tapped play/stop
         val playPauseIntent = intent(MainView::playPauseIntent)
                 .map { clockManager.playPause() }
                 .flatMap { Observable.empty<Partial<MainViewState>>() }

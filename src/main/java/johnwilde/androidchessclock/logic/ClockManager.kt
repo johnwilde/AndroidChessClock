@@ -1,6 +1,5 @@
 package johnwilde.androidchessclock.logic
 
-import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.BehaviorSubject
@@ -17,7 +16,7 @@ import javax.inject.Singleton
 
 // Manages the overall state of the game (started, finished, paused, etc).
 // Contains an instance of each player's clock and is responsible for calling
-// methods to synchronize the start/pause of each clock as players alternate
+// methods to synchronize the start/stop of each clock as players alternate
 // turns.
 @Singleton
 class ClockManager @Inject constructor(
@@ -84,7 +83,7 @@ class ClockManager @Inject constructor(
                         setGameState(GameState.NEGATIVE)
                     } else {
                         if (gameState() == GameState.PLAYING) {
-                            active().pause()
+                            active().stop()
                         }
                         setGameState(GameState.FINISHED)
                     }
@@ -103,7 +102,7 @@ class ClockManager @Inject constructor(
                 }
             }
             GameState.PAUSED -> {
-                // Can un-pause when non-active player hits their button
+                // Can un-stop when non-active player hits their button
                 if (color != active().color) {
                     // Resume play
                     startPlayerClock(forOtherColor(color))
@@ -126,12 +125,12 @@ class ClockManager @Inject constructor(
             GameState.PLAYING, GameState.NEGATIVE -> {
                 // Pause game
                 setGameState(GameState.PAUSED)
-                active().pause()
+                active().stop()
             }
             GameState.PAUSED ->
                 startPlayerClock(active())
             GameState.NOT_STARTED -> {
-                // Start / resume game
+                // Start / start game
                 startPlayerClock(white)
                 forOtherColor(active().color).publishInactiveState() // dim other clock
             }
@@ -151,8 +150,8 @@ class ClockManager @Inject constructor(
         setGameState(GameState.NOT_STARTED)
         stateHolder.removeActiveClock()
         gameOver.dispose()
-        white.dispose()
-        black.dispose()
+        white.destroy()
+        black.destroy()
 
         // Create new timers
         val timeSource = ActivityBindingModule.providesTimeSource()
@@ -169,7 +168,7 @@ class ClockManager @Inject constructor(
     private fun startPlayerClock(timer : Timer) {
         stateHolder.setActiveClock(timer)
         if (gameState() == GameState.PAUSED) {
-            active().resume()
+            active().start()
         } else {
             active().moveStart()
         }

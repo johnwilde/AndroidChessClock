@@ -10,7 +10,6 @@ class Fischer(color: ClockView.Color,
               timeSource: TimeSource)
     : Timer(color, preferencesUtil, stateHolder, timeSource) {
 
-
     init {
         updateAndPublishMsToGo(preferencesUtil.initialDurationSeconds * 1000.toLong())
     }
@@ -18,12 +17,12 @@ class Fischer(color: ClockView.Color,
     override fun moveStart() {
         super.moveStart()
         updateAndPublishMsToGo(msToGo + preferencesUtil.getFischerDelayMs())
-        resume()
+        start()
     }
 
     override fun moveEnd() {
         super.moveEnd()
-        pause()
+        stop()
         publishInactiveState()
     }
 
@@ -31,7 +30,7 @@ class Fischer(color: ClockView.Color,
         return object : PublishesClockState {
             private var lastUpdateMs: Long = timeSource.currentTimeMillis()
 
-            override fun publishUpdates() {
+            override fun publish() {
                 val now = timeSource.currentTimeMillis()
                 val dt = now - lastUpdateMs
                 lastUpdateMs = now

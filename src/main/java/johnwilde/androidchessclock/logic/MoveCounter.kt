@@ -46,6 +46,6 @@ class MoveCounter(val pref: PreferencesUtil) {
     }
 
     fun updateMoveTime(ms : Long) {
-        moveTimes[moveTimes.lastIndex] = ms - msToGoMoveStart
+        moveTimes[moveTimes.lastIndex] =  msToGoMoveStart - ms
     }
 }

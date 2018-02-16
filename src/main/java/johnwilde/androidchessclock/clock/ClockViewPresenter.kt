@@ -69,7 +69,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
 
     private fun handleBadClick(message: ClockViewState.Snackbar.Message)
             : Observable<Partial<ClockViewState>> {
-        // Must tap non-active color to resume/start game
+        // Must tap non-active color to start/start game
         // Let's show Snackbar for 2 seconds and then dismiss it
         return Observable.timer(2, TimeUnit.SECONDS)
                 .map { _ -> ClockViewState.Snackbar(dismiss = true) as Partial<ClockViewState> }

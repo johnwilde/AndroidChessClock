@@ -112,7 +112,7 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
     }
 
     override fun createPresenter(): MainViewPresenter {
-        // This component controls the state of the play / pause button and renders the
+        // This component controls the state of the play / stop button and renders the
         // mainSubject view (during Bronstein delay)
         return MainViewPresenter(clockManager)
     }

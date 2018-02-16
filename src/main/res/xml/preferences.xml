@@ -48,11 +48,37 @@
                     android:key="delay_type_preference"
                     android:summary="@string/summary_delay_type_preference"
                     android:title="@string/delay_type_preference" />
+            </PreferenceCategory>
 
-                <CheckBoxPreference
-                    android:defaultValue="false"
-                    android:key="allow_negative_time_preference"
-                    android:title="@string/allow_negative_time_preference" />
+        </PreferenceScreen>
+
+        <johnwilde.androidchessclock.prefs.RadioCheckBoxPreference
+            android:defaultValue="false"
+            android:key="hourglass_time_control_checkbox"
+            android:title="@string/hourglass_time_preference_description" />
+
+        <PreferenceScreen
+            android:summary="@string/adjust_basic_time_preference_description"
+            android:key="hourglass_time_control_preference_screen">
+
+            <PreferenceCategory>
+
+                <EditTextPreference
+                    android:defaultValue="5"
+                    android:dialogTitle="@string/dialog_title_initial_minutes_preference"
+                    android:key="hourglass_initial_minutes_preference"
+                    android:numeric="integer"
+                    android:summary="@string/summary_initial_minutes_preference"
+                    android:title="@string/initial_minutes_preference" />
+
+
+                <EditTextPreference
+                    android:defaultValue="0"
+                    android:dialogTitle="@string/dialog_title_initial_seconds_preference"
+                    android:key="hourglass_initial_seconds_preference"
+                    android:numeric="integer"
+                    android:summary="@string/summary_initial_seconds_preference"
+                    android:title="@string/initial_seconds_preference" />
 
             </PreferenceCategory>
 
@@ -111,12 +137,6 @@
                     android:key="advanced_delay_type_preference"
                     android:summary="@string/summary_delay_type_preference"
                     android:title="@string/delay_type_preference" />
-
-                <CheckBoxPreference
-                    android:defaultValue="false"
-                    android:key="advanced_allow_negative_time_preference"
-                    android:title="@string/allow_negative_time_preference" />
-
             </PreferenceCategory>
 
         </PreferenceScreen>
@@ -124,6 +144,11 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/display_options_preference_description">
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="allow_negative_time_preference"
+            android:title="@string/allow_negative_time_preference" />
 
         <CheckBoxPreference
             android:defaultValue="true"

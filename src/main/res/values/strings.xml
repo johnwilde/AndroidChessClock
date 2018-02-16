@@ -19,7 +19,7 @@
     <string name="start_button">Start</string>
 
     <string name="time_preference_description">Time Preferences</string>
-    <string name="basic_time_preference_description">Simple Time Control</string>
+    <string name="basic_time_preference_description">Simple</string>
     <string name="adjust_basic_time_preference_description">Adjust Settings</string>
 
     <string name="basic_screen_enabled_summary">Set basic time control options.</string>
@@ -59,7 +59,8 @@
     <string name="audible_notification_preference_bell">Play sound when clock runs out.</string>
     <string name="audible_notification_preference_click">Play sound when pressing buttons.</string>
 
-    <string name="advanced_time_preference_description">Tournament Time Control</string>
+    <string name="hourglass_time_preference_description">Hourglass</string>
+    <string name="advanced_time_preference_description">Tournament</string>
     <string name="summary_advanced_time_preference_description">Set tournament time control options.</string>
     <string name="select_time_control_type_preference">Select Type</string>
 

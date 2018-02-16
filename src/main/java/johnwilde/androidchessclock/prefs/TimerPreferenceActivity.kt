@@ -53,8 +53,7 @@ class TimerPreferenceActivity : AppCompatActivity(),
                 Key.TIME_GAP,
                 Key.PLAY_BELL,
                 Key.PLAY_CLICK,
-                Key.NEGATIVE_TIME,
-                Key.ADV_NEGATIVE_TIME)
+                Key.NEGATIVE_TIME)
 
         if (!uiKeys.contains(Key.fromString(key))){
             setResult(RESULT_OK, intent.putExtra(LOAD_ALL, true));

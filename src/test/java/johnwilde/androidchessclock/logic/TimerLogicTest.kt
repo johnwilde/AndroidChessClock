@@ -93,16 +93,16 @@ class TimerLogicTest {
         expectedValues.add(ClockViewState.Button(true, 9900, "1"))
         clockTestObserver.assertValueSequence(expectedValues)
 
-        // pause playing
-        whiteClock.pause()
+        // stop playing
+        whiteClock.stop()
         assertEquals(100, whiteClock.moveTimes.last())
 
         // move time forward while paused
         advanceTimeBy(100)
         clockTestObserver.assertValueCount(expectedValues.size) // no new updates while paused
 
-        // un-pause
-        whiteClock.resume()
+        // un-stop
+        whiteClock.start()
         testSchedulerRule.testScheduler.triggerActions()
         expectedValues.add(ClockViewState.Button(true, 9900, "1"))
         clockTestObserver.assertValueSequence(expectedValues)

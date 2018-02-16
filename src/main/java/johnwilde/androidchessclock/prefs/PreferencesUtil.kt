@@ -26,13 +26,7 @@ class PreferencesUtil @Inject constructor(
         get() = sharedPreferences.getBoolean(TimerPreferenceFragment.Key.TIME_GAP.toString(), true)
 
     var allowNegativeTime: Boolean = false
-        get() {
-            return if (timeControlType == TimeControlType.BASIC) {
-                sharedPreferences.getBoolean(TimerPreferenceFragment.Key.NEGATIVE_TIME.toString(), false)
-            } else {
-                sharedPreferences.getBoolean(TimerPreferenceFragment.Key.ADV_NEGATIVE_TIME.toString(), false)
-            }
-        }
+        get() = sharedPreferences.getBoolean(TimerPreferenceFragment.Key.NEGATIVE_TIME.toString(), false)
 
     var playBuzzerAtEnd: Boolean = false
         get() = sharedPreferences.getBoolean(TimerPreferenceFragment.Key.PLAY_BELL.toString(), false)
@@ -41,7 +35,7 @@ class PreferencesUtil @Inject constructor(
         get() = sharedPreferences.getBoolean(TimerPreferenceFragment.Key.PLAY_CLICK.toString(), false)
 
     enum class TimeControlType {
-        BASIC, TOURNAMENT
+        BASIC, TOURNAMENT, HOURGLASS
     }
     internal enum class DelayType {
         FISCHER, BRONSTEIN
@@ -62,16 +56,29 @@ class PreferencesUtil @Inject constructor(
 
     // Run after the user has changeda preference and during onCreate()
     fun loadTimeControlPreferences() {
-        val simpleTimeControl = sharedPreferences.getBoolean(
-                TimerPreferenceFragment.Key.SIMPLE_TIME_CONTROL_CHECKBOX.toString(),
-                true)
+        val tournament = sharedPreferences.getBoolean(
+                TimerPreferenceFragment.Key.TOURNAMENT_TIME_CONTROL_CHECKBOX.toString(),
+                false)
 
-        if (simpleTimeControl) {
-            timeControlType = TimeControlType.BASIC
-            loadBasicTimeControlUserPreference()
-        } else {
-            timeControlType = TimeControlType.TOURNAMENT
-            loadAdvancedTimeControlUserPreference()
+        val hourglass = sharedPreferences.getBoolean(
+                TimerPreferenceFragment.Key.HOURGLASS_TIME_CONTROL_CHECKBOX.toString(),
+                false)
+
+        when {
+            hourglass -> {
+                timeControlType = TimeControlType.HOURGLASS
+                val minutes = getTimerOptionsValue(TimerPreferenceFragment.Key.HOURGLASS_MINUTES)
+                val seconds = getTimerOptionsValue(TimerPreferenceFragment.Key.HOURGLASS_SECONDS)
+                initialDurationSeconds = minutes * 60 + seconds
+            }
+            tournament -> {
+                timeControlType = TimeControlType.TOURNAMENT
+                loadAdvancedTimeControlUserPreference()
+            }
+            else -> {
+                timeControlType = TimeControlType.BASIC
+                loadBasicTimeControlUserPreference()
+            }
         }
     }
 

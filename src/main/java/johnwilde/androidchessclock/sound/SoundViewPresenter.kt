@@ -15,7 +15,7 @@ class SoundViewPresenter(val clockManager: ClockManager, val preferencesUtil: Pr
         Timber.d("bindIntents for SoundViewPresenter")
         // Generate a new view state when the game state changes
         val buzzer = clockManager.stateHolder.gameStateSubject
-                .filter{ it == GameStateHolder.GameState.FINISHED }
+                .filter{ it == GameStateHolder.GameState.FINISHED || it == GameStateHolder.GameState.NEGATIVE }
                 .filter{ preferencesUtil.playBuzzerAtEnd }
                 .map{ Buzzer() }
 
