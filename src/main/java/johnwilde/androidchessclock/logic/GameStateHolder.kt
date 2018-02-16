@@ -1,5 +1,6 @@
 package johnwilde.androidchessclock.logic
 
+import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.logic.GameStateHolder.GameState.*
@@ -30,6 +31,9 @@ class GameStateHolder {
     var active : Timer? = null
     val gameStateSubject = PublishSubject.create<GameState>()
     val activePlayerSubject = PublishSubject.create<ClockView.Color>()
+    // Time remaining on a clock
+    data class TimeUpdate(val color: ClockView.Color, val ms: Long)
+    var timeSubject: BehaviorSubject<TimeUpdate> = BehaviorSubject.create()
 
     fun removeActiveClock() {
         active = null

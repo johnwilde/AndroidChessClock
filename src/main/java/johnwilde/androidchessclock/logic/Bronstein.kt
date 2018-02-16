@@ -36,36 +36,34 @@ class Bronstein(color: ClockView.Color,
         mainSubject.onNext(MainViewState.Spinner(0))
     }
 
-    override fun timerTask(): PublishesClockState {
-        return UpdateTime()
-    }
+    override fun timerTask() : PublishesClockState {
+        return object : PublishesClockState {
+            private var lastUpdateMs: Long = timeSource.currentTimeMillis()
 
-    private inner class UpdateTime : PublishesClockState {
-        private var lastUpdateMs: Long = timeSource.currentTimeMillis()
+            override fun publishUpdates() {
+                val now = timeSource.currentTimeMillis()
+                val dt = now - lastUpdateMs
+                lastUpdateMs = now
 
-        override fun publishUpdates() {
-            val now = timeSource.currentTimeMillis()
-            val dt = now - lastUpdateMs
-            lastUpdateMs = now
-
-            return if (delay > 0) {
-                // While in Bronstein period, we just decrement delay time
-                delay -= dt
-                updateAndPublishMsToGo(msToGo)
-                clockSubject.onNext(
-                        ClockViewState.Button(
-                                enabled = true,
-                                msToGo = msToGo)
-                )
-                mainSubject.onNext(MainViewState.Spinner(delay))
-            } else {
-                updateAndPublishMsToGo(msToGo - dt)
-                // After decrementing clock, publish new time
-                clockSubject.onNext(
-                        ClockViewState.Button(
-                                enabled = true,
-                                msToGo = msToGo)
-                )
+                return if (delay > 0) {
+                    // While in Bronstein period, we just decrement delay time
+                    delay -= dt
+                    updateAndPublishMsToGo(msToGo)
+                    clockSubject.onNext(
+                            ClockViewState.Button(
+                                    enabled = true,
+                                    msToGo = msToGo)
+                    )
+                    mainSubject.onNext(MainViewState.Spinner(delay))
+                } else {
+                    updateAndPublishMsToGo(msToGo - dt)
+                    // After decrementing clock, publish new time
+                    clockSubject.onNext(
+                            ClockViewState.Button(
+                                    enabled = true,
+                                    msToGo = msToGo)
+                    )
+                }
             }
         }
     }

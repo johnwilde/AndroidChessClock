@@ -28,24 +28,22 @@ class Fischer(color: ClockView.Color,
     }
 
     override fun timerTask(): PublishesClockState {
-        return UpdateTime()
-    }
+        return object : PublishesClockState {
+            private var lastUpdateMs: Long = timeSource.currentTimeMillis()
 
-    inner class UpdateTime : PublishesClockState {
-        private var lastUpdateMs: Long = timeSource.currentTimeMillis()
+            override fun publishUpdates() {
+                val now = timeSource.currentTimeMillis()
+                val dt = now - lastUpdateMs
+                lastUpdateMs = now
 
-        override fun publishUpdates() {
-            val now = timeSource.currentTimeMillis()
-            val dt = now - lastUpdateMs
-            lastUpdateMs = now
-
-            updateAndPublishMsToGo(msToGo - dt)
-            // After decrementing clock, publish new time
-            clockSubject.onNext(
-                    ClockViewState.Button(
-                            enabled = true,
-                            msToGo = msToGo)
-            )
+                updateAndPublishMsToGo(msToGo - dt)
+                // After decrementing clock, publish new time
+                clockSubject.onNext(
+                        ClockViewState.Button(
+                                enabled = true,
+                                msToGo = msToGo)
+                )
+            }
         }
     }
 

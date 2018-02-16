@@ -55,14 +55,13 @@ class ClockManager @Inject constructor(
     }
 
     init {
-        // Allow clocks to receive time updates from each other (enables time-gap display)
         initializeTimers()
     }
 
-    fun initializeTimers() {
+    private fun initializeTimers() {
         gameOver = gameOverSubscription()
-        white.initialize(black)
-        black.initialize(white)
+        white.initialize()
+        black.initialize()
         if (!::whiteDelegate.isInitialized) {
             whiteDelegate = TimerDelegate(ClockView.Color.WHITE)
             blackDelgate = TimerDelegate(ClockView.Color.BLACK)
@@ -76,8 +75,8 @@ class ClockManager @Inject constructor(
     // Logic for "ending" the game
     private fun gameOverSubscription() : Disposable {
         timeIsNegative = false
-        return Observable.merge<Long>(white.timeSubject, black.timeSubject)
-                .filter{ it <= 0 }
+        return stateHolder.timeSubject
+                .filter{ u ->  u.ms <= 0 }
                 .take(1)
                 .subscribe { _ ->
                     if (preferencesUtil.allowNegativeTime) {
@@ -160,7 +159,6 @@ class ClockManager @Inject constructor(
         white = ActivityBindingModule.providesWhite(preferencesUtil, stateHolder, timeSource)
         black = ActivityBindingModule.providesBlack(preferencesUtil, stateHolder, timeSource)
 
-        // listen for end of game
         initializeTimers()
     }
 
