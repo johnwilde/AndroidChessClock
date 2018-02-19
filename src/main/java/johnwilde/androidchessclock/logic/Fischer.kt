@@ -38,9 +38,7 @@ class Fischer(color: ClockView.Color,
                 updateAndPublishMsToGo(msToGo - dt)
                 // After decrementing clock, publish new time
                 clockSubject.onNext(
-                        ClockViewState.Button(
-                                enabled = true,
-                                msToGo = msToGo)
+                        ClockViewState.Time(msToGo = msToGo)
                 )
             }
         }
@@ -49,9 +47,7 @@ class Fischer(color: ClockView.Color,
     override fun setNewTime(newTime: Long) {
         updateAndPublishMsToGo(newTime)
         clockSubject.onNext(
-                ClockViewState.Button(
-                        enabled = buttonIsEnabled(),
-                        msToGo = msToGo)
+                ClockViewState.Time(msToGo = msToGo)
                 )
     }
 }

@@ -48,10 +48,12 @@ abstract class Timer(val color: ClockView.Color,
 
     open fun moveStart() {
         moveCounter.newMove(msToGo, this)
+        clockSubject.onNext(ClockViewState.Button(enabled = true))
     }
 
     open fun moveEnd() {
         moveCounter.updateMoveTime(msToGo)
+        clockSubject.onNext(ClockViewState.Button(enabled = false))
     }
 
     open fun stop() {
@@ -83,9 +85,8 @@ abstract class Timer(val color: ClockView.Color,
 
     fun initialState() : ClockViewState {
         return ClockViewState(
-                button = ClockViewState.Button(
-                        enabled = true,
-                        msToGo = msToGo),
+                button = ClockViewState.Button(enabled = true),
+                time = ClockViewState.Time(msToGo = msToGo),
                 timeGap = ClockViewState.TimeGap(show = false),
                 prompt = ClockViewState.Snackbar(dismiss = true),
                 moveCount = ClockViewState.MoveCount(
@@ -95,24 +96,12 @@ abstract class Timer(val color: ClockView.Color,
     }
 
     open fun publishInactiveState() {
-        clockSubject.onNext(
-                ClockViewState.Button(
-                        enabled = false,
-                        msToGo = msToGo)
-        )
+        clockSubject.onNext(ClockViewState.Button(enabled = false))
         clockSubject.onNext(
                 ClockViewState.MoveCount(
                         message = ClockViewState.MoveCount.Message.NONE,
                         count = 0)
         )
-    }
-
-    fun buttonIsEnabled(): Boolean {
-        return if (stateHolder.gameState == GameStateHolder.GameState.NOT_STARTED) {
-            true
-        } else {
-            stateHolder.active == this
-        }
     }
 
     // Stop the interval updates

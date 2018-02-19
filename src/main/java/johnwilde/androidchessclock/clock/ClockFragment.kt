@@ -97,7 +97,8 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
 
     // Update the button's visible viewState and the time text
     override fun render(viewState: ClockViewState) {
-        renderClock(viewState.button)
+        renderButton(viewState.button)
+        renderClock(viewState.time)
         renderTimeGap(viewState.timeGap)
         viewState.prompt?.let { renderSnackbar(it) }
         renderMoveCount(viewState.moveCount)
@@ -113,11 +114,14 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         timeGap.isChecked = viewState.msGap < 0
     }
 
-    private fun renderClock(buttonViewState: ClockViewState.Button) {
-        clock.text = Utils.formatClockTime(buttonViewState.msToGo)
-        clock.alpha = if (buttonViewState.enabled) 1.0f else .1f
-        clock.isChecked = buttonViewState.msToGo < 10_000
-        button.drawable.alpha = if (buttonViewState.enabled) BUTTON_VISIBLE else BUTTON_FADED
+    private fun renderButton(buttonState: ClockViewState.Button) {
+        clock.alpha = if (buttonState.enabled) 1.0f else .1f
+        button.drawable.alpha = if (buttonState.enabled) BUTTON_VISIBLE else BUTTON_FADED
+    }
+
+    private fun renderClock(time: ClockViewState.Time) {
+        clock.text = Utils.formatClockTime(time.msToGo)
+        clock.isChecked = time.msToGo < 10_000
     }
 
     private fun renderMoveCount(mc: ClockViewState.MoveCount) {

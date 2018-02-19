@@ -50,18 +50,14 @@ class Bronstein(color: ClockView.Color,
                     delay -= dt
                     updateAndPublishMsToGo(msToGo)
                     clockSubject.onNext(
-                            ClockViewState.Button(
-                                    enabled = true,
-                                    msToGo = msToGo)
+                            ClockViewState.Time(msToGo = msToGo)
                     )
                     mainSubject.onNext(MainViewState.Spinner(delay))
                 } else {
                     updateAndPublishMsToGo(msToGo - dt)
                     // After decrementing clock, publish new time
                     clockSubject.onNext(
-                            ClockViewState.Button(
-                                    enabled = true,
-                                    msToGo = msToGo)
+                            ClockViewState.Time(msToGo = msToGo)
                     )
                 }
             }
@@ -71,9 +67,7 @@ class Bronstein(color: ClockView.Color,
     override fun setNewTime(newTime: Long) {
         updateAndPublishMsToGo(newTime)
         clockSubject.onNext(
-                ClockViewState.Button(
-                        enabled = buttonIsEnabled(),
-                        msToGo = msToGo)
+                ClockViewState.Time(msToGo = msToGo)
         )
     }
 }

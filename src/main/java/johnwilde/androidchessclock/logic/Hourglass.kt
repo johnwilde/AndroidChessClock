@@ -118,21 +118,13 @@ class Hourglass(color: ClockView.Color,
 
                 updateAndPublishMsToGo(msToGo - dt)
                 // After decrementing clock, publish new time
-                clockSubject.onNext(
-                        ClockViewState.Button(
-                                enabled = true,
-                                msToGo = msToGo)
-                )
+                clockSubject.onNext(ClockViewState.Time(msToGo = msToGo))
             }
         }
     }
 
     override fun setNewTime(newTime: Long) {
         updateAndPublishMsToGo(newTime)
-        clockSubject.onNext(
-                ClockViewState.Button(
-                        enabled = buttonIsEnabled(),
-                        msToGo = msToGo)
-                )
+        clockSubject.onNext(ClockViewState.Time(msToGo = msToGo))
     }
 }
