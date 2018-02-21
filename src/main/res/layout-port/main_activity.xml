@@ -26,7 +26,7 @@
 
             <FrameLayout
                 android:id="@+id/leftContainer"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:scaleX="-1"
@@ -35,13 +35,15 @@
 
                 <FrameLayout
                     android:id="@+id/left"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 </FrameLayout>
             </FrameLayout>
 
             <FrameLayout
                 android:id="@+id/buttons"
+                android:layout_marginBottom="20dp"
+                android:layout_marginTop="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -124,14 +126,14 @@
 
             <FrameLayout
                 android:id="@+id/rightContainer"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <FrameLayout
                     android:id="@+id/right"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 </FrameLayout>
             </FrameLayout>

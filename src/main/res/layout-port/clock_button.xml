@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools"
               android:id="@+id/clockButton"
-              android:layout_width="wrap_content"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:layout_gravity="center"
               android:orientation="vertical">
@@ -10,10 +10,11 @@
     <CheckedTextView
         android:id="@+id/clock"
         style="@style/clockStyle"
+        android:stateListAnimator="@animator/clock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginTop="20dp"
+        android:layout_weight="0"
+        android:layout_gravity="center"
         android:background="@null"
         android:checked="false"
         android:focusable="false"
@@ -21,42 +22,32 @@
         android:textColor="@color/clock_text_color"
         tools:text="12:13"/>
 
-    <FrameLayout
+
+    <ImageButton
+        android:id="@+id/button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="16dp"
+        android:stateListAnimator="@animator/button"
+        android:background="@drawable/rect"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:elevation="2dp"
+        tools:src="@drawable/white"
+        android:scaleType="fitCenter"/>
 
-        <CheckedTextView
-            android:id="@+id/timeGap"
-            style="@style/clockStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
-            android:background="@null"
-            android:checked="false"
-            android:focusable="false"
-            android:gravity="center"
-            android:textColor="@color/time_gap_text_color"
-            tools:text="12:13"/>
 
-        <TextView
-            android:id="@+id/moveCount"
-            android:layout_gravity="bottom|center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="1"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            android:textColor="@color/accent"
-            android:visibility="visible" />
+    <TextView
+        android:id="@+id/moveCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:layout_weight="0"
+        android:gravity="center"
+        tools:text="Moves Remaining: 1"
+        android:textSize="20sp"
+        android:textColor="@color/accent"
+        android:visibility="visible" />
 
-        <ImageButton
-            android:id="@+id/button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:contentDescription="@string/white_button"
-            android:scaleType="fitCenter"
-            tools:src="@drawable/white" />
-    </FrameLayout>
 </LinearLayout>

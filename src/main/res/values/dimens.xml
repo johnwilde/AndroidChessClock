@@ -2,5 +2,6 @@
 <resources>
     <dimen name="spinnerWidth">50dp</dimen>
     <dimen name="clockHeightLandscape">120dp</dimen>
-    <dimen name="left_slop">50dp</dimen>
+    <dimen name="button_raised">10.0</dimen>
+    <dimen name="buttonRadius">10dp</dimen>
 </resources>

@@ -2,8 +2,10 @@ package johnwilde.androidchessclock.clock
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
-import android.support.v4.widget.DrawerLayout
+import android.support.v4.content.res.ResourcesCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,16 +23,13 @@ import johnwilde.androidchessclock.main.REQUEST_CODE_ADJUST_TIME
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import kotlinx.android.synthetic.main.clock_button.*
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 
 // This "View" represents one button and the TextView that shows the time remaining
-const val BUTTON_FADED : Int = 25
-const val BUTTON_VISIBLE : Int = 255
 class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     lateinit var color : ClockView.Color
-    private lateinit var drawerListener : SimpleDrawerListener
-    var leftSlopPx : Int = 0
     @Inject lateinit var clockManager : ClockManager
     @Inject lateinit var preferences : PreferencesUtil
 
@@ -69,28 +68,25 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        leftSlopPx = view.resources.getDimensionPixelSize(R.dimen.left_slop) // left margin so button isn't triggered while swiping drawer
-        drawerListener = SimpleDrawerListener()
-        activity?.findViewById<DrawerLayout>(R.id.drawerLayout)
-                ?.addDrawerListener(drawerListener)
-        button.setImageResource(if (color == ClockView.Color.WHITE) R.drawable.white else R.drawable.black)
-        clock.setOnClickListener({ launchAdjustPlayerClockActivity() })
+        val drawable = ResourcesCompat.getDrawable(
+                resources,
+                if (color == ClockView.Color.WHITE) R.drawable.white else R.drawable.black,
+                null)
+        button.setImageDrawable(drawable)
+        if (Build.VERSION.SDK_INT >= 23) {
+            button.foreground = FloodDrawable(Color.BLACK, resources.getDimension(R.dimen.buttonRadius))
+        }
+        clock.setOnClickListener { launchAdjustPlayerClockActivity() }
     }
 
     // Player tapped the button to end their turn
     override fun clickIntent(): Observable<Any> {
         return RxView.touches(button)
-                // Filter points on left of screen so they don't interfere with drawer
-                .filter {
-                    val p = clockButton.parent.parent as View
-                    val outArray = IntArray(2)
-                    button.getLocationOnScreen(outArray)
-                    val x = if (p.scaleX < 1) { // in portrait, the view is reversed
-                        outArray[0] - it.x
-                    } else {
-                        it.x + outArray[0]
+                .throttleFirst(100, TimeUnit.MILLISECONDS)
+                .map {
+                    if (Build.VERSION.SDK_INT >= 23) {
+                        (button.foreground as FloodDrawable).hotspot(it.x, it.y)
                     }
-                    x > leftSlopPx && !drawerListener.drawerIsDragging
                 }
                 .map { 1 }
     }
@@ -98,28 +94,40 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     // Update the button's visible viewState and the time text
     override fun render(viewState: ClockViewState) {
         renderButton(viewState.button)
-        renderClock(viewState.time)
-        renderTimeGap(viewState.timeGap)
+        if (viewState.timeGap.show) {
+            renderTimeGap(viewState.timeGap)
+        } else {
+            renderClock(viewState.time)
+        }
         viewState.prompt?.let { renderSnackbar(it) }
         renderMoveCount(viewState.moveCount)
     }
 
     private fun renderTimeGap(viewState: ClockViewState.TimeGap) {
-        timeGap.visibility = if (viewState.show) {
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
-        timeGap.text = Utils.formatTimeGap(viewState.msGap)
-        timeGap.isChecked = viewState.msGap < 0
+        clock.alpha = 1.0f
+        clock.setTextColor(
+                ResourcesCompat.getColorStateList(resources, R.color.time_gap_text_color, null))
+        clock.text = Utils.formatTimeGap(viewState.msGap)
+        clock.isChecked = viewState.msGap < 0
     }
 
     private fun renderButton(buttonState: ClockViewState.Button) {
-        clock.alpha = if (buttonState.enabled) 1.0f else .1f
-        button.drawable.alpha = if (buttonState.enabled) BUTTON_VISIBLE else BUTTON_FADED
+        //TODO:
+        //  fix landscape mode
+        // crash (in hourglass?)
+        // red text too hard to read
+        // disable time adjustment while playing
+        // time input is awkward
+        button.isSelected = buttonState.enabled
+        if (Build.VERSION.SDK_INT >= 23) {
+            (button.foreground as FloodDrawable).flooded = !buttonState.enabled
+        }
+        clock.isSelected = buttonState.enabled
     }
 
     private fun renderClock(time: ClockViewState.Time) {
+        clock.setTextColor(
+                ResourcesCompat.getColorStateList(resources, R.color.clock_text_color, null))
         clock.text = Utils.formatClockTime(time.msToGo)
         clock.isChecked = time.msToGo < 10_000
     }
@@ -176,16 +184,6 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
                 val timer = clockManager.timerForColor(color)
                 timer.setNewTime(newTime)
             }
-        }
-    }
-
-    class SimpleDrawerListener : DrawerLayout.SimpleDrawerListener() {
-        var drawerIsDragging = false
-        override fun onDrawerStateChanged(newState: Int) {
-            super.onDrawerStateChanged(newState)
-            // While swiping drawer, a touch event with x > leftSlopPx is passed
-            // to button.  This is to catch that case.
-            drawerIsDragging = (newState == 1)
         }
     }
 }
