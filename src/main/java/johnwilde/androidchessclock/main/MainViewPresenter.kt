@@ -42,9 +42,9 @@ class MainViewPresenter(val clockManager: ClockManager)
                     val change :  Any = when (state) {
                         GameState.NOT_STARTED -> MainViewState.initialState
                         GameState.PAUSED ->
-                            MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PLAY, true)
+                            MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PAUSE)
                         GameState.PLAYING, GameState.NEGATIVE ->
-                            MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PAUSE, true)
+                            MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PLAY)
                         else -> onGameOver()
                     }
                     val result = if (change is Observable<*>) {
@@ -89,7 +89,7 @@ class MainViewPresenter(val clockManager: ClockManager)
                 .map { _ -> MainViewState.Snackbar(dismiss = true) as Partial<MainViewState> }
                 .startWithArray(
                         MainViewState.Snackbar( show = true, message = message),
-                        MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PLAY, false)
+                        MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.FINISHED)
                 )
     }
 

@@ -14,15 +14,14 @@ data class MainViewState(
     companion object {
         @JvmStatic
         val initialState = MainViewState(
-                button = PlayPauseButton(State.PLAY, true),
+                button = PlayPauseButton(State.NEW),
                 prompt = Snackbar(show = false, dismiss = true),
                 spinner = Spinner(0))
     }
 
     data class PlayPauseButton(
-            val buttonState: State,
-            val visible: Boolean = true) : Partial<MainViewState> {
-        enum class State {PLAY, PAUSE}
+            val buttonState: State) : Partial<MainViewState> {
+        enum class State {NEW, PLAY, PAUSE, FINISHED}
         override fun reduce(previousState: MainViewState): MainViewState {
             return previousState.copy(button = this)
         }

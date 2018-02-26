@@ -113,10 +113,8 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
 
     private fun renderButton(buttonState: ClockViewState.Button) {
         //TODO:
-        //  fix landscape mode
+        // forward and backward controls for moves
         // crash (in hourglass?)
-        // red text too hard to read
-        // disable time adjustment while playing
         // time input is awkward
         button.isSelected = buttonState.enabled
         if (Build.VERSION.SDK_INT >= 23) {
@@ -160,8 +158,9 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     private fun launchAdjustPlayerClockActivity() {
-        // launch an activity through this intent
-        if (clockManager.stateHolder.gameState != GameStateHolder.GameState.FINISHED) {
+        // launch an activity through this intent (not while playing though)
+        if (clockManager.stateHolder.gameState != GameStateHolder.GameState.FINISHED &&
+             clockManager.stateHolder.gameState != GameStateHolder.GameState.PLAYING) {
             val launchAdjustPlayerClockIntent = Intent().setClass(activity, AdjustClock::class.java)
             launchAdjustPlayerClockIntent.putExtra(AdjustClock.EXTRA_COLOR, color.toString())
             launchAdjustPlayerClockIntent.putExtra(

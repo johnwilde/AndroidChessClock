@@ -42,85 +42,51 @@
 
             <FrameLayout
                 android:id="@+id/buttons"
-                android:layout_marginBottom="20dp"
-                android:layout_marginTop="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <johnwilde.androidchessclock.main.SpinnerView
                     android:id="@+id/spinner"
-                    android:layout_marginLeft="20dp"
+                    android:layout_gravity="left"
+                    android:layout_marginLeft="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:visibility="visible"
-                    tools:background="@color/white"
-                    android:layout_gravity="center_vertical"/>
+                    android:visibility="visible"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
-                    android:layout_marginStart="70dp"
-                    android:layout_marginEnd="70dp"
                     android:gravity="center"
+                    android:animateLayoutChanges="true"
                     android:orientation="horizontal">
-
-                    <Space
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"/>
 
                     <ImageView
                         android:id="@+id/menu_button"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:layout_gravity="top"
-                        android:background="@drawable/ic_tune_black_24dp"
-                        android:backgroundTint="@color/primary"/>
-                    <Space
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"/>
+                        android:src="@drawable/ic_tune_black_24dp"
+                        android:tint="@color/white"/>
 
                     <ImageView
                         android:id="@+id/reset_button"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:layout_gravity="top"
-                        android:background="@drawable/ic_autorenew_black_24dp"
-                        android:backgroundTint="@color/primary"/>
-
-                    <Space
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"/>
+                        android:tint="@color/white"
+                        android:src="@drawable/ic_autorenew_black_24dp"/>
 
                     <ImageView
                         android:id="@+id/swap_sides"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:layout_gravity="center"
-                        android:background="@drawable/ic_swap_vert_black_24dp"
-                        android:backgroundTint="@color/primary"/>
+                        android:tint="@color/white"
+                        android:src="@drawable/ic_swap_vert_black_24dp"/>
 
-                    <Space
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"/>
-
-                    <ToggleButton
+                    <ImageView
                         android:id="@+id/play_pause_button"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:background="@drawable/play_pause"
-                        android:backgroundTint="@color/primary"
-                        android:checked="true"
-                        android:textOff=""
-                        android:textOn=""/>
-
-                    <Space
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"/>
+                        android:src="@drawable/play_pause"
+                        android:tint="@color/white"/>
                 </LinearLayout>
             </FrameLayout>
 

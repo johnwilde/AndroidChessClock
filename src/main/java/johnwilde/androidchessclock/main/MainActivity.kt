@@ -153,12 +153,27 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
 
     private fun renderButton(button: MainViewState.PlayPauseButton) {
         // Show "PLAY" when checked, "PAUSE" when not checked
-        play_pause_button.isChecked = button.buttonState == State.PLAY
-        // When game is finished hide the button
-        play_pause_button.visibility = if (button.visible) {
-            View.VISIBLE
-        } else {
-            View.INVISIBLE
+        when (button.buttonState) {
+            State.NEW, State.PAUSE -> {
+                menu_button.visibility = View.VISIBLE
+                reset_button.visibility = View.VISIBLE
+                swap_sides.visibility = View.VISIBLE
+                play_pause_button.visibility = View.VISIBLE
+                play_pause_button.isSelected = true
+            }
+            State.PLAY -> {
+                menu_button.visibility = View.GONE
+                reset_button.visibility = View.GONE
+                swap_sides.visibility = View.GONE
+                play_pause_button.visibility = View.VISIBLE
+                play_pause_button.isSelected = false
+            }
+            State.FINISHED -> {
+                menu_button.visibility = View.VISIBLE
+                reset_button.visibility = View.VISIBLE
+                swap_sides.visibility = View.GONE
+                play_pause_button.visibility = View.GONE
+            }
         }
     }
 
