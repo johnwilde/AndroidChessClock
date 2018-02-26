@@ -36,14 +36,14 @@ class TimerLogicTest {
         whenever(preferencesUtil.getBronsteinDelayMs()).thenReturn(0)
         whenever(preferencesUtil.getFischerDelayMs()).thenReturn(0)
         whenever(preferencesUtil.timeControlType).thenReturn(PreferencesUtil.TimeControlType.BASIC)
-        whiteClock = Timer(ClockView.Color.WHITE, preferencesUtil, stateHolder, timeSource)
+        whiteClock = Bronstein(ClockView.Color.WHITE, preferencesUtil, stateHolder, timeSource)
         stateHolder.setActiveClock(whiteClock)
     }
 
     @Test
     fun timeGap() {
-        val blackClock = Timer(ClockView.Color.BLACK, preferencesUtil, stateHolder, timeSource)
-        blackClock.initialize(whiteClock)
+        val blackClock = Bronstein(ClockView.Color.BLACK, preferencesUtil, stateHolder, timeSource)
+        blackClock.initialize()
         val blackObserver = blackClock.clockSubject.test()
         val expectedBlackValues = mutableListOf<Partial<ClockViewState>>()
 
@@ -65,8 +65,8 @@ class TimerLogicTest {
         expectedBlackValues.add(ClockViewState.TimeGap(10_000 - 9_800))
         blackObserver.assertValueSequence(expectedBlackValues)
 
-        blackClock.reset()
-        expectedBlackValues.add(ClockViewState.Button(true, 10_000, ""))
+        blackClock.destroy()
+        expectedBlackValues.add(ClockViewState.Button(true))
         // Turn off time gap on reset
         expectedBlackValues.add(ClockViewState.TimeGap(show = false))
         blackObserver.assertValueSequence(expectedBlackValues)
@@ -81,7 +81,7 @@ class TimerLogicTest {
         whiteClock.moveStart()
 
         expectedValues.add(ClockViewState.TimeGap(show = false)) // hides time gap
-        expectedValues.add(ClockViewState.Button(true, 10000, "1"))
+        expectedValues.add(ClockViewState.Button(true))
 
         // trigger the first time update
         testSchedulerRule.testScheduler.triggerActions()
@@ -90,44 +90,47 @@ class TimerLogicTest {
         // move time forward while playing
         advanceTimeBy(100)
 
-        expectedValues.add(ClockViewState.Button(true, 9900, "1"))
+        expectedValues.add(ClockViewState.Button(true))
+        expectedValues.add(ClockViewState.Time(9900))
+        expectedValues.add(ClockViewState.MoveCount(ClockViewState.MoveCount.Message.TOTAL,1))
         clockTestObserver.assertValueSequence(expectedValues)
-
-        // stop playing
-        whiteClock.stop()
-        assertEquals(100, whiteClock.moveTimes.last())
-
-        // move time forward while paused
-        advanceTimeBy(100)
-        clockTestObserver.assertValueCount(expectedValues.size) // no new updates while paused
-
-        // un-stop
-        whiteClock.start()
-        testSchedulerRule.testScheduler.triggerActions()
-        expectedValues.add(ClockViewState.Button(true, 9900, "1"))
-        clockTestObserver.assertValueSequence(expectedValues)
-
-        // move time forward while playing
-        advanceTimeBy(100)
-        expectedValues.add(ClockViewState.Button(true, 9800, "1"))
-        clockTestObserver.assertValueSequence(expectedValues)
-
-        // end move
-        whiteClock.moveEnd()
-        expectedValues.add(ClockViewState.Button(false, 9800, ""))
-        clockTestObserver.assertValueSequence(expectedValues)
-
-        // move time forward after move ends
-        advanceTimeBy(100)
-        clockTestObserver.assertValueCount(expectedValues.size) // no new updates after move end
-
-        // next move
-        whiteClock.moveStart()
-        testSchedulerRule.testScheduler.triggerActions() // trigger the first time update
-
-        expectedValues.add(ClockViewState.TimeGap(show = false)) // hides time gap
-        expectedValues.add(ClockViewState.Button(true, 9800, "2"))
-        clockTestObserver.assertValueSequence(expectedValues)
+        TODO("fix tests")
+//
+//        // stop playing
+//        whiteClock.stop()
+//        assertEquals(100, whiteClock.moveTimes.last())
+//
+//        // move time forward while paused
+//        advanceTimeBy(100)
+//        clockTestObserver.assertValueCount(expectedValues.size) // no new updates while paused
+//
+//        // un-stop
+//        whiteClock.start()
+//        testSchedulerRule.testScheduler.triggerActions()
+//        expectedValues.add(ClockViewState.Button(true, 9900, "1"))
+//        clockTestObserver.assertValueSequence(expectedValues)
+//
+//        // move time forward while playing
+//        advanceTimeBy(100)
+//        expectedValues.add(ClockViewState.Button(true, 9800, "1"))
+//        clockTestObserver.assertValueSequence(expectedValues)
+//
+//        // end move
+//        whiteClock.moveEnd()
+//        expectedValues.add(ClockViewState.Button(false, 9800, ""))
+//        clockTestObserver.assertValueSequence(expectedValues)
+//
+//        // move time forward after move ends
+//        advanceTimeBy(100)
+//        clockTestObserver.assertValueCount(expectedValues.size) // no new updates after move end
+//
+//        // next move
+//        whiteClock.moveStart()
+//        testSchedulerRule.testScheduler.triggerActions() // trigger the first time update
+//
+//        expectedValues.add(ClockViewState.TimeGap(show = false)) // hides time gap
+//        expectedValues.add(ClockViewState.Button(true, 9800, "2"))
+//        clockTestObserver.assertValueSequence(expectedValues)
     }
 
     private fun advanceTimeBy(millis : Long) {

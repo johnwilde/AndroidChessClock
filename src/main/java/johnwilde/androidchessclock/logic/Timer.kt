@@ -32,7 +32,7 @@ abstract class Timer(val color: ClockView.Color,
     var mainSubject: BehaviorSubject<Partial<MainViewState>> = BehaviorSubject.create()
 
     // Utilities to keep track of moves and time gaps
-    private var moveCounter = MoveCounter(preferencesUtil)
+    var moveCounter = MoveCounter(preferencesUtil)
     private var timeGap =  TimeGap(preferencesUtil, color, stateHolder, clockSubject)
 
     val moveTimes get() = moveCounter.moveTimes.toLongArray()
@@ -57,8 +57,8 @@ abstract class Timer(val color: ClockView.Color,
     }
 
     open fun stop() {
+        disposeTimeSequenceSubscription() // disposing causes final msToGo update to happen
         moveCounter.updateMoveTime(msToGo)
-        disposeTimeSequenceSubscription()
     }
 
     open fun start() {
@@ -92,6 +92,15 @@ abstract class Timer(val color: ClockView.Color,
                 moveCount = ClockViewState.MoveCount(
                         message = ClockViewState.MoveCount.Message.NONE,
                         count = 0)
+        )
+    }
+
+    open fun publishActiveState() {
+        clockSubject.onNext(ClockViewState.Button(enabled = true))
+        clockSubject.onNext(
+                ClockViewState.MoveCount(
+                        message = ClockViewState.MoveCount.Message.TOTAL,
+                        count = moveCounter.count)
         )
     }
 

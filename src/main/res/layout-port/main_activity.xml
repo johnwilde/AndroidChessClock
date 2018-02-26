@@ -88,6 +88,23 @@
                         android:src="@drawable/play_pause"
                         android:tint="@color/white"/>
                 </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/back"
+                    android:layout_gravity="left"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_keyboard_arrow_left_black_24dp"
+                    android:tint="@color/white"/>
+
+                <ImageView
+                    android:id="@+id/forward"
+                    android:layout_gravity="right"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+                    android:tint="@color/white"/>
+
             </FrameLayout>
 
             <FrameLayout

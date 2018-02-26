@@ -119,6 +119,7 @@ class ClockManager @Inject constructor(
         }
     }
 
+    lateinit var takeBackController: TakeBackController
     // Play/Pause button was hit
     fun playPause() {
         when(gameState()) {
@@ -126,9 +127,12 @@ class ClockManager @Inject constructor(
                 // Pause game
                 setGameState(GameState.PAUSED)
                 active().stop()
+                takeBackController = TakeBackController(active(), forOtherColor(active().color), stateHolder)
+
             }
-            GameState.PAUSED ->
+            GameState.PAUSED -> {
                 startPlayerClock(active())
+            }
             GameState.NOT_STARTED -> {
                 // Start / start game
                 startPlayerClock(white)

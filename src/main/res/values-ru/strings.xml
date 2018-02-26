@@ -89,4 +89,9 @@
     <string name="tap_other_button_start">" Нажмите другую кнопку, чтобы начать"</string>
     <string name="white_lost">"Белый утерянный "</string>
     <string name="black_lost">"Черный Потерянный "</string>
+    <string name="basic_time_preference_description">основной</string>
+    <string name="hourglass_time_preference_description">"Песочные часы "</string>
+    <string name="advanced_time_preference_description">"Турнир "</string>
+    <string name="moves_remaining">"Остальные перемещения "</string>
+    <string name="move">возможность:</string>
 </resources>

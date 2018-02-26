@@ -94,6 +94,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     // Update the button's visible viewState and the time text
     override fun render(viewState: ClockViewState) {
         renderButton(viewState.button)
+        Timber.d("%s, msToGo: %s", color, viewState.time.msToGo)
         if (viewState.timeGap.show) {
             renderTimeGap(viewState.timeGap)
         } else {

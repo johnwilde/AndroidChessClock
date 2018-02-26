@@ -1,10 +1,8 @@
 package johnwilde.androidchessclock.clock
 
-import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import io.reactivex.Observable
 import johnwilde.androidchessclock.logic.ClockManager
 import johnwilde.androidchessclock.logic.GameStateHolder
 import johnwilde.androidchessclock.logic.TestSchedulerRule
@@ -15,9 +13,15 @@ import org.junit.Test
 class ClockViewPresenterTest {
     lateinit var robot : ClockViewRobot
     lateinit var presenter : ClockViewPresenter
-    val initialState = ClockViewState(
-            button =  ClockViewState.Button(true, 10_000, ""),
-            timeGap = ClockViewState.TimeGap(show = false))
+    var initialState = ClockViewState(
+            button = ClockViewState.Button(enabled = true),
+            time = ClockViewState.Time(msToGo = 0),
+            timeGap = ClockViewState.TimeGap(show = false),
+            prompt = ClockViewState.Snackbar(dismiss = true),
+            moveCount = ClockViewState.MoveCount(
+                    message = ClockViewState.MoveCount.Message.NONE,
+                    count = 0)
+    )
     var clockManager : ClockManager = mock()
 
     companion object {
@@ -28,8 +32,6 @@ class ClockViewPresenterTest {
 
     @Before
     fun beforeTest() {
-        whenever(clockManager.initialState(any())).thenReturn(initialState)
-        whenever(clockManager.clockUpdates(any())).thenReturn(Observable.empty())
         presenter = ClockViewPresenter(ClockView.Color.WHITE, clockManager)
         robot = ClockViewRobot(presenter)
     }

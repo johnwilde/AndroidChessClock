@@ -44,7 +44,6 @@ interface HasSnackbar {
 
 class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         HasSupportFragmentInjector, HasSnackbar {
-
     @Inject lateinit var clockManager : ClockManager
     @Inject lateinit var preferenceUtil : PreferencesUtil
     @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<android.support.v4.app.Fragment>
@@ -125,6 +124,14 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         return drawerListener.subject
     }
 
+    override fun goForward(): Observable<Any> {
+        return RxView.clicks(forward)
+    }
+
+    override fun goBack(): Observable<Any> {
+        return RxView.clicks(back)
+    }
+
     private fun launchStatsActivity() {
         startActivity(BarChartActivity.createIntent(this))
     }
@@ -147,6 +154,7 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
 
     override fun render(viewState: MainViewState) {
         renderButton(viewState.button)
+        renderTakeback(viewState.takeBack)
         renderSpinner(viewState.spinner)
         renderPromptToMove(viewState.prompt)
     }
@@ -175,6 +183,11 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
                 play_pause_button.visibility = View.GONE
             }
         }
+    }
+
+    private fun renderTakeback(takeBack: MainViewState.TakeBack) {
+        forward.visibility = if (takeBack.forwardEnabled) View.VISIBLE else View.INVISIBLE
+        back.visibility = if (takeBack.backEnabled) View.VISIBLE else View.INVISIBLE
     }
 
     private fun renderSpinner(spinnerViewState: MainViewState.Spinner) {

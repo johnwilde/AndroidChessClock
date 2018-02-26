@@ -2,6 +2,7 @@ package johnwilde.androidchessclock.logic
 
 import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.prefs.PreferencesUtil
+import timber.log.Timber
 
 class MoveCounter(val pref: PreferencesUtil) {
     var count : Int = 0 // number of moves for this player
@@ -32,6 +33,21 @@ class MoveCounter(val pref: PreferencesUtil) {
 
         count += 1  // the start of the Move
     }
+
+    fun popMove(timer: Timer) {
+        msToGoMoveStart += moveTimes.last()
+        moveTimes.removeAt(moveTimes.lastIndex)
+        count--
+        publishCurrentMoveCount(count, timer)
+    }
+
+    fun pushMove(ms: Long, timer: Timer) {
+        msToGoMoveStart -= ms
+        moveTimes.add(ms)
+        count++
+        publishCurrentMoveCount(count, timer)
+    }
+
     fun publishCurrentMoveCount(count: Int, timer : Timer) {
         timer.clockSubject.onNext(ClockViewState.MoveCount(
                 message = ClockViewState.MoveCount.Message.TOTAL,
@@ -46,6 +62,7 @@ class MoveCounter(val pref: PreferencesUtil) {
     }
 
     fun updateMoveTime(ms : Long) {
-        moveTimes[moveTimes.lastIndex] =  msToGoMoveStart - ms
+        Timber.d("update move time[%s]: %s", moveTimes.lastIndex, msToGoMoveStart - ms)
+        moveTimes[moveTimes.lastIndex] = msToGoMoveStart - ms
     }
 }

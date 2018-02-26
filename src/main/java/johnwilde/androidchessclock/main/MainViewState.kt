@@ -5,7 +5,8 @@ import johnwilde.androidchessclock.main.MainViewState.PlayPauseButton.*
 data class MainViewState(
         val button : PlayPauseButton,
         val prompt : Snackbar,
-        val spinner : Spinner) : Partial<MainViewState> {
+        val spinner : Spinner,
+        val takeBack : TakeBack) : Partial<MainViewState> {
 
     override fun reduce(previousState: MainViewState): MainViewState {
         return this
@@ -16,7 +17,8 @@ data class MainViewState(
         val initialState = MainViewState(
                 button = PlayPauseButton(State.NEW),
                 prompt = Snackbar(show = false, dismiss = true),
-                spinner = Spinner(0))
+                spinner = Spinner(0),
+                takeBack = TakeBack(false, false))
     }
 
     data class PlayPauseButton(
@@ -31,6 +33,14 @@ data class MainViewState(
             val msDelayToGo: Long) : Partial<MainViewState> {
         override fun reduce(previousState: MainViewState): MainViewState {
             return previousState.copy(spinner = this)
+        }
+    }
+
+    data class TakeBack(
+            val backEnabled: Boolean,
+            val forwardEnabled: Boolean) : Partial<MainViewState> {
+        override fun reduce(previousState: MainViewState): MainViewState {
+            return previousState.copy(takeBack = this)
         }
     }
 

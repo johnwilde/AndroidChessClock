@@ -42,9 +42,13 @@ class MainViewPresenter(val clockManager: ClockManager)
                     val change :  Any = when (state) {
                         GameState.NOT_STARTED -> MainViewState.initialState
                         GameState.PAUSED ->
-                            MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PAUSE)
+                            Observable.fromArray(
+                                    MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PAUSE),
+                                    MainViewState.TakeBack(true, false))
                         GameState.PLAYING, GameState.NEGATIVE ->
-                            MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PLAY)
+                            Observable.fromArray(
+                                    MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.PLAY),
+                                    MainViewState.TakeBack(false, false))
                         else -> onGameOver()
                     }
                     val result = if (change is Observable<*>) {
@@ -55,11 +59,18 @@ class MainViewPresenter(val clockManager: ClockManager)
                     result as Observable<Partial<MainViewState>>
                 }
 
+        val forward = intent(MainView::goForward)
+                .flatMap { Observable.just(clockManager.takeBackController.forward()) }
+
+        val back = intent(MainView::goBack)
+                .flatMap { Observable.just(clockManager.takeBackController.back()) }
+
         val intents = mutableListOf(
                 playPauseIntent,
                 drawerOpened,
                 snackBarDismissed,
                 stateChange,
+                forward, back,
                 // Allows this view to update the Spinner
                 Observable.merge(
                         clockManager.forColor(ClockView.Color.WHITE).main,
@@ -89,7 +100,8 @@ class MainViewPresenter(val clockManager: ClockManager)
                 .map { _ -> MainViewState.Snackbar(dismiss = true) as Partial<MainViewState> }
                 .startWithArray(
                         MainViewState.Snackbar( show = true, message = message),
-                        MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.FINISHED)
+                        MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.FINISHED),
+                        MainViewState.TakeBack(false, false)
                 )
     }
 

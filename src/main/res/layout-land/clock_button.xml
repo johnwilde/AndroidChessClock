@@ -7,20 +7,24 @@
               android:layout_gravity="center"
               android:orientation="vertical">
 
-    <CheckedTextView
-        android:id="@+id/clock"
-        style="@style/clockStyle"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/clockHeightLandscape"
         android:layout_weight="0"
-        android:paddingTop="20dp"
-        android:layout_gravity="bottom"
-        android:background="@null"
-        android:checked="false"
-        android:focusable="false"
-        android:gravity="center"
-        android:textColor="@color/clock_text_color"
-        tools:text="12:13"/>
+        >
+
+        <CheckedTextView
+            android:id="@+id/clock"
+            style="@style/clockStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:background="@null"
+            android:checked="false"
+            android:focusable="false"
+            android:textColor="@color/clock_text_color"
+            tools:text="12:13"/>
+    </FrameLayout>
 
     <ImageButton
         android:id="@+id/button"
