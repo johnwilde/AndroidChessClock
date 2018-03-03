@@ -41,4 +41,20 @@
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>
+
+    <style name="port_button">
+        <item name="android:layout_width">@dimen/button_side</item>
+        <item name="android:layout_height">@dimen/button_side</item>
+        <item name="android:layout_marginLeft">@dimen/port_button_padding</item>
+        <item name="android:layout_marginRight">@dimen/port_button_padding</item>
+        <item name="android:tint">@color/white</item>
+    </style>
+
+    <style name="land_button">
+        <item name="android:layout_width">@dimen/button_side</item>
+        <item name="android:layout_height">@dimen/button_side</item>
+        <item name="android:layout_marginTop">@dimen/land_button_padding</item>
+        <item name="android:layout_marginBottom">@dimen/land_button_padding</item>
+        <item name="android:tint">@color/white</item>
+    </style>
 </resources>

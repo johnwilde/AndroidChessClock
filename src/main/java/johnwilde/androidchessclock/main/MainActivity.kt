@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.transition.TransitionManager
+import android.support.v4.app.Fragment
 import android.support.v4.widget.DrawerLayout
 import android.view.Gravity
 import android.view.MenuItem
@@ -48,7 +49,7 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
     @Inject lateinit var preferenceUtil : PreferencesUtil
     @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<android.support.v4.app.Fragment>
 
-    var views : Array<View> = emptyArray()
+    var fragments : Array<Fragment> = emptyArray()
     var dialog : AlertDialog? = null
     private lateinit var drawerListener : SimpleDrawerListener
 
@@ -60,25 +61,13 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
 
         drawerListener = SimpleDrawerListener()
         drawerLayout.addDrawerListener(drawerListener)
-        views = arrayOf(leftContainer, buttons, rightContainer)
+        fragments = arrayOf(left, right)
 
         supportFragmentManager.findFragmentByTag("sound") ?:
             supportFragmentManager
                     .beginTransaction()
                     .add(SoundFragment(), "sound")
                     .commit()
-
-        supportFragmentManager.findFragmentByTag("left") ?:
-                supportFragmentManager
-                        .beginTransaction()
-                        .replace(R.id.left, ClockFragment.newInstance(ClockView.Color.WHITE), "left")
-                        .commit()
-
-        supportFragmentManager.findFragmentByTag("right") ?:
-                supportFragmentManager
-                        .beginTransaction()
-                        .replace(R.id.right, ClockFragment.newInstance(ClockView.Color.BLACK), "right")
-                        .commit()
 
         reset_button.setOnClickListener {
             showResetDialog()
@@ -252,17 +241,20 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
 
     private fun swapSides() {
         TransitionManager.beginDelayedTransition(mainContainer)
+        val buttonView = buttons
         mainContainer.removeAllViews()
-        views.reverse()
+        fragments.reverse()
         if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            views[0].scaleY = -1f
-            views[0].scaleX = -1f
-            views[2].scaleY = 1f
-            views[2].scaleX = 1f
+            val f1 = fragments[0]
+            val f2 = fragments[1]
+            f1.view?.scaleY = -1f
+            f1.view?.scaleX = -1f
+            f2.view?.scaleY = 1f
+            f2.view?.scaleX = 1f
         }
-        for (view in views) {
-            mainContainer.addView(view)
-        }
+        mainContainer.addView(fragments[0].view)
+        mainContainer.addView(buttonView)
+        mainContainer.addView(fragments[1].view)
     }
 
     fun onSettingsClick(item: MenuItem) {
@@ -340,5 +332,4 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
             super.onBackPressed()
         }
     }
-
 }

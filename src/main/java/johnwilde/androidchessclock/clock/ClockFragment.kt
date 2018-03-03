@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.content.res.ResourcesCompat
+import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,38 +27,36 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-
 // This "View" represents one button and the TextView that shows the time remaining
 class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     lateinit var color : ClockView.Color
+    private var scaleX : Float = 1f
+    private var scaleY : Float = 1f
     @Inject lateinit var clockManager : ClockManager
     @Inject lateinit var preferences : PreferencesUtil
 
-    companion object {
-        private val COLOR = "ARG_COLOR"
-
-        fun newInstance(color: ClockView.Color): ClockFragment {
-            val args = Bundle()
-            args.putSerializable(COLOR, color)
-            val fragment = ClockFragment()
-            fragment.arguments = args
-            return fragment
-        }
-    }
-
     override fun createPresenter(): ClockViewPresenter {
+        Timber.d("create presenter: %s", color)
         return ClockViewPresenter(color, clockManager)
     }
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
-        color = arguments!!.getSerializable(COLOR) as ClockView.Color
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.d("ClockFragment create")
         super.onCreate(savedInstanceState)
+    }
+
+    override fun onInflate(context: Context?, attrs: AttributeSet?, savedInstanceState: Bundle?) {
+        super.onInflate(context, attrs, savedInstanceState)
+        val androidNs = "http://schemas.android.com/apk/res/android"
+        val myTag = attrs?.getAttributeValue(androidNs, "tag")
+        attrs?.getAttributeFloatValue(androidNs, "scaleX", 1f)?.let { scaleX = it }
+        attrs?.getAttributeFloatValue(androidNs, "scaleY", 1f)?.let { scaleY = it }
+        color = if (myTag == "left") ClockView.Color.WHITE else ClockView.Color.BLACK
     }
 
     override fun onCreateView(inflater: LayoutInflater,
@@ -76,6 +75,8 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         if (Build.VERSION.SDK_INT >= 23) {
             button.foreground = FloodDrawable(Color.BLACK, resources.getDimension(R.dimen.buttonRadius))
         }
+        view.scaleX = scaleX
+        view.scaleY = scaleY
         clock.setOnClickListener { launchAdjustPlayerClockActivity() }
     }
 
@@ -120,6 +121,8 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         button.isSelected = buttonState.enabled
         if (Build.VERSION.SDK_INT >= 23) {
             (button.foreground as FloodDrawable).flooded = !buttonState.enabled
+        } else {
+           button.background.alpha = if (buttonState.enabled) 255 else (255 * .3).toInt()
         }
         clock.isSelected = buttonState.enabled
     }

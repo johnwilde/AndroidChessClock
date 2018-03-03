@@ -4,4 +4,8 @@
     <dimen name="clockHeightLandscape">120dp</dimen>
     <dimen name="button_raised">10.0</dimen>
     <dimen name="buttonRadius">10dp</dimen>
+    <dimen name="port_button_padding">10dp</dimen>
+    <dimen name="land_button_padding">10dp</dimen>
+    <dimen name="button_side">50dp</dimen>
+    <dimen name="bottomTextHeightLandscape">30dp</dimen>
 </resources>
