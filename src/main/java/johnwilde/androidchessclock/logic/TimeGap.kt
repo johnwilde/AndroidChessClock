@@ -2,6 +2,7 @@ package johnwilde.androidchessclock.logic
 
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.Subject
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.main.Partial
@@ -10,7 +11,7 @@ import johnwilde.androidchessclock.prefs.PreferencesUtil
 class TimeGap(val preferencesUtil : PreferencesUtil,
               val color: ClockView.Color,
               val stateHolder: GameStateHolder,
-              val clockSubject: BehaviorSubject<Partial<ClockViewState>>) {
+              val clockSubject: Subject<Partial<ClockViewState>>) {
 
     private val disposables = CompositeDisposable()
 

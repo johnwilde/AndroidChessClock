@@ -63,7 +63,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
     }
 
     private fun reducer(previous : ClockViewState, updates: Partial<ClockViewState>) : ClockViewState {
-       return updates.reduce(previous)
+        return updates.reduce(previous)
     }
 
     private fun handleBadClick(message: ClockViewState.Snackbar.Message)

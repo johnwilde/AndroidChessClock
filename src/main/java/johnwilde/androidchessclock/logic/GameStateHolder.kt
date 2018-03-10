@@ -28,21 +28,25 @@ class GameStateHolder {
     }
 
     var gameState : GameState = NOT_STARTED
+    val gameStateSubject: PublishSubject<GameState> = PublishSubject.create()
+
+    // The active player (or null before game starts)
     var active : Timer? = null
-    val gameStateSubject = PublishSubject.create<GameState>()
-    val activePlayerSubject = PublishSubject.create<ClockView.Color>()
+    val activePlayerSubject: PublishSubject<ClockView.Color> = PublishSubject.create()
+
     // Time remaining on a clock
     data class TimeUpdate(val color: ClockView.Color, val ms: Long)
     var timeSubject: BehaviorSubject<TimeUpdate> = BehaviorSubject.create()
 
     fun removeActiveClock() {
-        active = null
+        setActiveClock(null)
     }
 
-    fun setActiveClock(clock: Timer) {
-        Timber.d("Active player is %s", clock.color)
+    fun setActiveClock(clock: Timer?) {
+        val value = clock?.color ?: ClockView.Color.NULL
+        Timber.d("Active player is %s", value)
         active = clock
-        activePlayerSubject.onNext(clock.color)
+        activePlayerSubject.onNext(value)
     }
 
     fun setGameStateValue(newState : GameState) {

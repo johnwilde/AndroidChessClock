@@ -29,16 +29,19 @@ class Hourglass(color: ClockView.Color,
 
         // When game starts...
         if (color == ClockView.Color.BLACK) {
-            stateHolder.gameStateSubject
+            gameStateDisposable.add(
+                    stateHolder.gameStateSubject
                     .filter { it.isUnderway() }
                     .take(1)
                     .map { subscribeWhileInactive() }
                     .observeOn(Schedulers.computation())
                     .subscribe()
+            )
         }
 
         // When game pauses or resumes...
-        gameStateDisposable.add(stateHolder.gameStateSubject
+        gameStateDisposable.add(
+                stateHolder.gameStateSubject
                 .scan { previous, new ->
                     when (previous) {
                        GameStateHolder.GameState.PAUSED ->
