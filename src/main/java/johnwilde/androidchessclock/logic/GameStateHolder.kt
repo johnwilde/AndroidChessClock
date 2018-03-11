@@ -38,15 +38,10 @@ class GameStateHolder {
     data class TimeUpdate(val color: ClockView.Color, val ms: Long)
     var timeSubject: BehaviorSubject<TimeUpdate> = BehaviorSubject.create()
 
-    fun removeActiveClock() {
-        setActiveClock(null)
-    }
-
-    fun setActiveClock(clock: Timer?) {
-        val value = clock?.color ?: ClockView.Color.NULL
-        Timber.d("Active player is %s", value)
+    fun setActiveClock(clock: Timer) {
+        Timber.d("Active player is %s", clock.color)
         active = clock
-        activePlayerSubject.onNext(value)
+        activePlayerSubject.onNext(clock.color)
     }
 
     fun setGameStateValue(newState : GameState) {

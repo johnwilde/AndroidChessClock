@@ -57,13 +57,13 @@ class ClockManager @Inject constructor(
     }
 
     private fun initializeGame() {
-        gameOver = gameOverSubscription()
         whiteDelegate.subscribe()
         blackDelgate.subscribe()
         white.initialize()
         black.initialize()
         setGameState(GameState.NOT_STARTED)
-        stateHolder.removeActiveClock()
+        stateHolder.setActiveClock(white)
+        gameOver = gameOverSubscription()
     }
 
     fun reset() {
@@ -85,6 +85,7 @@ class ClockManager @Inject constructor(
         timeIsNegative = false
         return stateHolder.timeSubject
                 .filter{ u ->  u.ms <= 0 }
+                .filter{ stateHolder.gameState.isUnderway() }
                 .take(1)
                 .subscribe { _ ->
                     if (preferencesUtil.allowNegativeTime) {
@@ -181,21 +182,21 @@ class ClockManager @Inject constructor(
     // not be saved.
     fun timerForColor(color: ClockView.Color): Timer {
         return when (color) {
-            WHITE, NULL -> white
+            WHITE -> white
             BLACK -> black
         }
     }
 
     fun forColor(color: ClockView.Color): TimerDelegate {
         return when (color) {
-            WHITE, NULL -> whiteDelegate
+            WHITE -> whiteDelegate
             BLACK -> blackDelgate
         }
     }
 
     private fun forOtherColor(color: ClockView.Color): Timer {
         return when (color) {
-            WHITE, NULL -> black
+            WHITE -> black
             BLACK -> white
         }
     }
