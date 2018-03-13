@@ -23,6 +23,7 @@ class TakeBackControllerTest {
     fun setUp() {
         pref = mock()
         whenever(pref.timeGap).thenReturn(Observable.just(true))
+        whenever(pref.getBronsteinDelayMs()).thenReturn(10_000)
         stateHolder = GameStateHolder()
         white = Bronstein(ClockView.Color.WHITE, pref, stateHolder, timeSource)
         black = Bronstein(ClockView.Color.BLACK, pref, stateHolder, timeSource)
@@ -108,6 +109,34 @@ class TakeBackControllerTest {
         assertTrue(controller.isFirstMove())
         assertEquals(10, black.msToGo)
         assertEquals(10, white.msToGo)
+    }
+
+    @Test
+    fun backDelayFisher() {
+        whenever(pref.getFischerDelayMs()).thenReturn(10)
+        white = Fischer(ClockView.Color.WHITE, pref, stateHolder, timeSource)
+        black = Fischer(ClockView.Color.BLACK, pref, stateHolder, timeSource)
+        white.msToGo = 10
+        black.msToGo = 10
+        white.moveStart()
+        white.msToGo = 9
+        white.moveEnd()
+
+        assertTrue(Arrays.equals(longArrayOf(11), white.moveTimes))
+        black.moveStart()
+        stateHolder.setActiveClock(black)
+        black.msToGo = 8
+        black.stop()
+        assertTrue(Arrays.equals(longArrayOf(12), black.moveTimes))
+        stateHolder.setGameStateValue(GameStateHolder.GameState.PAUSED)
+        // black is active
+        controller = TakeBackController(black, white, stateHolder)
+        controller.goBack()
+        assertEquals(ClockView.Color.WHITE, stateHolder.active?.color)
+        assertEquals(10, black.msToGo)
+        assertEquals(9, white.msToGo)
+        assertTrue(Arrays.equals(longArrayOf(11), white.moveTimes))
+        assertTrue(Arrays.equals(longArrayOf(), black.moveTimes))
     }
 
 }

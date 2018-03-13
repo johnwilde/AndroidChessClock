@@ -51,11 +51,16 @@ abstract class Timer(val color: ClockView.Color,
     open fun moveStart() {
         moveCounter.newMove(msToGo, this)
         clockSubject.onNext(ClockViewState.Button(enabled = true))
+        start()
+    }
+
+    open fun bonusMsPerMove() : Long {
+        return 0
     }
 
     open fun moveEnd() {
-        moveCounter.updateMoveTime(msToGo)
-        clockSubject.onNext(ClockViewState.Button(enabled = false))
+        stop()
+        publishInactiveState()
     }
 
     open fun stop() {

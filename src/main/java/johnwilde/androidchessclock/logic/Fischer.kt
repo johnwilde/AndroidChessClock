@@ -14,16 +14,13 @@ class Fischer(color: ClockView.Color,
         updateAndPublishMsToGo(preferencesUtil.initialDurationSeconds * 1000.toLong())
     }
 
-    override fun moveStart() {
-        super.moveStart()
-        updateAndPublishMsToGo(msToGo + preferencesUtil.getFischerDelayMs())
-        start()
+    override fun bonusMsPerMove() : Long {
+        return preferencesUtil.getFischerDelayMs()
     }
 
-    override fun moveEnd() {
-        super.moveEnd()
-        stop()
-        publishInactiveState()
+    override fun moveStart() {
+        updateAndPublishMsToGo(msToGo + bonusMsPerMove())
+        super.moveStart()
     }
 
     override fun timerTask(): PublishesClockState {

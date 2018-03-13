@@ -16,6 +16,7 @@ class TakeBackController(val a: Timer, val o: Timer, val stateHolder: GameStateH
             at = t.moveTimes.lastIndex
             Timber.d("%s: %s", t.color, Arrays.toString(moves))
         }
+
         fun time() : Long {
             return moves[at]
         }
@@ -35,14 +36,14 @@ class TakeBackController(val a: Timer, val o: Timer, val stateHolder: GameStateH
 
         // give player back their time for this move
         fun moveBack() {
-            t.setNewTime(t.msToGo + time())
+            t.setNewTime(t.msToGo + time() - t.bonusMsPerMove())
             t.moveCounter.popMove(t)
             at--
         }
         // take away time for a move
         fun moveForward() {
             at++
-            t.setNewTime(t.msToGo - time())
+            t.setNewTime(t.msToGo - time() + t.bonusMsPerMove())
             t.moveCounter.pushMove(time(), t)
         }
     }
