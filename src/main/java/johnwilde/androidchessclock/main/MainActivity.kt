@@ -1,19 +1,17 @@
 package johnwilde.androidchessclock.main
 import android.app.AlertDialog
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.transition.TransitionManager
 import android.support.v4.app.Fragment
-import android.support.v4.widget.DrawerLayout
-import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import com.hannesdorfmann.mosby3.mvi.MviActivity
 import com.jakewharton.rxbinding2.view.RxView
+import com.mikepenz.materialdrawer.Drawer
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -22,12 +20,9 @@ import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import johnwilde.androidchessclock.BarChartActivity
 import johnwilde.androidchessclock.R
-import johnwilde.androidchessclock.clock.ClockFragment
-import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.logic.ClockManager
 import johnwilde.androidchessclock.main.MainViewState.PlayPauseButton.State
 import johnwilde.androidchessclock.prefs.PreferencesUtil
-import johnwilde.androidchessclock.prefs.TimerPreferenceActivity
 import johnwilde.androidchessclock.sound.SoundFragment
 import kotlinx.android.synthetic.main.main_activity.*
 import timber.log.Timber
@@ -43,15 +38,17 @@ interface HasSnackbar {
     fun hideSnackbar()
 }
 
+
 class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         HasSupportFragmentInjector, HasSnackbar {
     @Inject lateinit var clockManager : ClockManager
     @Inject lateinit var preferenceUtil : PreferencesUtil
     @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<android.support.v4.app.Fragment>
+    @Inject lateinit var drawerBuilder: MainDrawerBuilder
+    lateinit var myDrawer: Drawer
 
     var fragments : Array<Fragment> = emptyArray()
     var dialog : AlertDialog? = null
-    private lateinit var drawerListener : SimpleDrawerListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -59,8 +56,6 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         Timber.d("MainActivity onCreate")
         setContentView(R.layout.main_activity)
 
-        drawerListener = SimpleDrawerListener()
-        drawerLayout.addDrawerListener(drawerListener)
         fragments = arrayOf(left, right)
 
         supportFragmentManager.findFragmentByTag("sound") ?:
@@ -69,6 +64,8 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
                     .add(SoundFragment(), "sound")
                     .commit()
 
+        myDrawer = drawerBuilder.buildDrawer(this)
+
         reset_button.setOnClickListener {
             showResetDialog()
         }
@@ -76,7 +73,7 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
             swapSides()
         }
         menu_button.setOnClickListener{
-            drawerLayout.openDrawer(Gravity.START)
+            myDrawer.openDrawer()
         }
     }
 
@@ -89,6 +86,7 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
 
     override fun onSaveInstanceState(outState: Bundle?) {
         outState!!.putBoolean(RESET_DIALOG_SHOWING, dialog?.isShowing ?: false)
+        myDrawer.saveInstanceState(outState)
         super.onSaveInstanceState(outState)
     }
 
@@ -96,7 +94,6 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         super.onDestroy()
         // https://stackoverflow.com/questions/15244179/dismissing-dialog-on-activity-finish
         dialog?.dismiss()
-        drawerLayout.removeDrawerListener(drawerListener)
     }
 
     override fun createPresenter(): MainViewPresenter {
@@ -105,12 +102,20 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         return MainViewPresenter(clockManager)
     }
 
+    override fun onPostResume() {
+        super.onPostResume()
+        if (myDrawer.isDrawerOpen) {
+            // workaround for https://issuetracker.google.com/issues/36995532
+            // the drawer opened listener is not called on first launch
+            drawerBuilder.onDrawerOpened(this)
+        }
+    }
     override fun playPauseIntent(): Observable<Any> {
         return RxView.clicks(play_pause_button)
     }
 
     override fun drawerOpened(): Observable<Any> {
-        return drawerListener.subject
+        return MainDrawerBuilder.subject
     }
 
     override fun goForward(): Observable<Any> {
@@ -257,23 +262,11 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         mainContainer.addView(fragments[1].view)
     }
 
-    fun onSettingsClick(item: MenuItem) {
-        launchPreferencesActivity()
-    }
-
     fun onAboutClick(item: MenuItem) {
         showAboutDialog()
     }
 
-    private fun launchPreferencesActivity() {
-        // launch an activity through this intent
-        val launchPreferencesIntent = Intent().setClass(this,
-                TimerPreferenceActivity::class.java)
-        // Make it a subactivity so we know when it returns
-        startActivityForResult(launchPreferencesIntent, REQUEST_CODE_PREFERENCES)
-    }
-
-    private fun showAboutDialog() {
+    fun showAboutDialog() {
         val builder = AlertDialog.Builder(this)
         val title = getString(R.string.app_name)
         val about = getString(R.string.about_dialog)
@@ -292,44 +285,14 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         }
     }
 
-    // This method is called when the user preferences activity returns. That
-    // activity set fields in the Intent data to indicate what preferences
-    // have been changed. The method takes the action appropriate for what
-    // has changed. In some cases the clocks are reset.
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        // check which activity has returned (for now we only have one, so
-        // it isn't really necessary).
-        if (requestCode == REQUEST_CODE_PREFERENCES) {
-            if (data == null)
-                return  // no preferences were changed
-
-            // reset clocks using new settings
-            if (data.getBooleanExtra(
-                    TimerPreferenceActivity.LOAD_ALL, false)) {
-                preferenceUtil.loadTimeControlPreferences()
-                clockManager.reset()
-            }
-        }
-    }
-
-    class SimpleDrawerListener : DrawerLayout.SimpleDrawerListener() {
-        var subject : PublishSubject<Any> = PublishSubject.create()
-        override fun onDrawerOpened(drawerView: View) {
-            subject.onNext(1)
-        }
-    }
-
     override fun supportFragmentInjector(): AndroidInjector<android.support.v4.app.Fragment> {
         return fragmentInjector
     }
 
     override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(navigationDrawer)) {
-            drawerLayout.closeDrawer(navigationDrawer)
-        } else {
+        if (myDrawer.isDrawerOpen)
+            myDrawer.closeDrawer()
+        else
             super.onBackPressed()
-        }
     }
 }

@@ -40,9 +40,14 @@
     <string name="delay_type_preference">Delay Type</string>
     <string name="summary_delay_type_preference">Set how bonus time will be applied.</string>
 
+    <string-array name="delay_type_full_descriptions">
+        <item>Full increment is given at start of each move</item>
+        <item>Clock start is delayed</item>
+    </string-array>
+
     <string-array name="delay_type_descriptions">
-        <item>Bonus (Fischer)</item>
-        <item>Delay (Bronstein)</item>
+        <item>Fischer</item>
+        <item>Bronstein</item>
     </string-array>
 
     <string-array name="delay_type_values">
@@ -52,6 +57,7 @@
 
     <string name="allow_negative_time_preference">Allow clocks to go negative.</string>
 
+    <string name="display">Display</string>
     <string name="display_options_preference_description">Display and Sound Preferences</string>
     <string name="screen_dim_preference">Allow screen to dim</string>
     <string name="show_move_count_preference">Show move counter</string>
@@ -63,6 +69,7 @@
     <string name="advanced_time_preference_description">Tournament</string>
     <string name="summary_advanced_time_preference_description">Set tournament time control options.</string>
     <string name="select_time_control_type_preference">Select Type</string>
+    <string name="time_control">Time Control</string>
 
     <string-array name="timecontrol_type_descriptions">
         <item>Tournament time control (FIDE)</item>
@@ -88,6 +95,7 @@
 
     <string name="move_times">Move Times</string>
     <string name="move_counter_text">Move</string>
+    <string name="about">About</string>
     <string name="about_dialog">To report bugs or view source code, visit "https://github.com/johnwilde/AndroidChessClock"</string>
     <string name="pause_dialog">Paused</string>
     <string name="pause_toast">Paused. Press to resume.</string>
@@ -105,4 +113,19 @@
     <string name="show_time_gap">Show time gap</string>
     <string name="moves_remaining">Moves Remaining:</string>
     <string name="move">Move:</string>
+    <string name="use_bonus_time">Bonus time per move</string>
+    <string name="seconds">Seconds</string>
+    <string name="tournament_text_delay">%1$s (%2$d) %3$s %4$s</string>
+    <string name="tournament_text_no_delay">%1$s (%2$d) %3$s</string>
+    <string name="basic_text_delay">%1$s %2$s</string>
+    <string name="hourglass_info">While one clock is counting down the other clock is increasing</string>
+    <string name="phase_one_min">Phase 1</string>
+    <string name="moves">Moves</string>
+    <string name="phase_two_min">Phase 2</string>
+    <string name="sound">Sound</string>
+    <string name="buzzer">Buzzer</string>
+    <string name="button_click">Button click</string>
+    <string name="negative_time">Negative time</string>
+    <string name="minutes">Minutes</string>
+    <string name="hours">Hours</string>
 </resources>

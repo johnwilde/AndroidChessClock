@@ -1,5 +1,6 @@
 package johnwilde.androidchessclock
 
+import android.widget.NumberPicker
 import java.text.DecimalFormat
 
 object Utils {
@@ -84,4 +85,19 @@ object Utils {
 
         return stringHr + stringMin + stringSec
     }
+
+    fun twoDigitFormatter(intIn : Int) : String? {
+        return if (intIn < 10) {
+            "0" + intIn.toString()
+        } else {
+            intIn.toString()
+        }
+    }
+
+    fun setPicker(picker: NumberPicker, min: Int, max: Int, value: Int) {
+        picker.minValue = min
+        picker.maxValue = max
+        picker.value = value
+    }
+
 }

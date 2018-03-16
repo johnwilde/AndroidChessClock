@@ -120,13 +120,6 @@
                     android:tint="@color/white"/>
             </LinearLayout>
         </FrameLayout>
-        <!-- The navigation drawer -->
-        <android.support.design.widget.NavigationView
-            android:id="@+id/navigationDrawer"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            app:menu="@menu/menu"/>
 
     </android.support.v4.widget.DrawerLayout>
 </android.support.design.widget.CoordinatorLayout>

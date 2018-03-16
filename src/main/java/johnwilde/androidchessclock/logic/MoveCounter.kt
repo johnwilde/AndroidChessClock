@@ -20,7 +20,7 @@ class MoveCounter(val pref: PreferencesUtil) {
                     publishRemainingMoves(remaining, timer)
                 }
                 count == pref.phase1NumberOfMoves -> {
-                    timer.setNewTime(ms + pref.phase1Minutes * 60 * 1000)
+                    timer.setNewTime(ms + pref.phase2Minutes * 60 * 1000)
                     publishCurrentMoveCount(count + 1, timer)
                 }
                 count > pref.phase1NumberOfMoves -> {
