@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:tools="http://schemas.android.com/tools"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       tools:orientation="vertical"
+       tools:parentTag="android.widget.LinearLayout">
+
+    <CheckBox
+        android:id="@+id/use_bonus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:text="@string/use_bonus_time"/>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:tools="http://schemas.android.com/tools"
+                  android:orientation="horizontal"
+                  android:gravity="center"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/bonus_type_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:layout_gravity="center"
+                />
+
+            <NumberPicker
+                android:id="@+id/delay_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/picker_top_margin"
+                android:layout_marginBottom="@dimen/picker_bottom_margin"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:descendantFocusability="blocksDescendants"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bonus_seconds_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/bonus_seconds_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/seconds"
+                android:layout_gravity="center"
+                />
+
+            <NumberPicker
+                android:id="@+id/bonus_seconds"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/picker_top_margin"
+                android:layout_marginBottom="@dimen/picker_bottom_margin"
+                android:focusable="false"
+                android:focusableInTouchMode="true"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/bonus_text"
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:lines="2"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:layout_marginBottom="50dp"
+        tools:text="Clock start is delayed"/>
+
+</merge>

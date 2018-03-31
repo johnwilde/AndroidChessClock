@@ -66,26 +66,35 @@ internal abstract class ActivityBindingModule {
 
             return when (preferencesUtil.timeControlType) {
                 PreferencesUtil.TimeControlType.BASIC -> {
-                    when {
-                        preferencesUtil.getFischerDelayMs() > 0 -> {
-                            Fischer(color,preferencesUtil, stateHolder, timeSource)
-                        }
-                        preferencesUtil.getBronsteinDelayMs() > 0 -> {
-                            Bronstein(color,preferencesUtil, stateHolder, timeSource)
-                        }
-                        else -> {
-                            Fischer(color,preferencesUtil, stateHolder, timeSource)
-                        }
-                    }
+                    getTimerForTimeControl(color, preferencesUtil, stateHolder, timeSource)
                 }
                 PreferencesUtil.TimeControlType.TOURNAMENT -> {
-                    Fischer(color,preferencesUtil, stateHolder, timeSource)
+                    getTimerForTimeControl(color, preferencesUtil, stateHolder, timeSource)
                 }
                 PreferencesUtil.TimeControlType.HOURGLASS -> {
                     Hourglass(color,preferencesUtil, stateHolder, timeSource)
                 }
             }
         }
+
+        private fun getTimerForTimeControl(
+                color: ClockView.Color,
+                preferencesUtil: PreferencesUtil,
+                stateHolder: GameStateHolder,
+                timeSource: TimeSource): Timer {
+            return when {
+                preferencesUtil.getFischerDelayMs() > 0 -> {
+                    Fischer(color,preferencesUtil, stateHolder, timeSource)
+                }
+                preferencesUtil.getBronsteinDelayMs() > 0 -> {
+                    Bronstein(color,preferencesUtil, stateHolder, timeSource)
+                }
+                else -> {
+                    Fischer(color,preferencesUtil, stateHolder, timeSource)
+                }
+            }
+        }
+
         @JvmStatic
         @Provides
         @Singleton

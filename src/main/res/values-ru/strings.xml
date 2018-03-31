@@ -32,6 +32,12 @@
     <string name="delay_type_preference">Тип задержки</string>
     <string name="summary_delay_type_preference">Установить тип бонусного времени.</string>
 
+
+    <string-array name="delay_type_full_descriptions">
+        <item>Полное приращение дается в начале каждого хода</item>
+        <item>Запуск часов задерживается</item>
+    </string-array>
+
     <string-array name="delay_type_descriptions">
         <item>Бонус (Фишер)</item>
         <item>Задержка (Бронштейн)</item>
@@ -94,4 +100,22 @@
     <string name="advanced_time_preference_description">"Турнир "</string>
     <string name="moves_remaining">"Остальные перемещения "</string>
     <string name="move">возможность:</string>
+    <string name="display">"дисплей "</string>
+    <string name="time_control">"Контроль времени "</string>
+    <string name="about">"Около "</string>
+    <string name="use_bonus_time">"Бонусное время за ход "</string>
+    <string name="seconds">"секунд "</string>
+    <string name="tournament_text_delay">%1$s (%2$d) %3$s %4$s</string>
+    <string name="tournament_text_no_delay">%1$s (%2$d) %3$s</string>
+    <string name="basic_text_delay">%1$s %2$s</string>
+    <string name="hourglass_info">"В то время как один такт отсчитывает, другие часы увеличиваются. "</string>
+    <string name="phase_one_min">"Фаза 1 "</string>
+    <string name="moves">"Ходы "</string>
+    <string name="phase_two_min">"Фаза 2 "</string>
+    <string name="sound">"звук "</string>
+    <string name="buzzer">"Зуммер "</string>
+    <string name="button_click">"Нажмите кнопку "</string>
+    <string name="negative_time">"Отрицательное время "</string>
+    <string name="minutes">"минут "</string>
+    <string name="hours">"часов "</string>
 </resources>

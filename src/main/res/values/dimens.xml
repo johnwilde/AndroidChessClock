@@ -8,4 +8,7 @@
     <dimen name="land_button_padding">10dp</dimen>
     <dimen name="button_side">50dp</dimen>
     <dimen name="bottomTextHeightLandscape">30dp</dimen>
+    <!-- Date and time picker legacy dimens -->
+    <dimen name="picker_top_margin">16dip</dimen>
+    <dimen name="picker_bottom_margin">16dip</dimen>
 </resources>

@@ -19,16 +19,8 @@ class Bronstein(color: ClockView.Color,
     }
 
     override fun moveStart() {
-        super.moveStart()
         delay = preferencesUtil.getBronsteinDelayMs()
-        updateAndPublishMsToGo(msToGo)
-        start()
-    }
-
-    override fun moveEnd() {
-        super.moveEnd()
-        stop()
-        publishInactiveState()
+        super.moveStart()
     }
 
     override fun publishInactiveState() {

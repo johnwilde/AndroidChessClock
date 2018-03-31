@@ -81,17 +81,6 @@ class Hourglass(color: ClockView.Color,
                 .subscribe())
     }
 
-    override fun moveStart() {
-        super.moveStart()
-        start()
-    }
-
-    override fun moveEnd() {
-        super.moveEnd()
-        stop()
-        publishInactiveState()
-    }
-
     override fun stop() {
         super.stop()
         subscribeWhileInactive()

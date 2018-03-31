@@ -10,7 +10,7 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 // Responsible for user interactions with the play/stop button and
-// the drawer opening.  The view keeps the play/stop button in the correct
+// the myDrawer opening.  The view keeps the play/stop button in the correct
 // state and presents a snackbar telling which player ran out of time. It also
 // draws the mainSubject (used in Bronstein time mode).
 class MainViewPresenter(val clockManager: ClockManager)
