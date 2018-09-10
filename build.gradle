@@ -1,11 +1,11 @@
 buildscript {
-    ext.kotlin_version = '1.2.10'
+    ext.kotlin_version = '1.2.51'
     repositories {
         google()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.0-alpha08'
+        classpath 'com.android.tools.build:gradle:3.2.0-rc02'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -22,12 +22,16 @@ ext {
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.2'
 
     buildTypes {
         release {
             proguardFile getDefaultProguardFile('proguard-android.txt')
         }
+    }
+    defaultConfig {
+        targetSdkVersion 27
+        minSdkVersion 16
     }
 }
 
