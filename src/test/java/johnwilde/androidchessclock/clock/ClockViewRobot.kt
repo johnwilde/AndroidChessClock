@@ -15,7 +15,6 @@ class ClockViewRobot(presenter: ClockViewPresenter) {
         override fun render(viewState: ClockViewState) {
             viewStateObservable.onNext(viewState)
         }
-
     }
     init {
         presenter.attachView(RobotClockView())

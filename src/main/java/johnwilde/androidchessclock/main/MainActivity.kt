@@ -28,27 +28,26 @@ import kotlinx.android.synthetic.main.main_activity.*
 import timber.log.Timber
 import javax.inject.Inject
 
-var REQUEST_CODE_PREFERENCES : Int = 1
-var REQUEST_CODE_ADJUST_TIME : Int = 2
+var REQUEST_CODE_PREFERENCES: Int = 1
+var REQUEST_CODE_ADJUST_TIME: Int = 2
 val RESET_DIALOG_SHOWING = "RESET_DIALOG_SHOWING"
 
 interface HasSnackbar {
-    var snackBar : Snackbar?
-    fun showSnackbar(message : String) : Snackbar?
+    var snackBar: Snackbar?
+    fun showSnackbar(message: String): Snackbar?
     fun hideSnackbar()
 }
 
-
 class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         HasSupportFragmentInjector, HasSnackbar {
-    @Inject lateinit var clockManager : ClockManager
-    @Inject lateinit var preferenceUtil : PreferencesUtil
+    @Inject lateinit var clockManager: ClockManager
+    @Inject lateinit var preferenceUtil: PreferencesUtil
     @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<android.support.v4.app.Fragment>
     @Inject lateinit var drawerBuilder: MainDrawerBuilder
     lateinit var myDrawer: Drawer
 
-    var fragments : Array<Fragment> = emptyArray()
-    var dialog : AlertDialog? = null
+    var fragments: Array<Fragment> = emptyArray()
+    var dialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -58,8 +57,8 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
 
         fragments = arrayOf(left, right)
 
-        supportFragmentManager.findFragmentByTag("sound") ?:
-            supportFragmentManager
+        supportFragmentManager.findFragmentByTag("sound")
+            ?: supportFragmentManager
                     .beginTransaction()
                     .add(SoundFragment(), "sound")
                     .commit()
@@ -72,7 +71,7 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         swap_sides.setOnClickListener {
             swapSides()
         }
-        menu_button.setOnClickListener{
+        menu_button.setOnClickListener {
             myDrawer.openDrawer()
         }
     }
@@ -185,7 +184,7 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
     }
 
     private fun renderSpinner(spinnerViewState: MainViewState.Spinner) {
-        spinner.msTotal =  preferenceUtil.getBronsteinDelayMs()
+        spinner.msTotal = preferenceUtil.getBronsteinDelayMs()
         spinner.msSoFar = spinnerViewState.msDelayToGo
         if (spinnerViewState.msDelayToGo > 0) {
             spinner.visibility = View.VISIBLE
@@ -214,9 +213,9 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         }
     }
 
-    override var snackBar : Snackbar? = null
-    var snackBarDismissed : PublishSubject<Any> = PublishSubject.create()
-    override fun showSnackbar(message : String) : Snackbar? {
+    override var snackBar: Snackbar? = null
+    var snackBarDismissed: PublishSubject<Any> = PublishSubject.create()
+    override fun showSnackbar(message: String): Snackbar? {
         return if (snackBar == null || snackBar?.isShownOrQueued == false) {
             val v = coordinatorLayout
             snackBar = Snackbar.make(v, message, Snackbar.LENGTH_INDEFINITE)

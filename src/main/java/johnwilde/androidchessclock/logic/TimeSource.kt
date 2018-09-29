@@ -4,7 +4,7 @@ import android.os.SystemClock
 import javax.inject.Singleton
 
 interface TimeSource {
-    fun currentTimeMillis() : Long
+    fun currentTimeMillis(): Long
 }
 
 @Singleton
@@ -14,7 +14,7 @@ class SystemTime : TimeSource {
     }
 }
 
-class MockSystemTime(var currentTime : Long) : TimeSource {
+class MockSystemTime(var currentTime: Long) : TimeSource {
     override fun currentTimeMillis(): Long {
         return currentTime
     }

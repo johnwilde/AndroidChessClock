@@ -13,10 +13,11 @@ import javax.inject.Singleton
 
 @Singleton
 class PreferencesUtil @Inject constructor(
-        val context: Context,
-        rxSharedPreferences: RxSharedPreferences) {
+    val context: Context,
+    rxSharedPreferences: RxSharedPreferences
+) {
 
-    val sharedPreferences : SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     // Clock subscribes to this so it can update view state when it changes
     val timeGap = rxSharedPreferences
@@ -49,19 +50,19 @@ class PreferencesUtil @Inject constructor(
         }
 
     // Basic time settings
-    var initialHours : Int
+    var initialHours: Int
         get() = getTimerOptionsValue(Key.HOURS, "0")
         set(value) = sharedPreferences.edit {
             putString(Key.HOURS.toString(), value.toString())
         }
 
-    var initialMinutes : Int
+    var initialMinutes: Int
         get() = getTimerOptionsValue(Key.MINUTES, "15")
         set(value) = sharedPreferences.edit {
             putString(Key.MINUTES.toString(), value.toString())
         }
 
-    var initialSeconds : Int
+    var initialSeconds: Int
         get() = getTimerOptionsValue(Key.SECONDS, "0")
         set(value) = sharedPreferences.edit {
             putString(Key.SECONDS.toString(), value.toString())
@@ -90,33 +91,32 @@ class PreferencesUtil @Inject constructor(
         }
 
     // Hourglass settings
-    var hourglassMinutes : Int
+    var hourglassMinutes: Int
         get() = getTimerOptionsValue(Key.HOURGLASS_MINUTES, "5")
         set(value) = sharedPreferences.edit {
             putString(Key.HOURGLASS_MINUTES.toString(), value.toString())
         }
 
-    var hourglassSeconds : Int
+    var hourglassSeconds: Int
         get() = getTimerOptionsValue(Key.HOURGLASS_SECONDS, "0")
         set(value) = sharedPreferences.edit {
             putString(Key.HOURGLASS_SECONDS.toString(), value.toString())
         }
 
-
     // Tournament settings
-    var phase1Minutes : Int
+    var phase1Minutes: Int
         get() = getTimerOptionsValue(Key.FIDE_MIN_PHASE1, "90")
         set(value) = sharedPreferences.edit {
             putString(Key.FIDE_MIN_PHASE1.toString(), value.toString())
         }
 
-    var phase2Minutes : Int
+    var phase2Minutes: Int
         get() = getTimerOptionsValue(Key.FIDE_MIN_PHASE2, "30")
         set(value) = sharedPreferences.edit {
             putString(Key.FIDE_MIN_PHASE2.toString(), value.toString())
         }
 
-    var phase1NumberOfMoves : Int
+    var phase1NumberOfMoves: Int
         get() = getTimerOptionsValue(Key.FIDE_MOVES_PHASE1, "40")
         set(value) = sharedPreferences.edit {
             putString(Key.FIDE_MOVES_PHASE1.toString(), value.toString())
@@ -173,7 +173,7 @@ class PreferencesUtil @Inject constructor(
 
     private var incrementSeconds: Int = 0
         get() {
-            return when(timeControlType) {
+            return when (timeControlType) {
                 TimeControlType.HOURGLASS -> 0
                 TimeControlType.TOURNAMENT -> if (delayEnabled) tournamentIncrementSeconds else 0
                 TimeControlType.BASIC -> if (delayEnabled) basicIncrementSeconds else 0
@@ -182,7 +182,7 @@ class PreferencesUtil @Inject constructor(
 
     var delayType: DelayType = DelayType.FISCHER
         get() {
-            return when(timeControlType) {
+            return when (timeControlType) {
                 TimeControlType.HOURGLASS -> DelayType.FISCHER
                 TimeControlType.TOURNAMENT -> tournamentDelayType
                 TimeControlType.BASIC -> basicDelayType
@@ -191,7 +191,7 @@ class PreferencesUtil @Inject constructor(
 
     var delayEnabled: Boolean = true
             get() {
-               return when(timeControlType) {
+               return when (timeControlType) {
                    TimeControlType.HOURGLASS -> false
                    TimeControlType.TOURNAMENT ->
                        tournamentUseBonus && tournamentIncrementSeconds > 0
@@ -201,7 +201,7 @@ class PreferencesUtil @Inject constructor(
             }
     var initialDurationSeconds: Int = 0
         get() {
-            return when(timeControlType) {
+            return when (timeControlType) {
                 TimeControlType.HOURGLASS -> hourglassMinutes * 60 + hourglassSeconds
                 TimeControlType.TOURNAMENT ->
                     phase1Minutes * 60
@@ -210,7 +210,7 @@ class PreferencesUtil @Inject constructor(
             }
         }
 
-    fun formattedBasicTime() : String {
+    fun formattedBasicTime(): String {
         val ms = (initialHours * 3600 + initialMinutes * 60 + initialSeconds) * 1000
         val timeString = Utils.formatClockTime(ms.toLong())
         return if (basicSettingsUseBonus && basicIncrementSeconds > 0) {
@@ -245,12 +245,10 @@ class PreferencesUtil @Inject constructor(
         }
     }
 
-
     private fun getTimerOptionsValue(key: Key, default: String = "0"): Int {
         try {
             val s: String = sharedPreferences.getString(key.toString(), default)
             return Integer.parseInt(s)
-
         } catch (ex: NumberFormatException) {
             Timber.d("Exception: %s", ex)
             return 0
@@ -306,5 +304,4 @@ class PreferencesUtil @Inject constructor(
         }
     }
 }
-
 

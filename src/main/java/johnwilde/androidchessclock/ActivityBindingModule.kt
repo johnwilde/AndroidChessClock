@@ -35,20 +35,20 @@ internal abstract class ActivityBindingModule {
     companion object {
         @JvmStatic
         @Provides
-        internal fun provicesResources(context: Context) : Resources {
+        internal fun provicesResources(context: Context): Resources {
             return context.resources
         }
 
         @JvmStatic
         @Provides
-        internal fun providesRxSharedPreferences(context: Context) : RxSharedPreferences {
+        internal fun providesRxSharedPreferences(context: Context): RxSharedPreferences {
             val preferences = PreferenceManager.getDefaultSharedPreferences(context)
             return RxSharedPreferences.create(preferences)
         }
 
         @JvmStatic
         @Provides
-        internal fun providesTimeSource() : TimeSource { return SystemTime() }
+        internal fun providesTimeSource(): TimeSource { return SystemTime() }
 
         @JvmStatic
         @Provides
@@ -59,10 +59,11 @@ internal abstract class ActivityBindingModule {
         @Provides
         @Singleton
         internal fun providesTimer(
-                color: ClockView.Color,
-                preferencesUtil: PreferencesUtil,
-                stateHolder: GameStateHolder,
-                timeSource: TimeSource): Timer {
+            color: ClockView.Color,
+            preferencesUtil: PreferencesUtil,
+            stateHolder: GameStateHolder,
+            timeSource: TimeSource
+        ): Timer {
 
             return when (preferencesUtil.timeControlType) {
                 PreferencesUtil.TimeControlType.BASIC -> {
@@ -72,25 +73,26 @@ internal abstract class ActivityBindingModule {
                     getTimerForTimeControl(color, preferencesUtil, stateHolder, timeSource)
                 }
                 PreferencesUtil.TimeControlType.HOURGLASS -> {
-                    Hourglass(color,preferencesUtil, stateHolder, timeSource)
+                    Hourglass(color, preferencesUtil, stateHolder, timeSource)
                 }
             }
         }
 
         private fun getTimerForTimeControl(
-                color: ClockView.Color,
-                preferencesUtil: PreferencesUtil,
-                stateHolder: GameStateHolder,
-                timeSource: TimeSource): Timer {
+            color: ClockView.Color,
+            preferencesUtil: PreferencesUtil,
+            stateHolder: GameStateHolder,
+            timeSource: TimeSource
+        ): Timer {
             return when {
                 preferencesUtil.getFischerDelayMs() > 0 -> {
-                    Fischer(color,preferencesUtil, stateHolder, timeSource)
+                    Fischer(color, preferencesUtil, stateHolder, timeSource)
                 }
                 preferencesUtil.getBronsteinDelayMs() > 0 -> {
-                    Bronstein(color,preferencesUtil, stateHolder, timeSource)
+                    Bronstein(color, preferencesUtil, stateHolder, timeSource)
                 }
                 else -> {
-                    Fischer(color,preferencesUtil, stateHolder, timeSource)
+                    Fischer(color, preferencesUtil, stateHolder, timeSource)
                 }
             }
         }
@@ -100,10 +102,11 @@ internal abstract class ActivityBindingModule {
         @Singleton
         @Named("black")
         internal fun providesBlack(
-                preferencesUtil: PreferencesUtil,
-                stateHolder: GameStateHolder,
-                timeSource: TimeSource): Timer {
-            return providesTimer(ClockView.Color.BLACK, preferencesUtil, stateHolder, timeSource )
+            preferencesUtil: PreferencesUtil,
+            stateHolder: GameStateHolder,
+            timeSource: TimeSource
+        ): Timer {
+            return providesTimer(ClockView.Color.BLACK, preferencesUtil, stateHolder, timeSource)
         }
 
         @JvmStatic
@@ -111,10 +114,11 @@ internal abstract class ActivityBindingModule {
         @Singleton
         @Named("white")
         internal fun providesWhite(
-                preferencesUtil: PreferencesUtil,
-                stateHolder: GameStateHolder,
-                timeSource: TimeSource): Timer {
-            return providesTimer(ClockView.Color.WHITE, preferencesUtil, stateHolder, timeSource )
+            preferencesUtil: PreferencesUtil,
+            stateHolder: GameStateHolder,
+            timeSource: TimeSource
+        ): Timer {
+            return providesTimer(ClockView.Color.WHITE, preferencesUtil, stateHolder, timeSource)
         }
     }
 }

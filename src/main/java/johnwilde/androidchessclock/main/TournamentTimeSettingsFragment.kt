@@ -1,7 +1,6 @@
 package johnwilde.androidchessclock.main
 
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v7.app.AlertDialog
@@ -13,7 +12,6 @@ import johnwilde.androidchessclock.prefs.PreferencesUtil
 import kotlinx.android.synthetic.main.bonus_row.view.*
 import kotlinx.android.synthetic.main.dialog_tournament.view.*
 import kotlinx.android.synthetic.main.time_picker_row.view.*
-
 
 class TournamentTimeSettingsFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -41,14 +39,14 @@ class TournamentTimeSettingsFragment : DialogFragment() {
         initTimePicker(view.findViewById(R.id.phase2), hr, min)
 
         view.use_bonus.isChecked = a.preferenceUtil.tournamentUseBonus
-        view.use_bonus.setOnCheckedChangeListener({ _ , isChecked ->
+        view.use_bonus.setOnCheckedChangeListener({ _, isChecked ->
             view.bonus_seconds.isEnabled = isChecked
             view.delay_spinner.isEnabled = isChecked
         })
 
         view.use_bonus.isChecked = a.preferenceUtil.tournamentUseBonus
         setBonusEnabled(view.use_bonus.isChecked)
-        view.use_bonus.setOnCheckedChangeListener({ _ , isChecked ->
+        view.use_bonus.setOnCheckedChangeListener({ _, isChecked ->
             setBonusEnabled(isChecked)
         })
 
@@ -86,7 +84,7 @@ class TournamentTimeSettingsFragment : DialogFragment() {
         return builder.create()
     }
 
-    private fun initTimePicker(view: View, hours : Int, min: Int) {
+    private fun initTimePicker(view: View, hours: Int, min: Int) {
         view.seconds_container.visibility = View.GONE
         setPicker(view.hour, 0, 9, hours)
         setPicker(view.minute, 0, 59, min)

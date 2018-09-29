@@ -18,15 +18,15 @@ import javax.inject.Inject
 class BarChartActivity : Activity() {
     companion object {
         @JvmStatic
-        fun createIntent(context: Context) : Intent {
+        fun createIntent(context: Context): Intent {
             val intent = Intent(context, BarChartActivity::class.java)
             return intent
         }
     }
 
-    @Inject lateinit var clockManager : ClockManager
-    private lateinit var blackMs : LongArray
-    private lateinit var whiteMs : LongArray
+    @Inject lateinit var clockManager: ClockManager
+    private lateinit var blackMs: LongArray
+    private lateinit var whiteMs: LongArray
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -43,7 +43,7 @@ class BarChartActivity : Activity() {
     }
 
     private fun addViews(whiteMoves: LongArray, blackMoves: LongArray) {
-        val maxValue = Math.max(whiteMoves.max()?:0, blackMoves.max()?:0).toFloat()
+        val maxValue = Math.max(whiteMoves.max() ?: 0, blackMoves.max() ?: 0).toFloat()
         for (i in 0..whiteMoves.lastIndex) {
             val bars = layoutInflater.inflate(R.layout.two_bar, null)
             bars.two_bar_container.addView(
@@ -76,6 +76,6 @@ class BarChartActivity : Activity() {
         // Assigning a weight of 0 breaks layout for some reason
         val w1 = if (w == 0f) 0.01f else w
         val p1: LinearLayout.LayoutParams = v.layoutParams as LinearLayout.LayoutParams
-        p1.weight = w1;
+        p1.weight = w1
     }
 }

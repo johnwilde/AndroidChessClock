@@ -8,7 +8,7 @@ import java.util.*
 
 class TakeBackController(val a: Timer, val o: Timer, val stateHolder: GameStateHolder) {
 
-    class Wrapper(val t : Timer) {
+    class Wrapper(val t: Timer) {
         private var moves: LongArray
         private var at: Int
         init {
@@ -17,20 +17,20 @@ class TakeBackController(val a: Timer, val o: Timer, val stateHolder: GameStateH
             Timber.d("%s: %s", t.color, Arrays.toString(moves))
         }
 
-        fun time() : Long {
+        fun time(): Long {
             return moves[at]
         }
 
-        private fun isStartOfFirstMove() : Boolean {
-            return t.color == ClockView.Color.WHITE
-                   && t.moveTimes.isEmpty()
+        private fun isStartOfFirstMove(): Boolean {
+            return t.color == ClockView.Color.WHITE &&
+                   t.moveTimes.isEmpty()
         }
 
-        fun canMoveBack() : Boolean {
+        fun canMoveBack(): Boolean {
            return !isStartOfFirstMove()
         }
 
-        fun canMoveForward() : Boolean {
+        fun canMoveForward(): Boolean {
             return (at != moves.lastIndex || isStartOfFirstMove())
         }
 
@@ -108,11 +108,11 @@ class TakeBackController(val a: Timer, val o: Timer, val stateHolder: GameStateH
         return MainViewState.TakeBack(!isFirstMove(), !isLastMove())
     }
 
-    fun isLastMove() : Boolean {
+    fun isLastMove(): Boolean {
         return (active == first && !active.canMoveForward())
     }
 
-    fun isFirstMove() : Boolean {
+    fun isFirstMove(): Boolean {
         return (active.t.color == ClockView.Color.WHITE && !active.canMoveBack())
     }
 }

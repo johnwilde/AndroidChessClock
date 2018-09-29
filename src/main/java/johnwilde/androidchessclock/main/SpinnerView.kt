@@ -8,13 +8,12 @@ import android.graphics.RectF
 import android.view.View
 import android.util.AttributeSet
 import johnwilde.androidchessclock.R
-import timber.log.Timber
 
 class SpinnerView @JvmOverloads constructor(
-            context: Context,
-            attrs: AttributeSet? = null,
-            defStyleAttr: Int = 0
-    ) : View(context, attrs, defStyleAttr) {
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
 
     private val mOval: RectF
     private val mPaint: Paint = Paint()
@@ -29,8 +28,10 @@ class SpinnerView @JvmOverloads constructor(
         mOval = RectF(0f, 0f, dp, dp)
     }
 
-    override fun onMeasure(widthMeasureSpec: Int,
-                           heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int
+    ) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val dp = context.resources.getDimensionPixelSize(R.dimen.spinnerWidth)
         setMeasuredDimension(dp, dp)

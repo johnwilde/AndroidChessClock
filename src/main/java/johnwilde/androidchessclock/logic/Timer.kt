@@ -5,14 +5,11 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
-import io.reactivex.subjects.PublishSubject
-import io.reactivex.subjects.Subject
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.main.MainViewState
 import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 interface PublishesClockState {
@@ -21,10 +18,12 @@ interface PublishesClockState {
 // Responsible for updating an individual clock and publishing new view states
 // on each update.
 // Concrete subclasses implement the specific timing variants
-abstract class Timer(val color: ClockView.Color,
-            var preferencesUtil: PreferencesUtil,
-            private var stateHolder : GameStateHolder,
-            var timeSource: TimeSource) {
+abstract class Timer(
+    val color: ClockView.Color,
+    var preferencesUtil: PreferencesUtil,
+    private var stateHolder: GameStateHolder,
+    var timeSource: TimeSource
+) {
 
     private var clockSubscription: Disposable = Disposables.empty()
 
@@ -35,11 +34,11 @@ abstract class Timer(val color: ClockView.Color,
 
     // Utilities to keep track of moves and time gaps
     var moveCounter = MoveCounter(preferencesUtil)
-    private var timeGap =  TimeGap(preferencesUtil, color, stateHolder, clockSubject)
+    private var timeGap = TimeGap(preferencesUtil, color, stateHolder, clockSubject)
 
     val moveTimes get() = moveCounter.moveTimes.toLongArray()
-    var msToGo : Long = 0
-    abstract fun timerTask() : PublishesClockState
+    var msToGo: Long = 0
+    abstract fun timerTask(): PublishesClockState
     abstract fun setNewTime(newTime: Long)
 
     fun initialize() {
@@ -54,7 +53,7 @@ abstract class Timer(val color: ClockView.Color,
         start()
     }
 
-    open fun bonusMsPerMove() : Long {
+    open fun bonusMsPerMove(): Long {
         return 0
     }
 
@@ -72,7 +71,7 @@ abstract class Timer(val color: ClockView.Color,
         // Return observable that on subscription will cause various subjects to start emitting
         // state updates.  When subscription is disposed the state updates will stop.
         val clockTask = timerTask()
-        clockSubscription = Observable.interval(0,100, TimeUnit.MILLISECONDS)
+        clockSubscription = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.computation())
                 .map { clockTask.publish() } // each interval
                 .doOnDispose { clockTask.publish() } // the final update
@@ -90,7 +89,7 @@ abstract class Timer(val color: ClockView.Color,
         stateHolder.timeSubject.onNext(GameStateHolder.TimeUpdate(color, newValue))
     }
 
-    fun initialState() : ClockViewState {
+    fun initialState(): ClockViewState {
         return ClockViewState(
                 button = ClockViewState.Button(enabled = true),
                 time = ClockViewState.Time(msToGo = msToGo),

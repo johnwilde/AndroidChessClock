@@ -17,8 +17,8 @@ import java.io.IOException
 import javax.inject.Inject
 
 class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
-    @Inject lateinit var clockManager : ClockManager
-    @Inject lateinit var preferences : PreferencesUtil
+    @Inject lateinit var clockManager: ClockManager
+    @Inject lateinit var preferences: PreferencesUtil
 
     // for sounding buzzer
     private var mBellId: Int = 0
@@ -40,9 +40,10 @@ class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?): View {
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         return inflater.inflate(R.layout.empty, container, false)
     }
 
@@ -78,7 +79,7 @@ class SoundFragment : MviFragment<SoundView, SoundViewPresenter>(), SoundView {
     }
 
     private fun getMediaPlayer(media: Int): Int {
-        var id : Int = -1
+        var id: Int = -1
         try {
             val afd = resources.openRawResourceFd(media)
             id = mSoundPool?.load(afd, 1) ?: -1

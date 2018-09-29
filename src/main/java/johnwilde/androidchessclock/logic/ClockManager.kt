@@ -21,12 +21,13 @@ import javax.inject.Singleton
 // turns.
 @Singleton
 class ClockManager @Inject constructor(
-        val preferencesUtil: PreferencesUtil,
-        var stateHolder : GameStateHolder,
-        @Named("white") private var white: Timer,
-        @Named("black") private var black: Timer) {
+    val preferencesUtil: PreferencesUtil,
+    var stateHolder: GameStateHolder,
+    @Named("white") private var white: Timer,
+    @Named("black") private var black: Timer
+) {
 
-    private lateinit var gameOver : Disposable
+    private lateinit var gameOver: Disposable
     var timeIsNegative: Boolean = false // At least one clock has gone negative
     val whiteDelegate = TimerDelegate(WHITE)
     val blackDelgate = TimerDelegate(BLACK)
@@ -35,7 +36,7 @@ class ClockManager @Inject constructor(
     // Wrapper around the timer instances, which go away if time control
     // type is changed.  Clients should use the subjects exposed by this
     // class to receive correct state updates across time control changes.
-    inner class TimerDelegate(val color : ClockView.Color) {
+    inner class TimerDelegate(val color: ClockView.Color) {
         var clock = BehaviorSubject.create<Partial<ClockViewState>>()
         var main = BehaviorSubject.create<Partial<MainViewState>>()
         var disposables = CompositeDisposable()
@@ -79,13 +80,12 @@ class ClockManager @Inject constructor(
         initializeGame()
     }
 
-
     // Logic for "ending" the game
-    private fun gameOverSubscription() : Disposable {
+    private fun gameOverSubscription(): Disposable {
         timeIsNegative = false
         return stateHolder.timeSubject
-                .filter{ u ->  u.ms <= 0 }
-                .filter{ stateHolder.gameState.isUnderway() }
+                .filter { u -> u.ms <= 0 }
+                .filter { stateHolder.gameState.isUnderway() }
                 .take(1)
                 .subscribe { _ ->
                     if (preferencesUtil.allowNegativeTime) {
@@ -131,13 +131,12 @@ class ClockManager @Inject constructor(
 
     // Play/Pause button was hit
     fun playPause() {
-        when(gameState()) {
+        when (gameState()) {
             GameState.PLAYING, GameState.NEGATIVE -> {
                 // Pause game
                 setGameState(GameState.PAUSED)
                 active().stop()
                 takeBackController = TakeBackController(active(), forOtherColor(active().color), stateHolder)
-
             }
             GameState.PAUSED -> {
                 startPlayerClock(active())
@@ -159,11 +158,11 @@ class ClockManager @Inject constructor(
         }
     }
 
-    private fun setGameState(state : GameState) {
+    private fun setGameState(state: GameState) {
         stateHolder.setGameStateValue(state)
     }
 
-    private fun startPlayerClock(timer : Timer) {
+    private fun startPlayerClock(timer: Timer) {
         stateHolder.setActiveClock(timer)
         if (gameState() == GameState.PAUSED) {
             active().start()
@@ -201,7 +200,6 @@ class ClockManager @Inject constructor(
         }
     }
 
-    fun active() : Timer { return stateHolder.active!! }
-    private fun gameState() : GameState { return stateHolder.gameState }
+    fun active(): Timer { return stateHolder.active!! }
+    private fun gameState(): GameState { return stateHolder.gameState }
 }
-
