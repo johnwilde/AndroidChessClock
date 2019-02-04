@@ -5,7 +5,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.content.res.ResourcesCompat
+import androidx.core.content.res.ResourcesCompat
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -29,11 +29,11 @@ import javax.inject.Inject
 
 // This "View" represents one button and the TextView that shows the time remaining
 class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
-    lateinit var color : ClockView.Color
-    private var scaleX : Float = 1f
-    private var scaleY : Float = 1f
-    @Inject lateinit var clockManager : ClockManager
-    @Inject lateinit var preferences : PreferencesUtil
+    lateinit var color: ClockView.Color
+    private var scaleX: Float = 1f
+    private var scaleY: Float = 1f
+    @Inject lateinit var clockManager: ClockManager
+    @Inject lateinit var preferences: PreferencesUtil
 
     override fun createPresenter(): ClockViewPresenter {
         Timber.d("create presenter: %s", color)
@@ -59,9 +59,11 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
         color = if (myTag == "left") ClockView.Color.WHITE else ClockView.Color.BLACK
     }
 
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.clock_button, container, false)
     }
 
@@ -114,7 +116,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     private fun renderButton(buttonState: ClockViewState.Button) {
-        //TODO:
+        // TODO:
         // forward and backward controls for moves
         // crash (in hourglass?)
         // time input is awkward
@@ -135,7 +137,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
     }
 
     private fun renderMoveCount(mc: ClockViewState.MoveCount) {
-        moveCount.text = when(mc.message) {
+        moveCount.text = when (mc.message) {
             ClockViewState.MoveCount.Message.REMAINING ->
                 resources.getString(R.string.moves_remaining) + " " + mc.count.toString()
             ClockViewState.MoveCount.Message.NONE -> ""
@@ -180,7 +182,7 @@ class ClockFragment : MviFragment<ClockView, ClockViewPresenter>(), ClockView {
 
         if (requestCode == REQUEST_CODE_ADJUST_TIME) {
             if (data == null)
-                return  // no change
+                return // no change
             val playerColor = data.getStringExtra(AdjustClock.COLOR)
             if (color.toString().equals(playerColor)) {
                 val newTime = data.getLongExtra(AdjustClock.NEW_TIME, 0)

@@ -11,7 +11,6 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.util.concurrent.Executor
 
-
 class TestSchedulerRule : TestRule {
     private val immediate = object : Scheduler() {
         override fun createWorker(): Scheduler.Worker {

@@ -6,13 +6,15 @@ import android.graphics.ColorFilter
 import android.graphics.Path
 import android.graphics.PixelFormat
 import android.graphics.drawable.Drawable
-import android.support.annotation.ColorInt
-import androidx.graphics.toRectF
+import androidx.annotation.ColorInt
+import androidx.core.graphics.toRectF
 
-class FloodDrawable(@ColorInt val color: Int,
-                    val radiusPx: Float) : Drawable() {
-    var flood : FloodForeground? = null
-    var animator : Animator? = null
+class FloodDrawable(
+    @ColorInt val color: Int,
+    val radiusPx: Float
+) : Drawable() {
+    var flood: FloodForeground? = null
+    var animator: Animator? = null
     var flooded = false
         set(setFlooded) {
             if (setFlooded && !flooded) {
@@ -48,7 +50,7 @@ class FloodDrawable(@ColorInt val color: Int,
     override fun setColorFilter(colorFilter: ColorFilter?) {
     }
 
-    fun hotspot(x : Float, y: Float) {
+    fun hotspot(x: Float, y: Float) {
         this.x = x
         this.y = y
     }

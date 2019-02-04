@@ -3,7 +3,7 @@ package johnwilde.androidchessclock.main
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import co.zsmb.materialdrawerkt.builders.drawer
 import co.zsmb.materialdrawerkt.draweritems.badgeable.primaryItem
 import co.zsmb.materialdrawerkt.draweritems.divider
@@ -17,12 +17,12 @@ import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import javax.inject.Inject
 
-class MainDrawerBuilder @Inject constructor(var preferenceUtil : PreferencesUtil)
+class MainDrawerBuilder @Inject constructor(var preferenceUtil: PreferencesUtil)
     : SharedPreferences.OnSharedPreferenceChangeListener {
     companion object {
-        val subject : PublishSubject<Any> = PublishSubject.create()
+        val subject: PublishSubject<Any> = PublishSubject.create()
     }
-    lateinit var myDrawer : Drawer
+    lateinit var myDrawer: Drawer
     fun onDrawerOpened(activity: MainActivity) {
         myDrawer = activity.myDrawer
         subject.onNext(1)
@@ -38,18 +38,20 @@ class MainDrawerBuilder @Inject constructor(var preferenceUtil : PreferencesUtil
 
     private fun register(context: Context) {
         PreferenceManager.getDefaultSharedPreferences(context)
-                .registerOnSharedPreferenceChangeListener(this);
+                .registerOnSharedPreferenceChangeListener(this)
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences,
-                                           key: String) {
+    override fun onSharedPreferenceChanged(
+        sharedPreferences: SharedPreferences,
+        key: String
+    ) {
         updateDescription(1, preferenceUtil.formattedHourglass())
         updateDescription(2, preferenceUtil.formattedBasicTime())
         updateDescription(3, preferenceUtil.formattedTournament())
     }
 
     private fun updateDescription(identifier: Long, description: String) {
-        val drawerItem = myDrawer.getDrawerItem(identifier);
+        val drawerItem = myDrawer.getDrawerItem(identifier)
         if (drawerItem is SwitchDrawerItem) {
             drawerItem.withDescription(description)
             myDrawer.updateItem(drawerItem)
@@ -57,7 +59,7 @@ class MainDrawerBuilder @Inject constructor(var preferenceUtil : PreferencesUtil
     }
 
     private fun toggleOtherItems(activity: MainActivity, identifier: Long) {
-        val set = mutableSetOf<Long>(1,2,3)
+        val set = mutableSetOf<Long>(1, 2, 3)
         set.remove(identifier)
         for (i in set) {
             val item = myDrawer.getDrawerItem(i) as SwitchDrawerItem
@@ -67,19 +69,19 @@ class MainDrawerBuilder @Inject constructor(var preferenceUtil : PreferencesUtil
         activity.clockManager.reset()
     }
 
-    fun buildDrawer(activity : MainActivity): Drawer {
+    fun buildDrawer(activity: MainActivity): Drawer {
         return activity.drawer {
             closeOnClick = false
             showOnFirstLaunch = true
             headerViewRes = R.layout.header
             sectionHeader(R.string.time_control)
-            switchItem (R.string.basic_time_preference_description) {
+            switchItem(R.string.basic_time_preference_description) {
                 iicon = MaterialDesignIconic.Icon.gmi_timer
                 description = preferenceUtil.formattedBasicTime()
                 identifier = 2
                 selectable = false
                 checked = preferenceUtil.timeControlType == PreferencesUtil.TimeControlType.BASIC
-                onSwitchChanged {_, _, isEnabled ->
+                onSwitchChanged { _, _, isEnabled ->
                     if (isEnabled) {
                         preferenceUtil.timeControlType = PreferencesUtil.TimeControlType.BASIC
                         toggleOtherItems(activity, identifier)
@@ -93,13 +95,13 @@ class MainDrawerBuilder @Inject constructor(var preferenceUtil : PreferencesUtil
                     }
                 }
             }
-            switchItem (R.string.hourglass_time_preference_description) {
+            switchItem(R.string.hourglass_time_preference_description) {
                 iicon = MaterialDesignIconic.Icon.gmi_hourglass_outline
                 description = preferenceUtil.formattedHourglass()
                 identifier = 1
                 selectable = false
                 checked = preferenceUtil.timeControlType == PreferencesUtil.TimeControlType.HOURGLASS
-                onSwitchChanged {_, _, isEnabled ->
+                onSwitchChanged { _, _, isEnabled ->
                     if (isEnabled) {
                         preferenceUtil.timeControlType = PreferencesUtil.TimeControlType.HOURGLASS
                         toggleOtherItems(activity, identifier)
@@ -113,13 +115,13 @@ class MainDrawerBuilder @Inject constructor(var preferenceUtil : PreferencesUtil
                     }
                 }
             }
-            switchItem (R.string.advanced_time_preference_description) {
+            switchItem(R.string.advanced_time_preference_description) {
                 iicon = MaterialDesignIconic.Icon.gmi_timer
                 description = preferenceUtil.formattedTournament()
                 identifier = 3
                 selectable = false
                 checked = preferenceUtil.timeControlType == PreferencesUtil.TimeControlType.TOURNAMENT
-                onSwitchChanged {_, _, isEnabled ->
+                onSwitchChanged { _, _, isEnabled ->
                     if (isEnabled) {
                         preferenceUtil.timeControlType = PreferencesUtil.TimeControlType.TOURNAMENT
                         toggleOtherItems(activity, identifier)
@@ -134,14 +136,14 @@ class MainDrawerBuilder @Inject constructor(var preferenceUtil : PreferencesUtil
                 }
             }
             sectionHeader(R.string.sound)
-            switchItem (R.string.buzzer) {
+            switchItem(R.string.buzzer) {
                 iicon = MaterialDesignIconic.Icon.gmi_notifications_active
                 selectable = false
                 checked = preferenceUtil.playBuzzerAtEnd
                 onToggled { preferenceUtil.playBuzzerAtEnd = preferenceUtil.playBuzzerAtEnd.not() }
             }
 
-            switchItem (R.string.button_click) {
+            switchItem(R.string.button_click) {
                 iicon = MaterialDesignIconic.Icon.gmi_audio
                 selectable = false
                 checked = preferenceUtil.playSoundOnButtonTap
@@ -154,21 +156,20 @@ class MainDrawerBuilder @Inject constructor(var preferenceUtil : PreferencesUtil
                 checked = preferenceUtil.allowNegativeTime
                 onToggled { preferenceUtil.allowNegativeTime = preferenceUtil.allowNegativeTime.not() }
             }
-            switchItem (R.string.show_time_gap) {
+            switchItem(R.string.show_time_gap) {
                 iicon = MaterialDesignIconic.Icon.gmi_compare
                 selectable = false
                 checked = preferenceUtil.showTimeGap
                 onToggled { preferenceUtil.showTimeGap = preferenceUtil.showTimeGap.not() }
             }
-            divider {  }
-            primaryItem (R.string.about) {
+            divider { }
+            primaryItem(R.string.about) {
                 iicon = MaterialDesignIconic.Icon.gmi_info
                 selectable = false
                 onClick { _ ->
                     activity?.showAboutDialog()
                     true
                 }
-
             }
             onOpened { onDrawerOpened(activity) }
             onClosed { onDrawerClosed(activity) }

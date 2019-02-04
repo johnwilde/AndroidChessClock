@@ -4,17 +4,19 @@ import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 
-class Fischer(color: ClockView.Color,
-              preferencesUtil: PreferencesUtil,
-              stateHolder : GameStateHolder,
-              timeSource: TimeSource)
+class Fischer(
+    color: ClockView.Color,
+    preferencesUtil: PreferencesUtil,
+    stateHolder: GameStateHolder,
+    timeSource: TimeSource
+)
     : Timer(color, preferencesUtil, stateHolder, timeSource) {
 
     init {
         updateAndPublishMsToGo(preferencesUtil.initialDurationSeconds * 1000.toLong())
     }
 
-    override fun bonusMsPerMove() : Long {
+    override fun bonusMsPerMove(): Long {
         return preferencesUtil.getFischerDelayMs()
     }
 

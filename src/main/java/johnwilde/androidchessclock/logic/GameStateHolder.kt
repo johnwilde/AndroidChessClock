@@ -27,11 +27,11 @@ class GameStateHolder {
         }
     }
 
-    var gameState : GameState = NOT_STARTED
+    var gameState: GameState = NOT_STARTED
     val gameStateSubject: PublishSubject<GameState> = PublishSubject.create()
 
     // The active player (or null before game starts)
-    var active : Timer? = null
+    var active: Timer? = null
     val activePlayerSubject: PublishSubject<ClockView.Color> = PublishSubject.create()
 
     // Time remaining on a clock
@@ -44,7 +44,7 @@ class GameStateHolder {
         activePlayerSubject.onNext(clock.color)
     }
 
-    fun setGameStateValue(newState : GameState) {
+    fun setGameStateValue(newState: GameState) {
         Timber.d("new state is %s", newState)
         gameState = newState
         gameStateSubject.onNext(newState)

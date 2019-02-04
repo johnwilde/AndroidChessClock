@@ -39,7 +39,7 @@ class MainViewPresenter(val clockManager: ClockManager)
         // Generate a new view state when the game state changes
         val stateChange = clockManager.stateHolder.gameStateSubject
                 .flatMap { state ->
-                    val change :  Any = when (state) {
+                    val change: Any = when (state) {
                         GameState.NOT_STARTED -> MainViewState.initialState
                         GameState.PAUSED ->
                             Observable.fromArray(
@@ -84,11 +84,11 @@ class MainViewPresenter(val clockManager: ClockManager)
                 MainView::render)
     }
 
-    private fun reducer(previous : MainViewState, updates: Partial<MainViewState>) : MainViewState {
+    private fun reducer(previous: MainViewState, updates: Partial<MainViewState>): MainViewState {
         return updates.reduce(previous)
     }
 
-    private fun onGameOver() : Observable<Partial<MainViewState>> {
+    private fun onGameOver(): Observable<Partial<MainViewState>> {
         val message = if (clockManager.active().color == ClockView.Color.WHITE) {
             MainViewState.Snackbar.Message.WHITE_LOST
         } else {
@@ -99,7 +99,7 @@ class MainViewPresenter(val clockManager: ClockManager)
         return Observable.timer(5, TimeUnit.SECONDS)
                 .map { _ -> MainViewState.Snackbar(dismiss = true) as Partial<MainViewState> }
                 .startWithArray(
-                        MainViewState.Snackbar( show = true, message = message),
+                        MainViewState.Snackbar(show = true, message = message),
                         MainViewState.PlayPauseButton(MainViewState.PlayPauseButton.State.FINISHED),
                         MainViewState.TakeBack(false, false)
                 )

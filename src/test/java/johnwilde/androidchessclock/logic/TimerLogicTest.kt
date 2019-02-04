@@ -6,7 +6,6 @@ import io.reactivex.Observable
 import johnwilde.androidchessclock.clock.*
 import johnwilde.androidchessclock.main.Partial
 import johnwilde.androidchessclock.prefs.PreferencesUtil
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Test
@@ -48,7 +47,7 @@ class TimerLogicTest {
         val expectedBlackValues = mutableListOf<Partial<ClockViewState>>()
 
         // simulate move start
-        whiteClock.moveStart()  // send time gap on move start
+        whiteClock.moveStart() // send time gap on move start
         expectedBlackValues.add(ClockViewState.TimeGap(10_000 - 10_000))
         blackObserver.assertValueSequence(expectedBlackValues)
 
@@ -92,7 +91,7 @@ class TimerLogicTest {
 
         expectedValues.add(ClockViewState.Button(true))
         expectedValues.add(ClockViewState.Time(9900))
-        expectedValues.add(ClockViewState.MoveCount(ClockViewState.MoveCount.Message.TOTAL,1))
+        expectedValues.add(ClockViewState.MoveCount(ClockViewState.MoveCount.Message.TOTAL, 1))
         clockTestObserver.assertValueSequence(expectedValues)
         TODO("fix tests")
 //
@@ -133,7 +132,7 @@ class TimerLogicTest {
 //        clockTestObserver.assertValueSequence(expectedValues)
     }
 
-    private fun advanceTimeBy(millis : Long) {
+    private fun advanceTimeBy(millis: Long) {
         timeSource.currentTime += millis
         testSchedulerRule.testScheduler.advanceTimeBy(millis, TimeUnit.MILLISECONDS)
     }

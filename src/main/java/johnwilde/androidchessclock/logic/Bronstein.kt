@@ -5,10 +5,12 @@ import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.main.MainViewState
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 
-class Bronstein(color: ClockView.Color,
-                preferencesUtil: PreferencesUtil,
-                stateHolder : GameStateHolder,
-                timeSource: TimeSource)
+class Bronstein(
+    color: ClockView.Color,
+    preferencesUtil: PreferencesUtil,
+    stateHolder: GameStateHolder,
+    timeSource: TimeSource
+)
     : Timer(color, preferencesUtil, stateHolder, timeSource) {
 
     var delay: Long = 0
@@ -28,7 +30,7 @@ class Bronstein(color: ClockView.Color,
         mainSubject.onNext(MainViewState.Spinner(0))
     }
 
-    override fun timerTask() : PublishesClockState {
+    override fun timerTask(): PublishesClockState {
         return object : PublishesClockState {
             private var lastUpdateMs: Long = timeSource.currentTimeMillis()
 

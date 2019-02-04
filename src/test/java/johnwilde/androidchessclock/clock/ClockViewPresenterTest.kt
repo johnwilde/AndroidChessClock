@@ -11,8 +11,8 @@ import org.junit.ClassRule
 import org.junit.Test
 
 class ClockViewPresenterTest {
-    lateinit var robot : ClockViewRobot
-    lateinit var presenter : ClockViewPresenter
+    lateinit var robot: ClockViewRobot
+    lateinit var presenter: ClockViewPresenter
     var initialState = ClockViewState(
             button = ClockViewState.Button(enabled = true),
             time = ClockViewState.Time(msToGo = 0),
@@ -22,7 +22,7 @@ class ClockViewPresenterTest {
                     message = ClockViewState.MoveCount.Message.NONE,
                     count = 0)
     )
-    var clockManager : ClockManager = mock()
+    var clockManager: ClockManager = mock()
 
     companion object {
         @ClassRule
@@ -38,7 +38,7 @@ class ClockViewPresenterTest {
 
     @Test
     fun startPlayOnButtonClick() {
-        var mockStateHolder : GameStateHolder = mock()
+        var mockStateHolder: GameStateHolder = mock()
         whenever(mockStateHolder.gameState).thenReturn(GameStateHolder.GameState.NOT_STARTED)
         whenever(clockManager.stateHolder).thenReturn(mockStateHolder)
         robot.fireClickIntent()

@@ -1,16 +1,14 @@
 package johnwilde.androidchessclock.main
 
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v7.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
 import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.Utils.setPicker
 import johnwilde.androidchessclock.Utils.twoDigitFormatter
 import johnwilde.androidchessclock.prefs.PreferencesUtil
 import kotlinx.android.synthetic.main.bonus_row.view.*
-import kotlinx.android.synthetic.main.dialog_simple.view.*
 import kotlinx.android.synthetic.main.time_picker_row.view.*
 
 class BasicTimeSettingsFragment : DialogFragment() {
@@ -35,7 +33,7 @@ class BasicTimeSettingsFragment : DialogFragment() {
 
         view.use_bonus.isChecked = a.preferenceUtil.basicSettingsUseBonus
         setBonusEnabled(view.use_bonus.isChecked)
-        view.use_bonus.setOnCheckedChangeListener({ _ , isChecked ->
+        view.use_bonus.setOnCheckedChangeListener({ _, isChecked ->
             setBonusEnabled(isChecked)
         })
 

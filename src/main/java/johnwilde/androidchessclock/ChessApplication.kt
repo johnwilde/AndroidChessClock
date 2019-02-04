@@ -43,4 +43,3 @@ class ChessApplication : DaggerApplication() {
         return DaggerAppComponent.builder().create(this)
     }
 }
-

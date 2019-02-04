@@ -4,15 +4,16 @@ import android.animation.*
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
-import android.support.annotation.ColorInt
+import androidx.annotation.ColorInt
 import android.util.FloatProperty
 
 class FloodForeground(
-        @ColorInt val color: Int,
-        private val owner: FloodDrawable,
-        var bounds: Rect,
-        private var startX: Float,
-        private var startY: Float) {
+    @ColorInt val color: Int,
+    private val owner: FloodDrawable,
+    var bounds: Rect,
+    private var startX: Float,
+    private var startY: Float
+) {
     private val paint = Paint()
     private val targetRadius: Float
     private val radiusDuration: Long
@@ -25,7 +26,7 @@ class FloodForeground(
         paint.color = color
         paint.alpha = (255 * 0.8).toInt()
         targetRadius = getTargetRadius(bounds)
-        radiusDuration = 400  // ms
+        radiusDuration = 400 // ms
     }
 
     fun draw(canvas: Canvas?, flooded: Boolean) {
@@ -79,9 +80,10 @@ class FloodForeground(
      * Interpolator with a smooth log deceleration.
      */
     private class LogDecelerateInterpolator(
-            private val mBase: Float,
-            timeScale: Float,
-            private val mDrift: Float) : TimeInterpolator {
+        private val mBase: Float,
+        timeScale: Float,
+        private val mDrift: Float
+    ) : TimeInterpolator {
         private val mTimeScale: Float
         private val mOutputScale: Float
 

@@ -5,7 +5,7 @@ import dagger.Module
 import dagger.Provides
 
 @Module
-class AppModule{
+class AppModule {
     @Provides
     fun providesContext(application: ChessApplication): Context {
         return application.applicationContext

@@ -86,7 +86,7 @@ object Utils {
         return stringHr + stringMin + stringSec
     }
 
-    fun twoDigitFormatter(intIn : Int) : String? {
+    fun twoDigitFormatter(intIn: Int): String? {
         return if (intIn < 10) {
             "0" + intIn.toString()
         } else {
@@ -99,5 +99,4 @@ object Utils {
         picker.maxValue = max
         picker.value = value
     }
-
 }

@@ -50,7 +50,7 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                     }
                 }
 
-        val updates : Observable<Partial<ClockViewState>> =
+        val updates: Observable<Partial<ClockViewState>> =
                 Observable.merge(clockTapped, clockManager.forColor(color).clock)
 
         val initialState = clockManager.timerForColor(color).initialState()
@@ -62,12 +62,11 @@ class ClockViewPresenter(val color: ClockView.Color, val clockManager: ClockMana
                 ClockView::render)
     }
 
-    private fun reducer(previous : ClockViewState, updates: Partial<ClockViewState>) : ClockViewState {
+    private fun reducer(previous: ClockViewState, updates: Partial<ClockViewState>): ClockViewState {
         return updates.reduce(previous)
     }
 
-    private fun handleBadClick(message: ClockViewState.Snackbar.Message)
-            : Observable<Partial<ClockViewState>> {
+    private fun handleBadClick(message: ClockViewState.Snackbar.Message): Observable<Partial<ClockViewState>> {
         // Must tap non-active color to start/start game
         // Let's show Snackbar for 2 seconds and then dismiss it
         return Observable.timer(2, TimeUnit.SECONDS)

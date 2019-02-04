@@ -99,7 +99,7 @@ class TakeBackControllerTest {
         // white is active
         controller = TakeBackController(white, black, stateHolder)
         assertTrue(controller.isLastMove())
-        controller.goBack()  //black turn
+        controller.goBack() // black turn
         assertFalse(controller.isLastMove())
         assertEquals(ClockView.Color.BLACK, stateHolder.active?.color)
         assertEquals(8, black.msToGo)
@@ -138,5 +138,4 @@ class TakeBackControllerTest {
         assertTrue(Arrays.equals(longArrayOf(11), white.moveTimes))
         assertTrue(Arrays.equals(longArrayOf(), black.moveTimes))
     }
-
 }

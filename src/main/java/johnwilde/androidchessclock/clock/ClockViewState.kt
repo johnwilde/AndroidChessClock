@@ -5,11 +5,12 @@ import johnwilde.androidchessclock.main.Partial
 // Used to render a player button, clock, time-gap and move-count
 // and a toast (prompt)
 data class ClockViewState(
-        val button : Button,
-        val time: Time,
-        val prompt : Snackbar?,
-        val timeGap : TimeGap,
-        val moveCount: MoveCount) : Partial<ClockViewState> {
+    val button: Button,
+    val time: Time,
+    val prompt: Snackbar?,
+    val timeGap: TimeGap,
+    val moveCount: MoveCount
+) : Partial<ClockViewState> {
     override fun reduce(previousState: ClockViewState): ClockViewState {
         return this
     }
@@ -35,9 +36,10 @@ data class ClockViewState(
     }
 
     data class MoveCount(
-            val message: Message,
-            val count: Int) : Partial<ClockViewState> {
-        enum class Message { TOTAL, REMAINING, NONE}
+        val message: Message,
+        val count: Int
+    ) : Partial<ClockViewState> {
+        enum class Message { TOTAL, REMAINING, NONE }
         override fun reduce(previousState: ClockViewState): ClockViewState {
             return previousState.copy(
                     moveCount = this,
@@ -48,8 +50,9 @@ data class ClockViewState(
     // The time difference between the player clocks, only show when
     // it is not player's turn
     data class TimeGap(
-            val msGap: Long = 0,
-            val show: Boolean = true) : Partial<ClockViewState> {
+        val msGap: Long = 0,
+        val show: Boolean = true
+    ) : Partial<ClockViewState> {
         override fun reduce(previousState: ClockViewState): ClockViewState {
             return previousState.copy(timeGap = this, prompt = null)
         }
@@ -57,15 +60,14 @@ data class ClockViewState(
 
     // Publish a toast
     data class Snackbar(
-            val message: Message? = null,
-            val show: Boolean = false,
-            val dismiss: Boolean = false) : Partial<ClockViewState> {
+        val message: Message? = null,
+        val show: Boolean = false,
+        val dismiss: Boolean = false
+    ) : Partial<ClockViewState> {
         enum class Message { RESUME, START }
         override fun reduce(previousState: ClockViewState): ClockViewState {
             return previousState.copy(prompt = this)
         }
     }
 }
-
-
 

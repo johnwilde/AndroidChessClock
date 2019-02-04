@@ -5,11 +5,11 @@ import johnwilde.androidchessclock.prefs.PreferencesUtil
 import timber.log.Timber
 
 class MoveCounter(val pref: PreferencesUtil) {
-    var count : Int = 0 // number of moves for this player
+    var count: Int = 0 // number of moves for this player
     val moveTimes = mutableListOf<Long>() // array of time for each move (ms)
-    var msToGoMoveStart : Long = 0
+    var msToGoMoveStart: Long = 0
 
-    fun newMove(ms : Long, timer : Timer) {
+    fun newMove(ms: Long, timer: Timer) {
         msToGoMoveStart = ms
         moveTimes.add(0)
 
@@ -31,7 +31,7 @@ class MoveCounter(val pref: PreferencesUtil) {
             publishCurrentMoveCount(count + 1, timer)
         }
 
-        count += 1  // the start of the Move
+        count += 1 // the start of the Move
     }
 
     fun popMove(timer: Timer) {
@@ -48,20 +48,20 @@ class MoveCounter(val pref: PreferencesUtil) {
         publishCurrentMoveCount(count, timer)
     }
 
-    fun publishCurrentMoveCount(count: Int, timer : Timer) {
+    fun publishCurrentMoveCount(count: Int, timer: Timer) {
         timer.clockSubject.onNext(ClockViewState.MoveCount(
                 message = ClockViewState.MoveCount.Message.TOTAL,
                 count = count)
         )
     }
-    fun publishRemainingMoves(remaining : Int, timer: Timer) {
+    fun publishRemainingMoves(remaining: Int, timer: Timer) {
         timer.clockSubject.onNext(ClockViewState.MoveCount(
                 message = ClockViewState.MoveCount.Message.REMAINING,
                 count = remaining)
         )
     }
 
-    fun updateMoveTime(ms : Long) {
+    fun updateMoveTime(ms: Long) {
         Timber.d("update move time[%s]: %s", moveTimes.lastIndex, msToGoMoveStart - ms)
         moveTimes[moveTimes.lastIndex] = msToGoMoveStart - ms
     }

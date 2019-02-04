@@ -5,15 +5,16 @@ import io.reactivex.schedulers.Schedulers
 import johnwilde.androidchessclock.clock.ClockView
 import johnwilde.androidchessclock.clock.ClockViewState
 import johnwilde.androidchessclock.prefs.PreferencesUtil
-import timber.log.Timber
 
-class Hourglass(color: ClockView.Color,
-                preferencesUtil: PreferencesUtil,
-                val stateHolder : GameStateHolder,
-                timeSource: TimeSource)
+class Hourglass(
+    color: ClockView.Color,
+    preferencesUtil: PreferencesUtil,
+    val stateHolder: GameStateHolder,
+    timeSource: TimeSource
+)
     : Timer(color, preferencesUtil, stateHolder, timeSource) {
 
-    private lateinit var lastMsOtherClock : GameStateHolder.TimeUpdate
+    private lateinit var lastMsOtherClock: GameStateHolder.TimeUpdate
     private val inactiveDisposable = CompositeDisposable()
     private val timeDisposable = CompositeDisposable()
     private val gameStateDisposable = CompositeDisposable()
@@ -71,7 +72,7 @@ class Hourglass(color: ClockView.Color,
                 // only look for updates from other clock while it is running
                 .filter { u -> u.color != color }
                 .filter { stateHolder.gameState.clockMoving() }
-                .scan{ previous, new ->
+                .scan { previous, new ->
                     // Just add delta from previous and current state
                     setNewTime(msToGo + previous.ms - new.ms)
                     new
