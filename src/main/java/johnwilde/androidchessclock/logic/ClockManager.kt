@@ -45,7 +45,9 @@ class ClockManager @Inject constructor(
             val realClock = timerForColor(color)
             disposables.add(realClock.clockSubject.subscribe(clock::onNext, clock::onError))
             disposables.add(realClock.mainSubject.subscribe(main::onNext, main::onError))
-            clock.onNext(realClock.clockSubject.value)
+            realClock.clockSubject.value?.let {
+                clock.onNext(it)
+            }
         }
 
         fun unsubscribe() {
