@@ -2,8 +2,8 @@ package johnwilde.androidchessclock.main
 
 import android.app.Dialog
 import android.os.Bundle
-import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
 import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.Utils.setPicker
 import johnwilde.androidchessclock.Utils.twoDigitFormatter
@@ -11,7 +11,7 @@ import johnwilde.androidchessclock.prefs.PreferencesUtil
 import kotlinx.android.synthetic.main.bonus_row.view.*
 import kotlinx.android.synthetic.main.time_picker_row.view.*
 
-class BasicTimeSettingsFragment : androidx.fragment.app.DialogFragment() {
+class BasicTimeSettingsFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val a = activity as MainActivity
         val builder = AlertDialog.Builder(context!!)

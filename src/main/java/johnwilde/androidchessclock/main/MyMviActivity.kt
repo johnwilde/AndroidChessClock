@@ -1,7 +1,6 @@
 package johnwilde.androidchessclock.main
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
@@ -13,7 +12,8 @@ import com.hannesdorfmann.mosby3.mvp.MvpPresenter
 import com.hannesdorfmann.mosby3.mvp.MvpView
 
 /**
- *
+// https://github.com/sockeqwe/mosby/issues/317*
+ // From: https://github.com/sockeqwe/mosby/blob/master/mvi/src/main/java/com/hannesdorfmann/mosby3/mvi/MviActivity.java
  *
  * This abstract class can be used to extend from to implement an Model-View-Intent pattern with
  * this activity as View and a [MviPresenter] to coordinate the View and the underlying
@@ -33,13 +33,26 @@ import com.hannesdorfmann.mosby3.mvp.MvpView
 abstract class MyMviActivity<V : MvpView, P : MviPresenter<V, *>> : AppCompatActivity(), MvpView, MviDelegateCallback<V, P> {
 
     private var isRestoringViewState = false
+
+    /**
+     * Get the mvp delegate. This is internally used for creating presenter, attaching and detaching
+     * viewState from presenter.
+     *
+     *
+     * **Please note that only one instance of mvp delegate should be used per Activity
+     * instance**.
+     *
+     *
+     *
+     *
+     * Only override this method if you really know what you are doing.
+     *
+     *
+     * @return [ActivityMviDelegate]
+     */
     val mvpDelegate by lazy {
         ActivityMviDelegateImpl(this, this) as ActivityMviDelegate<V, P>
     }
-//    private lateinit var mvpDelegate: ActivityMviDelegate<V, P>
-//    get() {
-//        mvpDelegate = ActivityMviDelegateImpl(this, this) as ActivityMviDelegate<V, P>
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,31 +111,6 @@ abstract class MyMviActivity<V : MvpView, P : MviPresenter<V, *>> : AppCompatAct
      */
     @NonNull
     abstract override fun createPresenter(): P
-
-    /**
-     * Get the mvp delegate. This is internally used for creating presenter, attaching and detaching
-     * viewState from presenter.
-     *
-     *
-     * **Please note that only one instance of mvp delegate should be used per Activity
-     * instance**.
-     *
-     *
-     *
-     *
-     * Only override this method if you really know what you are doing.
-     *
-     *
-     * @return [ActivityMviDelegate]
-     */
-//    @NonNull
-//    fun mvpDelegate: ActivityMviDelegate<V, P> {
-//        if (mvpDelegate == null) {
-//            mvpDelegate = ActivityMviDelegateImpl(this, this) as ActivityMviDelegate<V, P>
-//        }
-//
-//        return mvpDelegate
-//    }
 
     @NonNull
     override fun getMvpView(): V {
