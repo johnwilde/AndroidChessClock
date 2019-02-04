@@ -35,7 +35,7 @@ internal abstract class ActivityBindingModule {
     companion object {
         @JvmStatic
         @Provides
-        internal fun provicesResources(context: Context): Resources {
+        internal fun providesResources(context: Context): Resources {
             return context.resources
         }
 
