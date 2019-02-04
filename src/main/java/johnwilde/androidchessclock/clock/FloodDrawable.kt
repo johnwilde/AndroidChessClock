@@ -6,8 +6,8 @@ import android.graphics.ColorFilter
 import android.graphics.Path
 import android.graphics.PixelFormat
 import android.graphics.drawable.Drawable
-import android.support.annotation.ColorInt
-import androidx.graphics.toRectF
+import androidx.annotation.ColorInt
+import androidx.core.graphics.toRectF
 
 class FloodDrawable(
     @ColorInt val color: Int,

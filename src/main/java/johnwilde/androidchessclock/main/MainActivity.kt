@@ -1,15 +1,14 @@
 package johnwilde.androidchessclock.main
+
 import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.transition.TransitionManager
-import android.support.v4.app.Fragment
+import com.google.android.material.snackbar.Snackbar
+import androidx.transition.TransitionManager
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
-import com.hannesdorfmann.mosby3.mvi.MviActivity
 import com.jakewharton.rxbinding2.view.RxView
 import com.mikepenz.materialdrawer.Drawer
 import dagger.android.AndroidInjection
@@ -38,15 +37,15 @@ interface HasSnackbar {
     fun hideSnackbar()
 }
 
-class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
+class MainActivity : MyMviActivity<MainView, MainViewPresenter>(), MainView,
         HasSupportFragmentInjector, HasSnackbar {
     @Inject lateinit var clockManager: ClockManager
     @Inject lateinit var preferenceUtil: PreferencesUtil
-    @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<android.support.v4.app.Fragment>
+    @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<androidx.fragment.app.Fragment>
     @Inject lateinit var drawerBuilder: MainDrawerBuilder
     lateinit var myDrawer: Drawer
 
-    var fragments: Array<Fragment> = emptyArray()
+    var fragments: Array<androidx.fragment.app.Fragment> = emptyArray()
     var dialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,7 +82,7 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+    override fun onSaveInstanceState(outState: Bundle) {
         outState!!.putBoolean(RESET_DIALOG_SHOWING, dialog?.isShowing ?: false)
         myDrawer.saveInstanceState(outState)
         super.onSaveInstanceState(outState)
@@ -284,7 +283,7 @@ class MainActivity : MviActivity<MainView, MainViewPresenter>(), MainView,
         }
     }
 
-    override fun supportFragmentInjector(): AndroidInjector<android.support.v4.app.Fragment> {
+    override fun supportFragmentInjector(): AndroidInjector<androidx.fragment.app.Fragment> {
         return fragmentInjector
     }
 

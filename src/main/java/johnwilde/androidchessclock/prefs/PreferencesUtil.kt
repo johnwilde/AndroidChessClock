@@ -3,7 +3,7 @@ package johnwilde.androidchessclock.prefs
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import androidx.content.edit
+import androidx.core.content.edit
 import com.f2prateek.rx.preferences2.RxSharedPreferences
 import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.Utils

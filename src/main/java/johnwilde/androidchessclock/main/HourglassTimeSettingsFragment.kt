@@ -3,15 +3,15 @@ package johnwilde.androidchessclock.main
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v7.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import androidx.appcompat.app.AlertDialog
 import android.view.View
 import johnwilde.androidchessclock.R
 import johnwilde.androidchessclock.Utils.setPicker
 import johnwilde.androidchessclock.Utils.twoDigitFormatter
 import kotlinx.android.synthetic.main.time_picker_row.view.*
 
-class HourglassTimeSettingsFragment : DialogFragment() {
+class HourglassTimeSettingsFragment : androidx.fragment.app.DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val a = activity as MainActivity
         val builder = AlertDialog.Builder(context!!)
